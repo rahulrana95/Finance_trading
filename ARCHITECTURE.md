@@ -1,125 +1,417 @@
-# System Architecture (v1)
+# System Architecture (v2, draft for review)
 
-Source: our own docs plus the parts we adopted from the reference guide
-"Automated Option Selling & Analysis Engine" (see the review at the end of this file).
+## 0. The problem we are solving
 
-## Design principles
+Every trading day, at a fixed time (10:00), answer one question with as much accuracy
+as possible:
 
-- **Our timing is slow:** one decision per day plus a check every 30 min. We do not need
-  sub-100 ms latency or tick-by-tick storage. Reliability matters far more than speed.
-- **Start simple:** one Python application with 4 separate modules. Split them into
-  separate services only if needed later.
-- **The risk module is independent:** it can always close positions, even if the
-  strategy or ML module crashes.
+> **"Given everything we know right now, should we sell a far call spread, a far put
+> spread, both (iron condor), or nothing? And at what size?"**
 
-## The 4 modules
+Then, for every open trade, every minute until it closes:
 
-```
- ┌──────────────────┐   ┌───────────────────────┐
- │ A. Data          │──▶│ B. Analytics &        │
- │ Dhan (primary)   │   │    Strategy           │
- │ AngelOne (backup)│   │ Greeks, features,     │
- │ cross-check      │   │ L0 rules, L1/L2 ML    │
- └────────┬─────────┘   └───────────┬───────────┘
-          │                         │ suggestion
-          ▼                         ▼
- ┌──────────────────────────────────────────────┐
- │ C. Execution & Risk                          │
- │ AGENTS.md / RULES.md checks, ledger,         │
- │ order safety, stops, kill switch             │
- └────────────────────┬─────────────────────────┘
-                      ▼
- ┌──────────────────────────────────────────────┐
- │ D. Alerts: Telegram, email, voice call       │
- └──────────────────────────────────────────────┘
-```
+> **"Hold, book profit, adjust, or exit?"**
 
-### A. Data ingestion
-- **Primary:** DhanHQ. Trading API free; Data API paid (~₹499 + GST / month; verify the
-  current price). Live feed via WebSocket, option chain with Greeks, OI, bid/ask.
-- **Backup:** AngelOne SmartAPI (free) for cross-checking prices. Shoonya (Finvasia) is
-  another free option.
-- Pull the option chain **every 30 min** and just before any order (not every 3 s; we
-  don't need it, and it stays well inside Dhan's rate limits).
-- Cross-check primary vs backup. A mismatch or stale data means no new orders
-  (`AGENTS.md` §2).
+Everything in this document exists to answer those two questions **correctly, quickly
+and safely**, and to **learn from every answer** so the next one is better.
 
-### B. Analytics and strategy
-- Greeks / IV calculated by us (Black-Scholes) and checked against the broker's values
-- Features: PCR and PCR momentum, OI build-up / unwinding at strikes, max pain, IV skew,
-  India VIX, trend (MACD, EMAs), regime (HMM, see `ML.md`)
-- L0 rules engine proposes trades; L1 / L2 models filter and size them (`ML.md`)
-- Output: one suggestion per day, plus exit signals
-
-### C. Execution and risk
-- Every suggestion passes the `AGENTS.md` / `RULES.md` checks before any order
-- Own position ledger, reconciled with the broker every 30 min (`MONITORING.md`)
-- Safe leg order: hedge first on entry, short first on exit
-- Stop-loss, drawdown limits, margin monitor, kill switch
-- **Not adopted:** "delta-neutral hedging" with futures or extra options. Our rules allow
-  Nifty spreads only. Delta is managed by closing or adjusting within `RULES.md`.
-
-### D. Alerts
-| Level | Channel |
-|---|---|
-| Info / daily summary | Telegram |
-| Warning | Telegram |
-| Critical (stop hit, limit breach, ledger mismatch, data failure) | Telegram **+ automated voice call** (e.g. Twilio) |
-| Backup | Email |
-
-The voice call matters because you only check 1–2 times a day.
-WhatsApp (Meta Cloud API) is optional later.
-
-## Storage
-
-| Data | Store | Why |
-|---|---|---|
-| Ledger, orders, fills, decisions, logs | PostgreSQL (append-only tables) | Must be transactional and never lost |
-| 30-min snapshots, option chain history, features | TimescaleDB (Postgres extension) or Parquet files | Time-series, large, used for backtests and ML |
-| Live state cache | In memory for now; Redis only if needed later | We are not latency-bound |
-
-## Python packages (planned)
-
-- Core: `pandas`, `numpy`, `scipy`
-- Broker: `dhanhq` (primary), AngelOne `smartapi-python` (backup)
-- ML: `lightgbm`, `hmmlearn`, `scikit-learn`
-- Features (to test): `smartmoneyconcepts` (order blocks)
-- Alerts: Telegram Bot API, `twilio`
-- To evaluate: OpenAlgo (self-hosted multi-broker bridge) for broker switching and failover
+**What "better decisions" means here.** At ≤ 0.12 delta, ~88% of trades win anyway. A model
+that always says "take it" is 88% "accurate". So accuracy is measured as:
+1. How many of the eventual **losers** did we skip or shrink? (most important)
+2. How many good trades did we wrongly skip? (cost of being too careful)
+3. Worst week / worst month vs rules-only.
 
 ---
 
-## Review of the reference guide: what we took and what we didn't
+## 1. Hard truths that shape the design
 
-| Item in the guide | Decision | Reason |
+These are not opinions; each one forces a design choice.
+
+| Fact | Consequence for the design |
+|---|---|
+| **SEBI retail algo rules (from 1 Apr 2026):** API orders only from a registered app on a **whitelisted static IP**, daily 2FA login, ≤ 10 orders/sec, market orders converted to price-protected orders. | The trading engine must run on a server with a **static IP** (Mumbai region). The owner does a **daily login** each morning. We use limit orders anyway. |
+| **Vercel is serverless.** Functions are short-lived; they cannot hold a WebSocket open all day. | Vercel hosts **only the UI**. The trading engine runs on an always-on server. |
+| **Historical data has no Greeks.** | We **calculate Greeks ourselves**, live and in backtests, with the same code. Broker Greeks are only a cross-check. |
+| **Backtest ≠ live is the #1 way trading systems fail.** | One shared feature/Greeks/decision codebase used by **both** the backtest and live engine. |
+| **News has weak predictive power for a 1-week index move,** but strong value as a **danger signal** (war, policy shock, crash). | News is used mainly as a **risk gate** (skip or shrink), not as a reason to trade. |
+| **We trade at most 1 new position a day.** | "Fast" means seconds, not milliseconds. The real speed need is **exits during a fast move**. |
+
+---
+
+## 2. Big picture
+
+```
+                    ┌────────────────────── TRADING SERVER (always on, Mumbai, static IP) ──────────────────────┐
+                    │                                                                                            │
+ Dhan WebSocket ───▶│ M1 Feed Gateway ──▶ M2 Ingest & Store ──▶ Redis (latest state, pub/sub)                    │
+ AngelOne (backup)─▶│      │                     │                    │                                          │
+ News / RSS / NSE ─▶│ M3 News Engine ────────────┘                    ▼                                          │
+ Calendar, FII/DII ▶│                                     M4 Analytics: Greeks, chain metrics, breadth           │
+                    │                                                 │                                          │
+                    │                                                 ▼                                          │
+                    │                                     M5 Feature Builder (same code as backtest)             │
+                    │                                        │                       │                           │
+                    │                                        ▼                       ▼                           │
+                    │                         M6 Entry Engine (10:00)      M7 Position Manager (every 1 min)     │
+                    │                         candidates → ML → choose     hold / book / adjust / exit           │
+                    │                                        │                       │                           │
+                    │                                        └──────────┬────────────┘                           │
+                    │                                                   ▼                                        │
+                    │                                     M8 Risk Gate + Order Manager ──▶ Dhan order API        │
+                    │                                                   │                                        │
+                    │      M10 Risk Watchdog (separate process) ◀───────┤  can always flatten positions          │
+                    │                                                   ▼                                        │
+                    │                                     M9 Journal (decisions, counterfactuals, fills)         │
+                    │                                                   │                                        │
+                    │                                     M11 Alerts (Telegram, voice call, email)               │
+                    └───────────────────────────────────────────────────┼────────────────────────────────────────┘
+                                                                        ▼
+                                          SUPABASE: Postgres (ledger, journal, bars, snapshots, metrics),
+                                                    Auth (Google), Realtime, Storage (Parquet history, models)
+                                                                        ▲
+                                          VERCEL: Next.js UI (login required, read-only + kill switch)
+
+                    RESEARCH (offline, laptop or batch job): M12 Backtester + M13 Training + Model Registry
+```
+
+---
+
+## 3. Modules
+
+### M1. Feed Gateway (live data in)
+
+**Job:** keep live connections open and turn every tick into one standard format.
+
+| Feed | Instruments | Source |
 |---|---|---|
-| 4 decoupled modules (Data, Analytics, Execution & Risk, Alerts) | ✅ Adopt | Clean separation; risk can run alone |
-| Sub-100 ms latency, ticks every 3 s | ❌ Not needed | We decide daily and check every 30 min |
-| Dhan as primary | ✅ Adopt | Matches our choice |
-| AngelOne as free backup feed | ✅ Adopt | Gives us the second source `ML.md` §5 needs |
-| Zerodha Kite | ❌ Skip | ₹2,000 / month, no advantage for us |
-| Redis + TimescaleDB / QuestDB | ⚠️ Partly | Postgres + TimescaleDB / Parquet yes; Redis not yet |
-| Greeks, max pain, PCR momentum, OI unwinding | ✅ As ML features | Must prove value in backtest |
-| Order blocks / Smart Money Concepts | ⚠️ Feature only, never a rule | Subjective, weak evidence; has a look-ahead trap (below) |
-| Hard-coded risk circuits | ✅ Already in `AGENTS.md` | |
-| Delta-neutral hedging | ❌ Skip | Outside our allowed instruments |
-| Telegram / email / voice call alerts | ✅ Adopt | Voice for critical only |
-| HMM regimes (trending / sideways / high-vol) | ✅ Adopt in `ML.md` | Good regime filter; must avoid look-ahead |
-| LightGBM strike-breach probability | ✅ Already planned | Same as our touch-probability model |
-| "Sell only in sideways regime" | ⚠️ Modified | Too strict; we choose structure by regime instead |
-| TFT / Darts / US markets section | ❌ Skip for now | Not our market; US cues only as features |
-| OpenAlgo | 🔍 Evaluate | Could simplify broker failover |
+| Nifty options | Current + next weekly expiry, strikes within ±1,500 pts of spot (~240 contracts) | Dhan WebSocket (full packet: LTP, bid/ask, OI, volume) |
+| Nifty index + futures | Nifty 50, current-month future | Dhan |
+| India VIX | | Dhan |
+| Sector indices | Bank Nifty, Fin Nifty, Nifty IT, Auto, Pharma, FMCG, Metal, Energy, Realty | Dhan |
+| Nifty 50 stocks | All 50 constituents | Dhan |
+| Broker option chain (with Greeks) | Snapshot every 30 min, for cross-check | Dhan REST |
+| Backup prices | Same core instruments | AngelOne SmartAPI |
 
-### Look-ahead traps found in the guide
+- Reconnects automatically; marks a feed **stale** if no tick for 60 s in market hours.
+- Compares primary vs backup prices; a mismatch beyond a threshold raises a data alert
+  and blocks new entries (`AGENTS.md` §2).
 
-1. **Order block code (swing length 5):** a swing high or low is only confirmed **5 candles
-   later**. Using it on the day it forms uses future data. The signal must be shifted by
-   the swing length before use.
-2. **HMM regimes:** the standard "decode the whole history" method (Viterbi / smoothed
-   probabilities) uses future data. We use **filtered** probabilities only, which use past
-   data up to the decision day.
+### M2. Ingest & Store
 
-Both would make a backtest look much better than live trading.
+**Job:** put data where each consumer needs it.
 
-Also note: the code block in the guide is collapsed onto one line and will not run as
-printed. It needs reformatting and the shift fix above.
+| Data | Where | Kept |
+|---|---|---|
+| Latest tick per instrument | Redis (on the trading server) | Live only |
+| 1-minute bars (all instruments above) | Supabase Postgres, partitioned by day | Forever |
+| Raw ticks | Parquet files, uploaded daily to Supabase Storage | 1 year, then bars only |
+| End-of-day: NSE bhavcopy, FII/DII flows, event calendar | Postgres | Forever |
+
+Size check: ~300 instruments × 375 min ≈ **110 K rows/day** of 1-min bars, ~28 M rows/year.
+Fine for Postgres with daily partitions.
+
+### M3. News Engine
+
+**Job:** turn news into structured, timestamped risk signals.
+
+- **Sources:** NSE corporate announcements, RBI / SEBI / government press releases,
+  economic calendar, business news RSS feeds, global headlines. (Check each source's
+  terms of use; a paid news API may be needed for reliability.)
+- **Schedule:** continuous in market hours; a full sweep at **08:30** covering news since
+  the previous close (overnight and global).
+- **Processing:** dedupe → an LLM classifies each item into:
+  - `event_type` (policy, geopolitics, macro data, earnings of a heavyweight, global market move, other)
+  - `severity` 0–3, `direction` (risk-on / risk-off / neutral), affected sectors / stocks
+- **Output used by the engine:**
+  - `news_risk_score` for the last 30 min and the last 24 h (a feature for the ML models)
+  - **Hard gate:** severity-3 risk-off news in the last 24 h means no new entry today
+- Every item is stored with its original timestamp, so the backtest uses only news
+  published **before** the decision time.
+
+> Honest note: news is the least reliable input for prediction. We start it as a gate and
+> a feature, and keep it only if it measurably reduces losing trades in the backtest.
+
+### M4. Analytics: Greeks and market metrics
+
+**Job:** compute everything derived from prices.
+
+- **Greeks and IV, calculated by us:**
+  - Forward price from **put-call parity** (synthetic future). This avoids guessing
+    interest and dividend rates.
+  - Black-76 model on that forward for IV, delta, gamma, theta, vega
+  - Compared with Dhan's Greeks every 30 min; a large gap raises a data alert
+- **Option chain metrics:** PCR (OI and volume) and its change, OI build-up / unwinding per
+  strike, max pain, IV skew (put IV − call IV at equal delta), ATM IV, term structure
+  (this week vs next week IV)
+- **Market breadth:** Nifty 50 advance/decline, % of stocks above 20/50-day EMA, move of the
+  top 10 heavyweights (they drive most of the index), sector leadership / divergence
+- **Trend and range:** MACD (1D), EMA 20/50/200, ATR, opening range (09:15–10:00)
+- Runs every minute on the latest Redis state. Takes milliseconds.
+
+### M5. Feature Builder (the shared brain)
+
+**Job:** one function, `build_features(time T)`, that produces the exact same feature set
+in live trading and in the backtest, using only data available before T.
+
+This is the single most important piece of code for reliability. If live and backtest
+features differ, every backtest result is fiction.
+
+- **Precomputed at 08:45:** daily features (trend, regime, volatility forecast, overnight
+  news, global cues, FII/DII). These don't change during the day.
+- **Computed at 10:00:** intraday features (opening range, first 45-min breadth, chain
+  changes since open, last 30-min news).
+- So the 10:00 decision only computes the small intraday part: **under 2 seconds**.
+
+### M6. Entry Engine (runs at 10:00)
+
+**Job:** decide today's entry, or no entry.
+
+**Step 1: Rules generate candidates (L0).** For each structure and delta, build the
+exact trade:
+
+| Candidate | Short leg | Long hedge |
+|---|---|---|
+| Bear call spread | Call at delta 0.08 / 0.10 / 0.12 | 200 pts further out |
+| Bull put spread | Put at delta 0.08 / 0.10 / 0.12 | 200 pts further out |
+| Iron condor | Both of the above | Both hedges |
+
+That is 9 candidates a day (plus width variants later). Candidates that fail any
+`RULES.md` / `AGENTS.md` check (credit too low, event day, budget left, margin) are removed.
+
+**Step 2: ML scores each remaining candidate (L1 + L2).** For each one:
+- P(short strike touched before exit), from the L1 touch model
+- P(trade hits profit target before stop or time exit), from the L2 meta-model
+- Expected P&L after costs and expected worst-case loss
+
+**Step 3: Choose.**
+- Pick the candidate with the best **risk-adjusted expected P&L**.
+- If none clears the minimum confidence threshold: `NO_ACTION`.
+- Size from the remaining risk budget, scaled down by uncertainty (never up).
+
+**Step 4: Record and send.** Log the decision **with all 9 candidates and their scores**
+(see M9), then pass the chosen trade to M8.
+
+If data is stale or missing at 10:00, the engine retries once at 10:30, then logs
+`NO_ACTION (data)`.
+
+### M7. Position Manager (every 1 minute)
+
+**Job:** manage every open trade.
+
+| Check | Frequency | Source |
+|---|---|---|
+| Hard stop (loss ≥ 2× credit), strike touch, budget breach | **Every 1 min** (from live stream) | Rules (`RULES.md` §4), no ML |
+| Profit target (50–70% of credit) | Every 1 min | Rules |
+| Time exit (15:00 day before expiry) | Scheduled | Rules |
+| **ML exit score:** P(this trade ends at the stop from here) | Every 30 min | L2 exit model |
+| Adjustment check | Every 30 min | Rules + ML |
+
+- If the ML exit score is high, the position is **closed early or reduced**. ML can only
+  make an exit **earlier**, never later. Hard stops are always rules.
+- A 30-min snapshot of every position is saved (`MONITORING.md`); stop checks happen
+  every minute. (Change from v1: a 30-min-only check could let a loss run far past the stop.)
+
+### M8. Risk Gate + Order Manager
+
+**Job:** the only module allowed to send orders.
+
+- Re-runs every `AGENTS.md` §1 check right before sending. Fails closed.
+- Checks the kill switch flag (Supabase + local file) before every order.
+- Leg order: buy hedge → sell short on entry; buy back short → sell hedge on exit.
+- Limit orders at a price derived from bid/ask; re-price a few times within a set limit;
+  if not filled, cancel and alert.
+- Writes every order, fill and rejection to the ledger (append-only).
+- Paper mode: same path, but fills are simulated from live bid/ask instead of sent.
+
+### M9. Journal (memory for learning)
+
+**Job:** record everything needed to learn, review and audit.
+
+For every decision:
+- Timestamp, full feature vector, model versions
+- **All candidates with their scores** and the chosen one (or `NO_ACTION`) with the reason
+- Later: the **actual outcome of every candidate**, not just the one taken
+  (a "counterfactual" result, simulated from real prices)
+- Owner's review label (right / wrong / why) from the UI
+
+> This is how we "find more patterns" without waiting years: each day produces **9
+> labelled examples**, not 1. Over a year that is ~2,250 labelled outcomes instead of 250.
+> The same is done on historical data in the backtest.
+
+### M10. Risk Watchdog (separate process)
+
+**Job:** keep us safe if the main engine crashes or hangs.
+
+- Runs as its own process with its own broker session.
+- Every minute: reads broker positions directly, checks loss limits and expiry-day rule.
+- If the main engine's heartbeat is missing for 3 min during market hours: alert. If a
+  hard limit is breached and the engine is down: **closes positions itself**, safe leg order.
+- Can only close. Can never open.
+
+### M11. Alerts
+
+| Level | Examples | Channel |
+|---|---|---|
+| Info | Daily summary, trade opened / closed | Telegram |
+| Warning | Spot near short strike, loss ≥ 1× credit, feed lag | Telegram |
+| Critical | Stop hit, limit breach, ledger mismatch, engine down, login missing | Telegram **+ voice call** |
+
+### M12–M13. Research: Backtester, Training, Model Registry (offline)
+
+- **Backtester:** replays history minute by minute through **the same M4–M8 code** with
+  simulated fills (bid/ask + slippage + all costs).
+- **Training:** walk-forward with purging; calibration; models saved with version, data
+  snapshot and test report (`ML.md`).
+- **Model registry:** in Supabase Storage. Live engine loads only models marked
+  `approved` by the owner. New models run in **shadow mode** first.
+- **Pattern mining:** search the journal + backtest results for conditions where losses
+  cluster (e.g. "high VIX + falling breadth + Monday"). Each pattern found becomes a
+  **candidate rule or feature**, tested on later data it was not found on. Count every
+  pattern tried; many tries need stronger proof.
+
+---
+
+## 4. Where ML is used (and where it is not)
+
+| Place | Model | Decides | Can it add risk? |
+|---|---|---|---|
+| M3 News | LLM classifier | Event type, severity, risk-on/off | No (gate or feature only) |
+| M5 Features | HMM regime (filtered) | Sideways / trending / high-vol | No |
+| M5 Features | Volatility forecast (HAR / LightGBM) | Expected realized vol vs IV | No |
+| M6 Entry | L1 touch-probability (LightGBM) | Chance each short strike is hit | No |
+| M6 Entry | L2 meta-model (LightGBM, calibrated) | Take / skip / size per candidate | Only within the risk budget; uncertainty only shrinks size |
+| M7 Exit | L2 exit model | Exit earlier than rules | Only earlier exits |
+| M12 Research | Pattern mining | New rule / feature ideas | Only via owner-approved rule changes |
+| Later | Bandit / RL (`RL.md`) | Choose among allowed actions | Within guardrails only |
+
+**Not ML:** hard stops, budget limits, order safety, kill switch, expiry-day exit. These
+are always plain rules.
+
+---
+
+## 5. Daily timeline (IST)
+
+| Time | What happens |
+|---|---|
+| 08:15 | Owner completes daily broker login (2FA). If missing by 09:10: critical alert |
+| 08:30 | News sweep (overnight + global). Global cues pulled |
+| 08:45 | Daily features + regime + vol forecast precomputed |
+| 09:00–09:08 | Pre-open session data captured |
+| 09:15 | Market opens. Feeds live. Position Manager active on open trades |
+| 10:00 | **Entry decision** (M6). Logged with all candidates |
+| 10:00–15:00 | Order placed if a trade is chosen |
+| Every 1 min | Stops, targets, budget checks; heartbeat |
+| Every 30 min | ML exit score, snapshot, ledger reconciliation, Greeks cross-check |
+| 15:00 (day before expiry) | Time exit of expiring positions |
+| 15:30 | Market close. Daily summary to Telegram |
+| 16:00 | Raw ticks to Parquet. Counterfactual outcomes updated. Metrics refreshed for UI |
+
+---
+
+## 6. UI (Vercel + Supabase)
+
+**Principle:** the UI shows the truth from the ledger and journal. It never places
+trades. The only write actions are the **kill switch**, **review labels**, and
+**approving a model / switching paper ↔ live** (owner only, with confirmation).
+
+**Access:** Supabase Auth with Google login. **Allowlist:** only the owner's Google account
+(and anyone the owner adds). Postgres row-level security; the UI uses read-only access.
+The trading server's credentials never touch the UI.
+
+**Live updates:** Supabase Realtime pushes position and P&L changes; no page refresh.
+
+### Pages
+
+**1. Live (home)**
+- Top bar: today's P&L, week / month / year P&L, mode (PAPER / LIVE), feed status, engine
+  heartbeat, **kill switch**
+- Risk budget gauges: weekly (₹50 K), monthly (₹1.5 L), yearly (₹2.5 L) used vs left;
+  margin used %
+- Open positions table:
+
+| Position | Structure | Expiry | Legs (strike, CE/PE, buy/sell) | Lots | Entry price | Live price | Live P&L (₹, % of max profit) | Distance to short strike | Delta / theta | Stop / target | Exit score |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+
+- Today's decision card: action, chosen candidate, scores of all 9 candidates, reason
+
+**2. Trades (history)**
+- Every closed trade: entry / exit time and price per leg, lots, P&L, days held, exit
+  reason, max adverse move, model score at entry
+- Filter by structure, delta, regime, exit reason
+
+**3. Performance**
+- Equity curve and drawdown curve
+- Tables by **week / month / year**: P&L (₹ and %), number of trades, win rate, average win,
+  average loss, worst trade, worst week, max drawdown
+- **Model vs baselines:** our live result vs rules-only vs "always iron condor", on the same
+  days (from counterfactuals)
+- Model quality: calibration chart, losers skipped vs winners skipped
+
+**4. Decisions & Review**
+- Daily decision log including `NO_ACTION` days
+- Owner marks each closed decision **right / wrong + reason**. Feeds training (M9)
+
+**5. System health**
+- Feed latency, stale feeds, primary vs backup price gaps, Greeks cross-check gaps
+- Last ledger reconciliation result, model versions in use, alerts log
+
+---
+
+## 7. Deployment and cost (estimate, verify before buying)
+
+| Component | Where | Approx. monthly cost |
+|---|---|---|
+| Trading server (engine + watchdog + Redis) | Cloud VM in **Mumbai** with a static IP (e.g. AWS Lightsail / EC2 ap-south-1) | ₹1,500–4,000 |
+| Dhan Data API | Dhan | ~₹499 + GST |
+| AngelOne SmartAPI (backup) | AngelOne | Free |
+| Database, auth, realtime, storage | Supabase (Pro plan) | ~$25 |
+| UI | Vercel (existing) | Existing plan |
+| News LLM classification | Claude API | Small (a few hundred items/day) |
+| Voice / SMS alerts | Twilio | Small (only critical alerts) |
+
+Register the server's static IP with Dhan (primary and a secondary IP if supported).
+
+Tech: Python for the engine (asyncio for feeds, LightGBM / hmmlearn for ML), Redis local
+on the server, Next.js + TypeScript for the UI.
+
+---
+
+## 8. Build order
+
+| Phase | Build | Done when |
+|---|---|---|
+| 1 | M1 + M2: feeds and storage | 2 weeks of clean 1-min data with no gaps |
+| 2 | M4 + M5: Greeks and features | Our Greeks match Dhan's within tolerance |
+| 3 | M12: backtester on historical data, rules only (L0) | Baseline numbers with drawdowns |
+| 4 | UI pages 1, 2, 5 (paper data) | Owner can see live paper positions |
+| 5 | M6 + M7 + M8 + M10 in **paper mode** | 4+ weeks paper, journal complete |
+| 6 | M3 news + L1 / L2 models in shadow mode | Beat rules-only out of sample |
+| 7 | Live with small size, owner approval | All `AGENTS.md` checks green |
+| 8 | Bandit / RL (`RL.md`) | Beat L2 out of sample |
+
+---
+
+## 9. Review of the reference PDF (kept from v1)
+
+| Item | Decision |
+|---|---|
+| 4 decoupled modules | ✅ Expanded into M1–M13 |
+| Sub-100 ms latency, 3-s chain refresh | ❌ Not needed; seconds are enough. Stops checked every 1 min |
+| Dhan primary, AngelOne backup | ✅ |
+| Redis | ✅ Now adopted, locally on the trading server (latest state + pub/sub) |
+| TimescaleDB / QuestDB | ⚠️ Postgres partitioned tables + Parquet instead (simpler with Supabase) |
+| Greeks, max pain, PCR momentum, OI unwinding | ✅ M4 |
+| Order blocks (SMC) | ⚠️ Test feature only; shift by swing length (look-ahead trap) |
+| HMM regimes | ✅ Filtered probabilities only (look-ahead trap) |
+| LightGBM strike-breach model | ✅ L1 touch model |
+| Delta-neutral hedging, TFT / US models | ❌ Not used |
+| Telegram / voice alerts | ✅ M11 |
+
+---
+
+## 10. Open questions for the owner
+
+1. **News source:** free RSS (less reliable) or a paid news API?
+2. **Hedge width:** fixed at 200 pts as you described, or let the backtest test 100 / 150 / 200?
+3. **Server:** OK to run a Mumbai cloud VM with a static IP (needed for SEBI rules)?
+4. **Historical data** for the backtester: which source (still open)?

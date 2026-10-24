@@ -1,4 +1,4 @@
-# Live P&L Monitoring (every 30 min)
+# Live P&L Monitoring (stops every 1 min, full snapshot every 30 min)
 
 ## The problem
 
@@ -24,7 +24,9 @@ We keep our own ledger. The broker is used only for prices and as a cross-check.
 | Max loss (position) | 62 points × 65 × lots |
 | Stop / target levels | Loss 76 pts / profit 19–27 pts |
 
-## Every 30 minutes (09:30, 10:00, ... 15:30)
+## Every 1 minute: stop, target and budget checks from the live stream (see `ARCHITECTURE.md` M7)
+
+## Every 30 minutes (09:30, 10:00, ... 15:30): full snapshot
 
 1. Fetch the latest price (LTP) and Greeks for every leg in the ledger.
 2. Calculate for **each position**:

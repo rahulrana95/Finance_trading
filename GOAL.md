@@ -15,6 +15,28 @@
 
 Once the week's 1% target is hit, stop adding risk for that week.
 
+## Long-term goal: ₹50 Cr
+
+Grow trading capital from ₹50 L to **₹50 Cr** (100×), by compounding profits back in.
+
+How long it takes depends on the yearly return **after tax**. F&O profit is business
+income, taxed at slab rate (~30%+ at this level):
+
+| Pre-tax return / year | After tax (~31%) | Years to 100× |
+|---|---|---|
+| 40% (stretch) | ~27.5% | ~19 years |
+| 20% | ~13.8% | ~36 years |
+| 10% (minimum) | ~6.9% | ~69 years |
+
+What this means:
+- Return alone gets there only at the stretch target. The biggest lever is **adding fresh
+  capital** (savings, MF growth) over the years, not taking more risk.
+- **The 50 Cr goal never justifies raising risk limits.** One blow-up resets the clock;
+  a slower, steady curve gets there, a fast one with a −30% year usually does not.
+- All limits are in **%**, so they scale automatically as capital grows.
+- At larger capital, check liquidity at 0.08–0.12 delta strikes and the exchange's
+  per-order quantity limit (orders get split into slices).
+
 ## Risk limits (hard rules, these override the return targets)
 | | % | ₹ |
 |---|---|---|

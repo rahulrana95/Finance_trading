@@ -27,7 +27,7 @@ def test_logs_json_with_level_timestamp_and_context() -> None:
     assert line["level"] == "info"
     assert line["position_id"] == "P-1"
     assert line["lots"] == 2
-    assert "timestamp" in line
+    assert str(line["timestamp"]).endswith("+05:30")
 
 
 def test_secrets_never_reach_the_output() -> None:

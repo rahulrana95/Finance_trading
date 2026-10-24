@@ -2,12 +2,15 @@
 
 import logging
 import sys
-from typing import TextIO
+from collections.abc import MutableMapping
+from datetime import datetime
+from typing import Any, TextIO
 
 import structlog
 
 from fintrade.core.errors import ConfigError
 from fintrade.core.redaction import redact_processor
+from fintrade.core.timezone import IST
 
 LOG_LEVELS: dict[str, int] = {
     "DEBUG": logging.DEBUG,
@@ -16,6 +19,14 @@ LOG_LEVELS: dict[str, int] = {
     "ERROR": logging.ERROR,
     "CRITICAL": logging.CRITICAL,
 }
+
+
+def add_ist_timestamp(
+    _logger: object, _method_name: str, event_dict: MutableMapping[str, Any]
+) -> MutableMapping[str, Any]:
+    """Timezone-aware IST timestamp on every line (ENGINEERING.md section 10)."""
+    event_dict["timestamp"] = datetime.now(tz=IST).isoformat()
+    return event_dict
 
 
 def configure_logging(level: str = "INFO", stream: TextIO = sys.stdout) -> None:
@@ -27,7 +38,7 @@ def configure_logging(level: str = "INFO", stream: TextIO = sys.stdout) -> None:
         processors=[
             structlog.contextvars.merge_contextvars,
             structlog.processors.add_log_level,
-            structlog.processors.TimeStamper(fmt="iso", utc=False),
+            add_ist_timestamp,
             structlog.processors.format_exc_info,
             redact_processor,
             structlog.processors.JSONRenderer(),

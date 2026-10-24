@@ -12,7 +12,7 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T2.1d Expiry relabels | M2 | `T2.1d-expiry-relabels` | Claude |
+| T4.6c First walk-forward results | M4 | `T4.6c-first-walk-forward-results` | Claude |
 
 ---
 
@@ -85,6 +85,8 @@
 | T4.5b | P&L attribution: theta, delta, gamma, vega, costs per trade | 4h | Claude | review |
 | T4.6 | Walk-forward parameter search (width, min credit, target, delta; MACD on/off and VIX bands once those inputs exist) | 6h | Claude | review |
 | T4.6b | Replay the walk-forward choices through the engine with account limits (needs a margin estimate per position) | 4h | Claude | todo |
+| T4.6c | First walk-forward run recorded in `BACKTEST_RESULTS.md` (no edge out of sample on daily data) | 1h | Claude | review |
+| T4.6d | Walk-forward run as a tested service (reproducible command, results file) instead of a scratch script | 3h | Claude | todo |
 | T4.7a | Stress grid: re-price book for spot / IV / time shocks + collateral stress | 5h | Claude | todo |
 | T4.7b | Volatility surface fit (SVI) for strike selection on thin quotes. IV only from OTM side and prices ≥ 1 tick (₹0.05), per T2.3/T2.4 findings | 6h | Claude | todo |
 | T4.7c | Conservative bid/ask model when historical quotes are missing | 4h | Claude | todo |

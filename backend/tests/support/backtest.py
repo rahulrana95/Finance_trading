@@ -6,7 +6,8 @@ from datetime import date
 from decimal import Decimal
 
 from fintrade.backtest.data import DayBars, InMemoryMarketData
-from fintrade.backtest.engine import EntryProposal, OpenTrade
+from fintrade.backtest.engine import EntryProposal
+from fintrade.backtest.trades import OpenTrade
 from fintrade.core.bars import DailyContractBar
 from fintrade.core.instruments import CreditSpread, Side
 from tests.support.bars import make_bar

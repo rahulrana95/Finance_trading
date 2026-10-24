@@ -37,6 +37,26 @@ These are not opinions; each one forces a design choice.
 | **News has weak predictive power for a 1-week index move,** but strong value as a **danger signal** (war, policy shock, crash). | News is used mainly as a **risk gate** (skip or shrink), not as a reason to trade. |
 | **We trade at most 1 new position a day.** | "Fast" means seconds, not milliseconds. The real speed need is **exits during a fast move**. |
 
+## 1b. Execution mode (current): MANUAL
+
+**The owner places all orders by hand.** The system is advisory: it decides, records
+and monitors, but never sends an order. This changes four things:
+
+| Area | Manual mode (now) | Auto mode (later, optional) |
+|---|---|---|
+| M8 | **Trade ticket**: the exact legs, strikes, lots and limit prices, shown in the UI and sent to Telegram at 10:00 | Order Manager sends orders |
+| Fills | **Imported read-only** from Dhan's order / trade book (no static IP needed for read APIs), matched to the suggestion. Manual entry form in the UI as a fallback | From order responses |
+| M10 | **Alarm escalator**: critical alerts repeat (Telegram → voice call → call again every 5 min) until the owner acknowledges in the UI | Can close positions itself |
+| Static IP / order relay | **Not needed** | Needed (see §7) |
+
+- The journal records both the **suggested** trade and the **actual** trade (price, time,
+  any difference). Slippage from manual entry is measured, not guessed.
+- If the owner skips or changes a suggestion, that is logged too. It is useful data.
+- **Protection while away:** after entering, the trade ticket also lists **stop-loss
+  orders to place at the broker** on the short legs (stop-limit buy at the 2× credit
+  level). The broker then enforces the stop even if nobody is watching. The engine still
+  checks every minute and escalates if something is wrong.
+
 ---
 
 ## 2. Big picture
@@ -119,9 +139,7 @@ Fine for Postgres with daily partitions.
 
 **Job:** turn news into structured, timestamped risk signals.
 
-- **Sources:** NSE corporate announcements, RBI / SEBI / government press releases,
-  economic calendar, business news RSS feeds, global headlines. (Check each source's
-  terms of use; a paid news API may be needed for reliability.)
+- **Sources:** see "News sources" below.
 - **Schedule:** continuous in market hours; a full sweep at **08:30** covering news since
   the previous close (overnight and global).
 - **Processing:** dedupe → an LLM classifies each item into:
@@ -135,6 +153,31 @@ Fine for Postgres with daily partitions.
 
 > Honest note: news is the least reliable input for prediction. We start it as a gate and
 > a feature, and keep it only if it measurably reduces losing trades in the backtest.
+
+#### News sources (recommended)
+
+For an index option seller, what matters is **"is something big happening?"**, not every
+headline. So the most valuable sources are the **official primary sources**: they are
+free, they are first, and they are never wrong about what was announced.
+
+| Tier | Source | What it gives | Cost | Use |
+|---|---|---|---|---|
+| **1. Official (must have)** | NSE RSS feeds (announcements, board meetings, results, corporate actions) | Company events for the 50 Nifty stocks, especially heavyweights | Free | Earnings / event flags per stock |
+| | BSE corporate announcements | Same, second source | Free | Cross-check |
+| | RBI press releases, SEBI press releases / circulars, PIB (government), MoSPI (GDP, CPI, IIP dates) | Policy and macro events | Free | Hard event gates |
+| | Own event calendar (RBI policy dates, Budget, elections, Fed / FOMC, US CPI, F&O expiries, holidays) | Known risk dates, in advance | Free (maintained by us) | **Most important input of all**: known events cause most big moves |
+| **2. Headlines (pick one paid API)** | A financial news API with India coverage, e.g. **Marketaux** or **EODHD** (both tag news to NSE/BSE tickers) | Broad Indian + global business headlines with timestamps and tickers | ~$20–100 / month | Breadth of coverage, LLM classification |
+| **3. Global** | Same API's global feed; plus prices of GIFT Nifty, US futures, crude, USD/INR, US 10Y | Overnight global shocks | Included / price data | Pre-market risk score |
+| **Avoid for now** | Reuters / Bloomberg (enterprise pricing), X / Twitter API (expensive, noisy), scraping news sites (breaks often, violates terms) | | | |
+
+How to choose the Tier 2 vendor: **trial 2 vendors for 2 weeks in parallel** and measure
+(a) delay vs the official source, (b) how many of the real market-moving events of those
+2 weeks they caught, (c) duplicates and noise. Keep the one that wins. Don't decide from
+marketing pages.
+
+Note on scale: free RSS from Indian news sites (Moneycontrol, ET, etc.) is fine for
+personal research only. Showing their content to other users needs a licence (see
+`SCALING.md`).
 
 ### M4. Analytics: Greeks and market metrics
 
@@ -380,7 +423,8 @@ The trading server's credentials never touch the UI.
 | Component | Where | Approx. monthly cost |
 |---|---|---|
 | Backend: M1–M9, M11, Redis, scheduled jobs, `/api` | **Railway** (Pro plan; Singapore region, nearest to India) | Railway Pro + usage |
-| Order relay + M10 watchdog | Small VM in **Mumbai** with a **dedicated** static IP (e.g. AWS Lightsail ap-south-1) | ~₹500–1,000 |
+| Order relay + M10 watchdog | Small VM in **Mumbai** with a **dedicated** static IP (e.g. AWS Lightsail ap-south-1). **Deferred: manual mode now** | ~₹500–1,000 (later) |
+| News API (Tier 2) | Marketaux or EODHD after a 2-week trial | ~$20–100 |
 | Dhan Data API | Dhan | ~₹499 + GST |
 | AngelOne SmartAPI (backup) | AngelOne | Free |
 | Database, auth, realtime, storage | Supabase (Pro plan) | ~$25 |
@@ -388,7 +432,7 @@ The trading server's credentials never touch the UI.
 | News LLM classification | Claude API | Small (a few hundred items/day) |
 | Voice / SMS alerts | Twilio | Small (only critical alerts) |
 
-### Why a separate order relay
+### Why a separate order relay (only for auto mode; **not needed while orders are manual**)
 
 Railway's static IPs may be shared with other customers, and SEBI wants an IP traceable to
 us. So only the **order traffic** goes through our own VM:
@@ -446,8 +490,10 @@ Railway, Next.js + TypeScript for the UI.
 
 ## 10. Open questions for the owner
 
-1. **News source:** free RSS (less reliable) or a paid news API?
+1. **News source:** Tier 1 official sources + one paid API after a 2-week trial (proposed).
 2. **Hedge width:** fixed at 200 pts as you described, or let the backtest test 100 / 150 / 200?
-3. **Server:** Railway for the backend (decided). OK to add a small Mumbai VM with a
-   dedicated static IP for orders + watchdog? Confirm with Dhan how many IPs they allow.
+3. **Server:** Railway for the backend (decided). Orders are manual for now, so no static
+   IP / relay yet.
+5. **Multi-user:** see `SCALING.md`, especially the regulatory section, before building
+   anything for other users.
 4. **Historical data** for the backtester: which source (still open)?

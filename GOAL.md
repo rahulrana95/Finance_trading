@@ -47,7 +47,16 @@ If a limit is hit: stop trading for the rest of that period and review.
 
 Data/API candidate: DhanHQ (live feed + option chain with Greeks). To be verified.
 
+## Decisions made
+- Entries always use next week's expiry
+- Weekly loss limit: 1% (₹50 K)
+- One decision every trading day (including "do nothing"), not just Mondays
+- Live P&L check every 30 min for all open positions
+
+## Related docs
+- `RULES.md`: global rules
+- `MONITORING.md`: live P&L tracking
+- `RL.md`: what the RL system needs
+
 ## Open questions
-- Monday entry: next week's expiry (8 days to expiry) or the next-day expiry?
-- Is a 1% weekly loss limit right?
 - Source for historical options data for the backtest

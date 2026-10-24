@@ -12,8 +12,8 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| M0 foundations done (T0.3–T0.10), waiting for merge to `master` | M0 | `T0.3`…`T0.10` branches (stacked) | You: approve merge |
-| T1.3 NSE bhavcopy downloader (next) | M1 | `T1.3-bhavcopy-downloader` | Claude |
+| T1.3 NSE bhavcopy downloader (PR open) | M1 | `T1.3-bhavcopy-downloader` | Claude |
+| T1.4 Data validator (next) | M1 | `T1.4-data-validator` | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
 ---
@@ -25,12 +25,12 @@
 | T0.1 | Goal, rules, guardrails, architecture docs | — | Claude | done |
 | T0.2 | Owner decisions round (14 questions) → `DECISIONS.md` | — | You + Claude | done |
 | T0.3 | Repo skeleton per `ENGINEERING.md` §6: `backend/` (uv, ruff, mypy strict, pytest + 100% branch coverage), `make` targets. (UI scaffold moved to T8.1) | 4h | Claude | done |
-| T0.4 | CI on GitHub Actions: lint, typecheck, tests, **coverage gate 100% line + branch**, fails on any skip | 4h | Claude | review |
-| T0.5 | Test framework: pytest, xdist, hypothesis (deterministic CI profile), time-machine, `tests/support/` | 3h | Claude | review |
-| T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI (gitleaks) | 2h | Claude | review |
-| T0.8 | `import-linter` boundaries, pre-commit hooks, dependency audit, complexity limits | 3h | Claude | review |
-| T0.9 | Core utils: `Clock`, money (`Decimal`), structlog setup with redaction filter, error hierarchy | 5h | Claude | review |
-| T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | review |
+| T0.4 | CI on GitHub Actions: lint, typecheck, tests, **coverage gate 100% line + branch**, fails on any skip | 4h | Claude | done |
+| T0.5 | Test framework: pytest, xdist, hypothesis (deterministic CI profile), time-machine, `tests/support/` | 3h | Claude | done |
+| T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI (gitleaks) | 2h | Claude | done |
+| T0.8 | `import-linter` boundaries, pre-commit hooks, dependency audit, complexity limits | 3h | Claude | done |
+| T0.9 | Core utils: `Clock`, money (`Decimal`), structlog setup with redaction filter, error hierarchy | 5h | Claude | done |
+| T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | done |
 | T0.7 | Create Telegram bot (@BotFather); decide on domain | 1h | You | todo |
 
 ## M1. Historical data
@@ -40,7 +40,7 @@
 | T1.1 | Research sources (Dhan expired options, NSE bhavcopy, paid minute vendors): years, granularity, bid/ask, cost → `DATA_SOURCES.md` | 4h | Claude | review |
 | T1.2 | Pick source | — | You | todo |
 | T1.2b | Confirm the go / no-go bar for the backtest (`ARCHITECTURE.md` §12) | — | You | done |
-| T1.3 | Data downloader for chosen source (resumable, checksums) | 5h | Claude | todo |
+| T1.3 | NSE bhavcopy downloader: both formats, resumable, SHA-256 manifest, limited retries | 5h | Claude | review |
 | T1.4 | Data validator: gaps, bad prices, expiry/lot-size history checks, report | 5h | Claude | todo |
 | T1.5 | Store as Parquet (partitioned by date/expiry) + loader API | 4h | Claude | todo |
 

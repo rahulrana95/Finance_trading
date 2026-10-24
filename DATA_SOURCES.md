@@ -27,8 +27,9 @@ so 0.10 delta ≈ 600+ pts OTM. Hedges sit at ~800 pts or more.
 | Our own live recording (Dhan WebSocket, from now on) | Full chain we subscribe to | Starts today | Tick / 1-min, **with bid / ask** | **Yes** | Included | ✅ **Start early.** The only source of real bid/ask; calibrates the spread model |
 
 Notes:
-- NSE moved the F&O bhavcopy to a new file format (UDiFF) in 2024, so the downloader must
-  read both the old and new formats (verify the exact switch date in T1.3).
+- NSE moved the F&O bhavcopy to a new file format (UDiFF) in 2024. Verified in T1.3: old
+  format exists up to **2024-07-05**, UDiFF from **2024-07-08** (UDiFF was also back-filled
+  to early 2024). Holidays return HTTP 404 with an HTML page. No API key needed.
 - NSE's site blocks plain scripted requests; the downloader needs proper headers,
   sessions, retry with limits, and polite rate limiting.
 - Historical vendor data is usually 1-min bars from exchange snapshots, not true ticks.

@@ -493,6 +493,75 @@ Railway, Next.js + TypeScript for the UI.
 
 ---
 
+## 11. Architecture review: gaps vs the goal and vs industry practice
+
+Review date 2026-10-24. Professional option-selling desks (volatility funds, prop desks)
+differ from our v2 design in the points below. Each gap is now a `TODO.md` task.
+
+### Gaps that matter most for making money
+
+| # | Gap | Industry practice | Why it matters for our goal | Fix |
+|---|---|---|---|---|
+| G1 | **No pre-agreed go / no-go bar for the backtest** | Success criteria fixed **before** looking at results | Without it, we keep tweaking until something looks good (overfitting) | Owner sets the bar now (see §12) |
+| G2 | **Strike IV taken one strike at a time** | Fit a **volatility surface** (SVI / smooth smile) and price strikes from it | Our 0.08–0.12 delta strikes are the thinnest quotes; one bad quote shifts delta and the strike choice | Surface fit in M4 analytics; delta from the surface |
+| G3 | **Risk = max loss only** | **Scenario / stress grid**: re-price the book for spot ±1–8%, IV +5 / +10 / +20 points, one day passing; SPAN-like margin view | Max loss says nothing about how fast losses come, or the margin call when IV spikes | Stress grid module; entry blocked if worst case breaks budget |
+| G4 | **Only a delta limit** | Limits on **vega and gamma** too | Short options lose most from IV spikes (vega) and fast moves near expiry (gamma) | Added to `RULES.md` §6 |
+| G5 | **No liquidity filter** | Min OI / volume, max bid-ask spread per leg | Thin strikes fill badly, and exits in a crash are much worse | Added to `RULES.md` §3 |
+| G6 | **No P&L attribution** | Daily P&L split into theta, delta, gamma, vega, costs | Tells us *why* we made or lost money, which is the fastest way to improve decisions | Attribution in journal + UI |
+| G7 | **No margin model** | Broker margin calculator / SPAN estimate before each trade | Sizing and the 60% cap need the real margin, not a guess | Groww / Dhan margin API, or SPAN-file estimate |
+| G8 | **No strategy decay check** | Halt when live results fall below the backtest's expected range | Edges fade; detect it early instead of after a bad year | `RULES.md` §6b |
+| G9 | **Backtest statistics too simple** | Deflated Sharpe ratio, probability of backtest overfitting (CSCV), bootstrap confidence intervals | We will test many parameter sets; luck looks like skill | Add to backtest report |
+| G10 | **Historical bid/ask probably missing** | Model spreads conservatively when quotes are missing | Far-OTM premium is small; spread + costs can be 20–40% of it | Conservative spread model by moneyness / time; check against live data |
+
+### Gaps in reliability and operations
+
+| # | Gap | Fix |
+|---|---|---|
+| G11 | **No backup way to cut risk if Groww is down** | Emergency hedge cash at Dhan (`RULES.md` §7) + runbook |
+| G12 | **No runbooks** | One page per failure: feed down at 10:00, Groww down, Dhan login failed, Supabase down, wrong ledger |
+| G13 | **No experiment tracking / data versioning** | MLflow (or a simple run table): every backtest and model run saved with data hash, params, results |
+| G14 | **No backups / restore test** | Supabase point-in-time recovery + monthly restore test; Parquet copies in a second store |
+| G15 | **Job scheduling not defined** | APScheduler inside the service (simple) with missed-run alerts; move to Dagster / Prefect only if pipelines grow |
+
+### What industry uses (and what fits us)
+
+| Area | Industry / pro tools | Our choice |
+|---|---|---|
+| Event-driven backtest + live with the same code | **NautilusTrader** (production-grade, Python API, backtest-live parity), QuantConnect LEAN | **2-hour spike** before building our own replay engine (T4.0). Use it if its options support and a custom Dhan data adapter are practical; otherwise our minute-bar replay engine |
+| Retail option tools in India | Sensibull, Opstra, AlgoTest (backtesting) | Use AlgoTest / Opstra to **sanity-check** our backtest numbers on a few strategies |
+| Pricing / vol surface | QuantLib, py_vollib, SVI fits | py_vollib + our SVI fit; QuantLib to cross-check |
+| Historical tick data (India) | NSE-authorized vendors (e.g. TrueData, Global Datafeeds) | Decided in T1.1 |
+| Risk | Scenario grids, SPAN | Stress grid + margin estimate |
+| Research tracking | MLflow, Weights & Biases | MLflow (self-hosted) or a run table |
+| Monitoring | Grafana / Prometheus, Sentry, uptime checks | Sentry + Better Stack (or similar) + our health page |
+
+### Honest overall verdict
+
+- **The safety design is strong** (guardrails, fail-closed, watchdog, journal, tests).
+- **The weak spot is the money-making core**, not the infrastructure. The edge comes from
+  four things: (1) choosing when **not** to trade, (2) correct strike pricing on thin
+  quotes, (3) stress-based sizing, (4) cutting losers early. G1–G10 strengthen exactly these.
+- **Risk of over-building:** 13 modules + news + ML + RL is a lot for one trade a day. The
+  build order already puts the **backtest first**. Hold to it: if the rules-only backtest
+  can't clear the §12 bar after costs, adding ML or news will not rescue it, and we change
+  the strategy before building more infrastructure.
+- **Simplify the first live version:** Redis, the news LLM and RL can wait. A single
+  Python service on Railway with in-process state is enough for paper trading.
+
+## 12. Go / no-go bar for the backtest (owner to confirm)
+
+Proposed: the rules-only strategy goes forward to paper trading only if, **after all costs**,
+in walk-forward tests across all years:
+
+| Metric | Proposed bar |
+|---|---|
+| Yearly return | ≥ 12% in most years, never below 0% |
+| Max drawdown | ≤ 5% in every year |
+| Worst month | ≥ −3% |
+| Number of trades | ≥ 100 in total (enough to trust) |
+| Deflated Sharpe ratio | Positive at 95% confidence |
+| Beats "always iron condor" and holding cash | Yes |
+
 ## 10. Open questions for the owner
 
 1. **News source:** Tier 1 official sources + one paid API after a 2-week trial (proposed).

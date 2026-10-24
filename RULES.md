@@ -55,6 +55,13 @@ All ₹ figures are on ₹50 L trading capital.
 - **Events:** no new entries the day before a major event (RBI policy, Budget,
   election results, US Fed). Existing positions follow the normal exit rules.
 - **Timing:** entries only after 10:00 and before 15:00 (avoid open and close spikes).
+- **Liquidity filter:** every leg must have a minimum OI and volume, and a bid/ask spread
+  ≤ a set % of its price (values from config, set by backtest). Far-OTM strikes with thin
+  quotes are skipped, because their real exit price in a fast move is far worse than the
+  screen price.
+- **Stress check before entry:** the new position plus open positions are re-priced in the
+  stress grid (`ARCHITECTURE.md` §11). Entry is blocked if the worst scenario breaks the
+  remaining monthly budget or the margin cap.
 
 ## 4. Exit rules (checked every 30 min)
 
@@ -84,6 +91,14 @@ Exit at whichever comes first:
 | New positions per day | ≤ 1 |
 | Margin used | ≤ 60% of available margin |
 | Net portfolio delta | within a set band (to be set by backtest) |
+| Net portfolio vega / gamma | within set bands (to be set by backtest). Short-vol books are hurt most by IV spikes and fast moves, so these are capped, not just delta |
+
+## 6b. Strategy kill switch (performance)
+
+The strategy itself is paused (no new entries, owner review) if live or paper results fall
+clearly below what the backtest predicted, e.g. a drawdown or losing streak worse than the
+backtest's 5th-percentile case. Exact thresholds are set from the backtest's own spread of
+outcomes before going live.
 
 ## 7. Margin and collateral
 
@@ -91,6 +106,11 @@ Exit at whichever comes first:
 - Margin buffer: assume the MF portfolio can fall 20% in a crash. Margin used must still
   be safe after that fall (hence the 60% cap).
 - Never let a margin shortfall force the sale of MF units.
+- **Collateral stress:** the stress grid also assumes the exchange raises margins and the
+  MF collateral value falls at the same time (they happen together in a crash).
+- **Emergency hedge account:** keep a small cash balance (e.g. ₹1–2 L) at a second broker
+  (Dhan). If Groww is down during a fast move, buy protective options there to cap risk
+  until Groww positions can be closed.
 
 ## 8. Daily decision
 

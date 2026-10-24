@@ -37,6 +37,7 @@
 |---|---|---|---|---|
 | T1.1 | Research sources (Dhan expired options, NSE bhavcopy, paid minute vendors): years, granularity, bid/ask, cost → `DATA_SOURCES.md` | 4h | Claude | doing |
 | T1.2 | Pick source | — | You | todo |
+| T1.2b | Confirm the go / no-go bar for the backtest (`ARCHITECTURE.md` §12) | — | You | todo |
 | T1.3 | Data downloader for chosen source (resumable, checksums) | 5h | Claude | todo |
 | T1.4 | Data validator: gaps, bad prices, expiry/lot-size history checks, report | 5h | Claude | todo |
 | T1.5 | Store as Parquet (partitioned by date/expiry) + loader API | 4h | Claude | todo |
@@ -66,13 +67,21 @@
 
 | ID | Task | Est. | Owner | Status |
 |---|---|---|---|---|
-| T4.1 | Replay engine: steps through history, no look-ahead (guard tests) | 6h | Claude | todo |
+| T4.0 | Spike: evaluate NautilusTrader for backtest + live parity with Indian options data | 2h | Claude | todo |
+| T4.1 | Replay engine (if T4.0 says build our own): steps through history, no look-ahead (guard tests) | 6h | Claude | todo |
 | T4.2 | Fill simulator: bid/ask + slippage + costs | 4h | Claude | todo |
 | T4.3 | Candidate generator: 9 candidates/day (3 structures × 3 deltas) × widths | 5h | Claude | todo |
 | T4.4 | Counterfactual results for every candidate | 4h | Claude | todo |
 | T4.5 | Metrics report: return, max DD, worst week/month, trades, win rate, avg win/loss | 4h | Claude | todo |
+| T4.5b | P&L attribution: theta, delta, gamma, vega, costs per trade | 4h | Claude | todo |
 | T4.6 | Walk-forward parameter search (width, min credit, target, delta, MACD on/off, VIX bands) | 6h | Claude | todo |
-| T4.7 | Baseline results review; approve parameter set | 2h | You | todo |
+| T4.7a | Stress grid: re-price book for spot / IV / time shocks + collateral stress | 5h | Claude | todo |
+| T4.7b | Volatility surface fit (SVI) for strike selection on thin quotes | 6h | Claude | todo |
+| T4.7c | Conservative bid/ask model when historical quotes are missing | 4h | Claude | todo |
+| T4.7d | Overfitting statistics: deflated Sharpe, CSCV, bootstrap intervals | 5h | Claude | todo |
+| T4.7e | Cross-check a few results against AlgoTest / Opstra | 3h | Claude | todo |
+| T4.7f | Run tracking (MLflow or run table): data hash, params, results | 4h | Claude | todo |
+| T4.7 | Baseline results vs go / no-go bar (`ARCHITECTURE.md` §12); approve parameter set | 2h | You | todo |
 
 ## M5. Live data (Dhan) and storage
 
@@ -84,6 +93,7 @@
 | T5.4 | Option chain + Greeks snapshot (30 min), cross-check vs our Greeks | 4h | Claude | todo |
 | T5.5 | Supabase schema: bars, snapshots, ledger, journal (append-only), RLS | 5h | Claude | todo |
 | T5.6 | Ingest: Redis latest state, 1-min bars to Postgres, daily Parquet archive | 5h | Claude | todo |
+| T5.6b | Margin estimate: broker margin API or SPAN-file estimate | 4h | Claude | todo |
 | T5.7 | Railway deploy: services, Redis, health checks, logs | 4h | Claude | todo |
 
 ## M6. Daily decision and trade ticket (paper)
@@ -139,6 +149,16 @@
 | T10.5 | Meta-model take / skip / size | 6h | Claude | todo |
 | T10.6 | Purged walk-forward evaluation + acceptance report | 5h | Claude | todo |
 | T10.7 | Model registry + shadow mode + drift fallback | 5h | Claude | todo |
+
+## M10b. Operations
+
+| ID | Task | Est. | Owner | Status |
+|---|---|---|---|---|
+| T10b.1 | Runbooks: feed down, Groww down, Dhan login failed, Supabase down, ledger mismatch | 4h | Claude | todo |
+| T10b.2 | Backups: Supabase PITR, Parquet second copy, monthly restore test | 3h | Claude | todo |
+| T10b.3 | Sentry + uptime monitoring + scheduler missed-run alerts | 4h | Claude | todo |
+| T10b.4 | Open emergency hedge cash balance at Dhan (₹1–2 L) | 1h | You | todo |
+| T10b.5 | Strategy decay check (live vs backtest range) | 4h | Claude | todo |
 
 ## M11. Paper trading (8 weeks)
 

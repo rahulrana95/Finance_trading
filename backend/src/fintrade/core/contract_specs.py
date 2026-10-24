@@ -24,7 +24,7 @@ Lot size source, per expiry:
 """
 
 from collections import defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
 from enum import StrEnum
@@ -35,6 +35,7 @@ from fintrade.core.errors import DataError
 
 LOT_WINDOW_DAYS = 14
 NEIGHBOUR_WINDOW_DAYS = 7  # expiries this close share the market lot for new trades
+RELABEL_WINDOW_DAYS = 7  # a holiday moves an expiry by days, never by more than a week
 # Only reliable specs vote: short-lived contracts with plenty of data (long-dated ones
 # carry stale positions; real case 2023-06-28/29 voted for each other with gcd 25).
 MAX_VOTER_LIFE_DAYS = 120  # weeklies ~60-70 days, monthlies ~90; long-dated >= ~1 year
@@ -178,3 +179,29 @@ def _resolved(spec: ExpirySpec, specs: list[ExpirySpec]) -> ExpirySpec:
     if spec.lot_size is not None and market_lot % spec.lot_size != 0:
         return spec
     return replace(spec, lot_size=market_lot, source=LotSizeSource.CONSENSUS)
+
+
+def expiry_relabels(specs: Sequence[ExpirySpec]) -> dict[date, date]:
+    """Listed expiry -> the date its contracts actually expired, for holiday moves where NSE
+    re-labelled live contracts with the new date (2023-06-29 became 2023-06-28: the same
+    contracts carry expiry 06-29 up to 06-27 and 06-28 on 06-28).
+
+    Seen in the data as an expiry that trades only on its own expiry day, plus a listed
+    expiry up to `RELABEL_WINDOW_DAYS` later whose trading stopped in the week before.
+    """
+    window = timedelta(RELABEL_WINDOW_DAYS)
+    relabels: dict[date, date] = {}
+    for moved in specs:
+        if not moved.first_traded == moved.last_traded == moved.expiry:
+            continue
+        sources = [
+            listed.expiry
+            for listed in specs
+            if moved.expiry < listed.expiry <= moved.expiry + window
+            and moved.expiry - window <= listed.last_traded < moved.expiry
+        ]
+        if len(sources) > 1:
+            raise DataError(f"{moved.expiry} could be the moved date of several: {sources}")
+        if sources:
+            relabels[sources[0]] = moved.expiry
+    return relabels

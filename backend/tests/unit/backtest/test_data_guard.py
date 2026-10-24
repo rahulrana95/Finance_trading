@@ -4,7 +4,12 @@ from datetime import date
 
 import pytest
 
-from fintrade.backtest.data import GuardedMarketData, LookAheadError, option_contract
+from fintrade.backtest.data import (
+    GuardedMarketData,
+    LookAheadError,
+    option_contract,
+    relabel_expiries,
+)
 from fintrade.core.errors import DataError
 from tests.support.backtest import market, spread_bars
 from tests.support.bars import make_future
@@ -57,3 +62,11 @@ def test_futures_ignored_and_missing_day_is_empty() -> None:
 def test_option_contract_rejects_future_bar() -> None:
     with pytest.raises(DataError, match="not an option bar"):
         option_contract(make_future())
+
+
+def test_relabel_expiries_gives_one_contract_one_identity() -> None:
+    old, new = date(2023, 6, 29), date(2023, 6, 28)
+    bars = [make_future(expiry=old), make_future(expiry=date(2023, 7, 27))]
+    out = list(relabel_expiries(bars, {old: new}))
+    assert [b.expiry for b in out] == [new, date(2023, 7, 27)]
+    assert out[1] is bars[1]

@@ -4,7 +4,8 @@ AGENTS.md section 5: a decision on day D may only use data available on day D.
 `GuardedMarketData` raises if anything asks for a later day.
 """
 
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 from typing import Protocol
@@ -49,6 +50,16 @@ def chain_points(bars: DayBars, expiry: date) -> dict[Decimal, ChainPoint]:
         strike: ChainPoint(strike, by_type.get(OptionType.CALL), by_type.get(OptionType.PUT))
         for strike, by_type in sorted(prices.items())
     }
+
+
+def relabel_expiries(
+    bars: Iterable[DailyContractBar], relabels: Mapping[date, date]
+) -> Iterator[DailyContractBar]:
+    """Bars with re-labelled expiries (`core.contract_specs.expiry_relabels`) moved to the
+    date the contracts actually expired, so one contract keeps one identity."""
+    for bar in bars:
+        moved = relabels.get(bar.expiry)
+        yield bar if moved is None else replace(bar, expiry=moved)
 
 
 class InMemoryMarketData:

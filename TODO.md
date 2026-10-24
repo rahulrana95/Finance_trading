@@ -12,7 +12,7 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T4.3b Liquid candidates | M4 | `T4.3b-liquid-candidates` | Claude |
+| T2.1d Expiry relabels | M2 | `T2.1d-expiry-relabels` | Claude |
 
 ---
 
@@ -50,6 +50,7 @@
 | T2.1a | Instruments model: option contract, leg, credit spread, iron condor, with structure validation | 4h | Claude | review |
 | T2.1b | Lot size + expiry history derived from data (OI gcd per expiry), checked vs UDiFF lot sizes | 4h | Claude | review |
 | T2.1c | Lot size timeline from the full 2019→today data: neighbour-expiry consensus, revision dates, resolve UNKNOWN / long-dated monthlies; owner spot-check | 4h | Claude | review |
+| T2.1d | Holiday-moved expiries re-labelled on live contracts (2023-06-29 -> 06-28): one contract, one expiry | 1h | Claude | review |
 | T2.2 | Market calendar: NSE holidays, Tuesday expiry, shifted expiries, "next week's expiry" rule | 4h | Claude | review |
 | T2.3 | Greeks wrapper on `vollib` (Black-76; py_vollib is deprecated): forward from put-call parity, IV, delta/gamma/theta/vega | 5h | Claude | review |
 | T2.4 | Greeks cross-check vs QuantLib + golden values + edge cases (deep OTM, near expiry, no IV solution) | 4h | Claude | review |

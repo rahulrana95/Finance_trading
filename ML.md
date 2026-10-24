@@ -51,6 +51,21 @@ selling profits depend mostly on them.
 Gradient boosting on good features usually beats deep learning on this much data
 (~1,500–2,500 daily samples). Deep models come only after the simple ones are proven.
 
+### Regime filter (HMM)
+
+A Hidden Markov Model (`hmmlearn`) on daily Nifty returns, range and VIX classifies each
+day into 3 regimes. The regime picks the structure; it never raises risk:
+
+| Regime | Allowed action |
+|---|---|
+| Sideways / mean-reverting | Iron condor (normal size) |
+| Trending | Credit spread on the trend side only (bull put in uptrend, bear call in downtrend) |
+| High-vol expansion | Smaller size, wider wings, or `NO_ACTION` |
+
+- Use **filtered** regime probabilities (past data only). Never the Viterbi path or
+  smoothed probabilities over the full history: those use future data.
+- If the regime probability is unclear (no regime > ~60%), treat it as high-vol.
+
 ## 3. Features
 
 Same state as `RL.md`, plus:
@@ -60,6 +75,10 @@ Same state as `RL.md`, plus:
 - Global cues before open: GIFT Nifty, US index futures, USD/INR, crude
 - FII / DII flows, PCR change, OI build-up at the short strikes
 - Event flag and days to next event
+- PCR momentum, speed of OI shift / unwinding at the short strikes, max pain distance
+- HMM regime probabilities (filtered)
+- Distance of short strikes from the nearest order block (Smart Money Concepts). Test only;
+  must be shifted by the swing length to avoid look-ahead (see `ARCHITECTURE.md`)
 
 ## 4. Making predictions reliable
 

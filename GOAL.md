@@ -55,6 +55,7 @@ Data/API candidate: DhanHQ (live feed + option chain with Greeks). To be verifie
 
 ## Related docs
 - `AGENTS.md`: global guardrails (highest authority)
+- `ARCHITECTURE.md`: system design, brokers, storage, alerts
 - `RULES.md`: global rules
 - `MONITORING.md`: live P&L tracking
 - `ML.md`: prediction models stacked on top of the rules

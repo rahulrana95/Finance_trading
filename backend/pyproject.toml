@@ -15,6 +15,8 @@ dev = [
     "pytest-xdist>=3.6",
     "hypothesis>=6.120",
     "time-machine>=2.16",
+    "import-linter>=2.15",
+    "pip-audit>=2.10.1",
 ]
 
 [build-system]
@@ -85,4 +87,18 @@ skip_covered = true
 exclude_also = [
     "if TYPE_CHECKING:",
     "@overload",
+]
+
+# ---------- import-linter (ENGINEERING.md section 6) ----------
+[tool.importlinter]
+root_package = "fintrade"
+
+[[tool.importlinter.contracts]]
+name = "Dependencies point inward: services -> adapters/backtest -> ports -> core"
+type = "layers"
+layers = [
+    "fintrade.services",
+    "fintrade.adapters | fintrade.backtest",
+    "fintrade.ports",
+    "fintrade.core",
 ]

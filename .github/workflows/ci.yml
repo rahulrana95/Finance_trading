@@ -45,5 +45,11 @@ jobs:
       - name: Type check
         run: make typecheck
 
+      - name: Architecture boundaries
+        run: make arch
+
+      - name: Dependency audit
+        run: make audit
+
       - name: Tests (100% line + branch coverage, no skips)
         run: make test

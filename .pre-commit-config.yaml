@@ -1,0 +1,19 @@
+# Fast local checks before each commit. CI runs the full `make check`.
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: ruff lint + format check
+        entry: make lint
+        language: system
+        pass_filenames: false
+      - id: typecheck
+        name: mypy strict
+        entry: make typecheck
+        language: system
+        pass_filenames: false
+      - id: arch
+        name: import boundaries
+        entry: make arch
+        language: system
+        pass_filenames: false

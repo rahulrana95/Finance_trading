@@ -24,6 +24,7 @@ dev = [
     "import-linter>=2.15",
     "pip-audit>=2.10.1",
     "pyarrow-stubs>=20.0.0.20260819",
+    "quantlib>=1.44",
 ]
 
 [build-system]
@@ -114,5 +115,5 @@ layers = [
 
 # vollib ships without type hints; it is wrapped by fintrade.core.pricing (typed).
 [[tool.mypy.overrides]]
-module = ["vollib.*", "py_lets_be_rational.*"]
+module = ["vollib.*", "py_lets_be_rational.*", "QuantLib.*"]
 ignore_missing_imports = true

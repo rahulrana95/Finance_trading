@@ -2,6 +2,13 @@
 
 Owner decisions, newest first. Each one is reflected in the doc named.
 
+## 2026-10-24: backtest go / no-go bar
+
+Accepted as proposed (`ARCHITECTURE.md` §12): after all costs, walk-forward across all years:
+≥ 12% return in most years and never below 0%; max drawdown ≤ 5% every year; worst month
+≥ −3%; ≥ 100 trades; deflated Sharpe positive at 95%; beats "always iron condor" and cash.
+If the rules-only strategy fails this bar, we change the strategy before building more.
+
 ## 2026-10-24: open-questions round
 
 | # | Topic | Decision | Doc |

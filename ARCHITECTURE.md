@@ -548,7 +548,7 @@ differ from our v2 design in the points below. Each gap is now a `TODO.md` task.
 - **Simplify the first live version:** Redis, the news LLM and RL can wait. A single
   Python service on Railway with in-process state is enough for paper trading.
 
-## 12. Go / no-go bar for the backtest (owner to confirm)
+## 12. Go / no-go bar for the backtest (accepted by owner, 2026-10-24)
 
 Proposed: the rules-only strategy goes forward to paper trading only if, **after all costs**,
 in walk-forward tests across all years:

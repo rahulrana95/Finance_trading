@@ -37,7 +37,7 @@
 |---|---|---|---|---|
 | T1.1 | Research sources (Dhan expired options, NSE bhavcopy, paid minute vendors): years, granularity, bid/ask, cost → `DATA_SOURCES.md` | 4h | Claude | doing |
 | T1.2 | Pick source | — | You | todo |
-| T1.2b | Confirm the go / no-go bar for the backtest (`ARCHITECTURE.md` §12) | — | You | todo |
+| T1.2b | Confirm the go / no-go bar for the backtest (`ARCHITECTURE.md` §12) | — | You | done |
 | T1.3 | Data downloader for chosen source (resumable, checksums) | 5h | Claude | todo |
 | T1.4 | Data validator: gaps, bad prices, expiry/lot-size history checks, report | 5h | Claude | todo |
 | T1.5 | Store as Parquet (partitioned by date/expiry) + loader API | 4h | Claude | todo |

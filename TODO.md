@@ -24,7 +24,8 @@
 | T2.5 Cost model (PR #11) | M2 | `T2.5-cost-model` | Claude |
 | T2.6 Position P&L / max loss (PR #12) | M2 | `T2.6-pnl` | Claude |
 | T3.1 Entry rule checks (PR #13) | M3 | `T3.1-entry-rule-checks` | Claude |
-| T3.2 Risk budget tracker (PR #14) | M3 | `T3.2-risk-budget` (stacked on T3.1) | Claude |
+| T3.2 Risk budget tracker (PR #14) | M3 | `T3.2-risk-budget` | Claude |
+| T3.3 Entry filters (PR #15) | M3 | `T3.3-entry-filters` (stacked on T3.2) | Claude |
 | Full download 2019 → today (after merge) | M1 | run, no code | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
@@ -76,7 +77,8 @@
 |---|---|---|---|---|
 | T3.1 | Rule checks for every `AGENTS.md` §1 limit (delta, structure, expiry, counts, margin) | 6h | Claude | review |
 | T3.2 | Risk budget tracker: weekly / monthly / yearly loss, remaining budget, max-loss vs budget | 5h | Claude | review |
-| T3.3 | Entry filters: min credit, events, time window, VIX bands (parameters from config) | 4h | Claude | todo |
+| T3.3 | Entry filters: min credit, events, time window, VIX bands (parameters from config) | 4h | Claude | review |
+| T3.3b | Liquidity filter: min OI / volume, max bid-ask spread % per leg (`RULES.md` §3) | 3h | Claude | todo |
 | T3.4 | Exit rules: profit target, 2× stop, strike touch, time exit, budget breach | 5h | Claude | todo |
 | T3.5 | Kill switch + fail-closed checks (stale data, ledger mismatch) | 3h | Claude | todo |
 | T3.6 | Mutation testing (mutmut) on `core/rules` + risk modules in CI; no surviving mutants (`TESTING.md` §3) | 4h | Claude | todo |

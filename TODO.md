@@ -26,7 +26,7 @@
 | T0.3 | Repo skeleton per `ENGINEERING.md` §6: `backend/` (uv, ruff, mypy strict, pytest + 100% branch coverage), `make` targets. (UI scaffold moved to T8.1) | 4h | Claude | done |
 | T0.4 | CI on GitHub Actions: lint, typecheck, tests, **coverage gate 100% line + branch**, fails on any skip | 4h | Claude | review |
 | T0.5 | Test framework: pytest, xdist, hypothesis (deterministic CI profile), time-machine, `tests/support/` | 3h | Claude | review |
-| T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI | 2h | Claude | todo |
+| T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI (gitleaks) | 2h | Claude | review |
 | T0.8 | `import-linter` boundaries, pre-commit hooks, dependency audit, complexity limits | 3h | Claude | todo |
 | T0.9 | Core utils: `Clock`, money (`Decimal`), structlog setup with redaction filter, error hierarchy | 5h | Claude | todo |
 | T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | todo |

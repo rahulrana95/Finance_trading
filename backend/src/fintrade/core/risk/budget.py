@@ -109,7 +109,7 @@ def _baseline(
 ) -> Rupees:
     """Value at the end of the previous period (0 before any history)."""
     current = period(history[-1].day)
-    before = [p for p in history if period(p.day) != current and p.day < history[-1].day]
+    before = [p for p in history if period(p.day) != current]  # sorted: earlier periods
     return value(before[-1]) if before else Decimal(0)
 
 

@@ -17,4 +17,5 @@ Python engine for the Nifty option selling system. Layout follows `ENGINEERING.m
 | `make setup` | Install dependencies |
 | `make check` | Lint, format check, types, tests with 100% coverage gate |
 | `make test` | Tests only (parallel), coverage gate |
+| `make mutation` | Mutation testing on `core/rules` + `core/risk`; fails if any mutant survives |
 | `make fmt` | Auto-format and fix lint |

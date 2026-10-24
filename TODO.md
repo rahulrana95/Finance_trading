@@ -27,7 +27,8 @@
 | T3.2 Risk budget tracker (PR #14) | M3 | `T3.2-risk-budget` | Claude |
 | T3.3 Entry filters (PR #15) | M3 | `T3.3-entry-filters` | Claude |
 | T3.4 Exit rules + safe leg order (PR #16) | M3 | `T3.4-exit-rules` | Claude |
-| T3.5 Kill switch + order gate (PR #17) | M3 | `T3.5-kill-switch-gate` (stacked on T3.4) | Claude |
+| T3.5 Kill switch + order gate (PR #17) | M3 | `T3.5-kill-switch-gate` | Claude |
+| T3.6 Mutation testing (PR #18) | M3 | `T3.6-mutation-testing` (stacked on T3.5) | Claude |
 | Full download 2019 → today (after merge) | M1 | run, no code | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
@@ -84,7 +85,7 @@
 | T3.4 | Exit rules: profit target, 2× stop, strike touch, time exit, budget breach; safe leg order for entry / exit (`AGENTS.md` §2) | 5h | Claude | review |
 | T3.4b | Adjustment rules: close tested side / roll untested side, ≤ 1 per position, never increases max loss (`RULES.md` §5) | 4h | Claude | todo |
 | T3.5 | Kill switch + fail-closed checks (stale data, ledger mismatch) | 3h | Claude | review |
-| T3.6 | Mutation testing (mutmut) on `core/rules` + risk modules in CI; no surviving mutants (`TESTING.md` §3) | 4h | Claude | todo |
+| T3.6 | Mutation testing (mutmut) on `core/rules` + risk modules in CI; no surviving mutants (`TESTING.md` §3) | 4h | Claude | review |
 
 ## M4. Backtester (rules only, L0)
 

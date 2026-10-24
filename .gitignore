@@ -32,3 +32,6 @@ node_modules/
 
 # Logs
 *.log
+
+# mutmut sandbox
+backend/mutants/

@@ -17,7 +17,8 @@
 | T1.4b Data validator (PR #4) | M1 | `T1.4b-data-validator` (stacked on T1.4a) | Claude |
 | T1.5 Parquet store (PR #5) | M1 | `T1.5-parquet-store` | Claude |
 | T2.1a Instruments model (PR #6) | M2 | `T2.1a-instruments` | Claude |
-| T2.1b Contract specs from data (PR #7) | M2 | `T2.1b-contract-specs` (stacked on T2.1a) | Claude |
+| T2.1b Contract specs from data (PR #7) | M2 | `T2.1b-contract-specs` | Claude |
+| T2.2 Market calendar (PR #8) | M2 | `T2.2-market-calendar` (stacked on T2.1b) | Claude |
 | Full download 2019 → today (after merge) | M1 | run, no code | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
@@ -57,7 +58,7 @@
 | T2.1a | Instruments model: option contract, leg, credit spread, iron condor, with structure validation | 4h | Claude | review |
 | T2.1b | Lot size + expiry history derived from data (OI gcd per expiry), checked vs UDiFF lot sizes | 4h | Claude | review |
 | T2.1c | Lot size timeline from the full 2019→today data: neighbour-expiry consensus, revision dates, resolve UNKNOWN / long-dated monthlies; owner spot-check | 4h | Claude | todo |
-| T2.2 | Market calendar: NSE holidays, Tuesday expiry, shifted expiries, "next week's expiry" rule | 4h | Claude | todo |
+| T2.2 | Market calendar: NSE holidays, Tuesday expiry, shifted expiries, "next week's expiry" rule | 4h | Claude | review |
 | T2.3 | Greeks adapter on `py_vollib(_vectorized)` (Black-76): forward from put-call parity, IV, delta/gamma/theta/vega | 5h | Claude | todo |
 | T2.4 | Greeks cross-check vs QuantLib + golden values + edge cases (deep OTM, near expiry, no IV solution) | 4h | Claude | todo |
 | T2.5 | Cost model: brokerage, STT, exchange fees, GST, stamp duty, slippage (Groww schedule) | 4h | Claude | todo |

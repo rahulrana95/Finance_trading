@@ -12,7 +12,8 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T0.4 CI on GitHub Actions | M0 | `T0.4-ci` | Claude |
+| M0 foundations done (T0.3–T0.10), waiting for merge to `master` | M0 | `T0.3`…`T0.10` branches (stacked) | You: approve merge |
+| T1.3 NSE bhavcopy downloader (next) | M1 | `T1.3-bhavcopy-downloader` | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
 ---
@@ -29,7 +30,7 @@
 | T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI (gitleaks) | 2h | Claude | review |
 | T0.8 | `import-linter` boundaries, pre-commit hooks, dependency audit, complexity limits | 3h | Claude | review |
 | T0.9 | Core utils: `Clock`, money (`Decimal`), structlog setup with redaction filter, error hierarchy | 5h | Claude | review |
-| T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | todo |
+| T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | review |
 | T0.7 | Create Telegram bot (@BotFather); decide on domain | 1h | You | todo |
 
 ## M1. Historical data

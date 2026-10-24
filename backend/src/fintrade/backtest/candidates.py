@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time
 from decimal import Decimal
 
-from fintrade.backtest.data import DayBars
+from fintrade.backtest.data import DECISION_TIME, DEFAULT_RATE, DayBars, chain_points
 from fintrade.core.bars import OptionType
 from fintrade.core.errors import InvalidInputError
 from fintrade.core.instruments import (
@@ -27,7 +27,7 @@ from fintrade.core.instruments import (
     credit_spread,
 )
 from fintrade.core.limits import HARD_LIMITS
-from fintrade.core.pricing.black76 import EXPIRY_CLOSE, time_to_expiry_years
+from fintrade.core.pricing.black76 import time_to_expiry_years
 from fintrade.core.pricing.chain import ChainGreeks, ChainPoint, chain_greeks
 from fintrade.core.timezone import IST
 
@@ -42,9 +42,9 @@ class CandidateConfig:
     target_deltas: tuple[Decimal, ...] = (Decimal("0.08"), Decimal("0.10"), Decimal("0.12"))
     widths: tuple[Decimal, ...] = (Decimal(100), Decimal(200), Decimal(300))
     lots: int = 1
-    rate: float = 0.065  # annual risk-free rate; deltas barely move with it
+    rate: float = DEFAULT_RATE
     min_price: Decimal = Decimal("0.05")  # one tick: below this no IV is trusted
-    decision_time: time = EXPIRY_CLOSE  # end-of-day bars: decide at the close
+    decision_time: time = DECISION_TIME
 
     def __post_init__(self) -> None:
         if not self.structures or not self.target_deltas or not self.widths:
@@ -72,7 +72,7 @@ class Candidate:
 def generate_candidates(
     day: date, bars: DayBars, expiry: date, config: CandidateConfig
 ) -> list[Candidate]:
-    points = _chain_points(bars, expiry)
+    points = chain_points(bars, expiry)
     if not points:
         return []
     now = datetime.combine(day, config.decision_time, tzinfo=IST)
@@ -87,17 +87,6 @@ def generate_candidates(
                 if candidate is not None:
                     found.append(candidate)
     return found
-
-
-def _chain_points(bars: DayBars, expiry: date) -> dict[Decimal, ChainPoint]:
-    prices: dict[Decimal, dict[OptionType, Decimal]] = {}
-    for contract, bar in bars.items():
-        if contract.expiry == expiry and contract.symbol == HARD_LIMITS.underlying:
-            prices.setdefault(contract.strike, {})[contract.option_type] = bar.settle
-    return {
-        strike: ChainPoint(strike, by_type.get(OptionType.CALL), by_type.get(OptionType.PUT))
-        for strike, by_type in sorted(prices.items())
-    }
 
 
 @dataclass(frozen=True, slots=True)

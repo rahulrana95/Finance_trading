@@ -1,28 +1,31 @@
 """Synthetic option chains priced with Black-76 at a flat volatility."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from datetime import date
 from decimal import Decimal
 
 from fintrade.backtest.data import DayBars, option_contract
-from fintrade.core.bars import OptionType
+from fintrade.core.bars import DailyContractBar, OptionType
 from fintrade.core.pricing.black76 import price
 from fintrade.core.pricing.chain import ChainPoint
 from tests.support.bars import make_bar
 
 FORWARD, YEARS, RATE, VOL = 25213.4, 8 / 365, 0.065, 0.13
+EXPIRY_DAY_FRACTION = 0.25  # bars dated on expiry day still carry a little time value
 
 
-def _px(option_type: OptionType, forward: float, strike: int, vol: float) -> Decimal:
-    return Decimal(str(round(price(option_type, forward, float(strike), YEARS, RATE, vol), 4)))
+def _px(option_type: OptionType, forward: float, strike: int, vol: float, years: float) -> Decimal:
+    return Decimal(str(round(price(option_type, forward, float(strike), years, RATE, vol), 4)))
 
 
 def flat_chain(
-    strikes: Iterable[int], forward: float = FORWARD, vol: float = VOL
+    strikes: Iterable[int], forward: float = FORWARD, vol: float = VOL, years: float = YEARS
 ) -> list[ChainPoint]:
     return [
         ChainPoint(
-            Decimal(k), _px(OptionType.CALL, forward, k, vol), _px(OptionType.PUT, forward, k, vol)
+            Decimal(k),
+            _px(OptionType.CALL, forward, k, vol, years),
+            _px(OptionType.PUT, forward, k, vol, years),
         )
         for k in strikes
     ]
@@ -47,4 +50,16 @@ def chain_bars(
                 close=px,
             )
             bars[option_contract(bar)] = bar
+    return bars
+
+
+def chain_history(
+    forwards: Mapping[date, float], expiry: date, strikes: Iterable[int], vol: float = VOL
+) -> list[DailyContractBar]:
+    """Bars for one expiry's chain on each day, priced close-to-close at a flat vol."""
+    strikes = list(strikes)
+    bars: list[DailyContractBar] = []
+    for day, forward in forwards.items():
+        years = max((expiry - day).days, EXPIRY_DAY_FRACTION) / 365
+        bars.extend(chain_bars(flat_chain(strikes, forward, vol, years), day, expiry).values())
     return bars

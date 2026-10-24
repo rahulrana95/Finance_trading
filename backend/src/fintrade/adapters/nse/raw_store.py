@@ -89,6 +89,18 @@ class RawStore:
             latest[record.day] = record
         return latest
 
+    def load(self, record: ManifestRecord) -> bytes:
+        """Read a stored file, refusing it if missing or if its checksum changed."""
+        if record.status is not RecordStatus.OK:
+            raise DataError(f"no stored file for {record.day} (status {record.status})")
+        path = self.path_for(date.fromisoformat(record.day))
+        if not path.exists():
+            raise DataError(f"stored file missing: {path}")
+        content = path.read_bytes()
+        if sha256_hex(content) != record.sha256:
+            raise DataError(f"checksum mismatch: {path}")
+        return content
+
     def is_intact(self, record: ManifestRecord) -> bool:
         """True if the stored file exists and still matches its recorded checksum."""
         if record.status is not RecordStatus.OK:

@@ -12,4 +12,8 @@ Download a range (resumable; re-run to retry failures):
 
     uv --directory backend run python -m fintrade.services.bhavcopy_download --end 2026-10-23
 
+Validate everything downloaded (writes `data/reports/bhavcopy_quality.json`, exit 1 on errors):
+
+    uv --directory backend run python -m fintrade.services.bhavcopy_validate
+
 Files land in `data/raw/nse_fo_bhavcopy/` (git-ignored).

@@ -89,3 +89,22 @@ def test_not_found_record_is_never_intact(tmp_path: Path) -> None:
     record = store.mark_not_found(DAY, URL, AT)
     assert isinstance(record, ManifestRecord)
     assert not store.is_intact(record)
+
+
+def test_load_returns_verified_content(tmp_path: Path) -> None:
+    store = RawStore(tmp_path)
+    record = store.save(DAY, URL, b"good", AT)
+    assert store.load(record) == b"good"
+
+
+def test_load_refuses_tampered_missing_or_not_found(tmp_path: Path) -> None:
+    store = RawStore(tmp_path)
+    record = store.save(DAY, URL, b"good", AT)
+    store.path_for(DAY).write_bytes(b"bad")
+    with pytest.raises(DataError, match="checksum mismatch"):
+        store.load(record)
+    store.path_for(DAY).unlink()
+    with pytest.raises(DataError, match="stored file missing"):
+        store.load(record)
+    with pytest.raises(DataError, match="no stored file"):
+        store.load(store.mark_not_found(DAY, URL, AT))

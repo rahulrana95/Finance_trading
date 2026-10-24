@@ -92,8 +92,8 @@
 
 | ID | Task | Est. | Owner | Status |
 |---|---|---|---|---|
-| T4.0 | Spike: evaluate NautilusTrader for backtest + live parity with Indian options data | 2h | Claude | todo |
-| T4.1 | Replay engine (if T4.0 says build our own): steps through history, no look-ahead (guard tests) | 6h | Claude | todo |
+| T4.0 | Spike: evaluate NautilusTrader for backtest + live parity with Indian options data → decided: own replay engine for daily backtest (`DECISIONS.md`) | 2h | Claude | done |
+| T4.1 | Replay engine (own, per T4.0): steps through history, no look-ahead (guard tests) | 6h | Claude | todo |
 | T4.2 | Fill simulator: bid/ask + slippage + costs | 4h | Claude | todo |
 | T4.3 | Candidate generator: 9 candidates/day (3 structures × 3 deltas) × widths | 5h | Claude | todo |
 | T4.4 | Counterfactual results for every candidate | 4h | Claude | todo |

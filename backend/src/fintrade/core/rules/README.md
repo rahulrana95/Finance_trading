@@ -7,6 +7,8 @@ violation is returned (stable codes), so logs show all reasons a trade was block
 |---|---|
 | `strategy_config` | `EntryFilterConfig` (tunable, set by backtest + owner approval); `DEFAULT_ENTRY_FILTERS` |
 | `filters` | `check_filters(FilterInputs, config)` → violations: entry window 10:00–15:00 IST, min credit % of width per side, event blackout (today / next trading day), optional VIX band |
+| `exits` | `exit_reasons(ExitInputs, config)` → reasons (empty = hold): profit target, 2× credit stop, short strike touched, time exit, loss limit hit |
+| `order_sequence` | `entry_sequence` (hedges first), `exit_sequence` (shorts first): `AGENTS.md` §2 |
 | `entry` | `check_entry(ProposedEntry, AccountState)` → `list[RuleViolation]` (empty = allowed); `EntryRule` codes |
 
 Each `AGENTS.md` §1 limit has its own test file in `tests/unit/core/rules/limits/`.

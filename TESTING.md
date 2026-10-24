@@ -13,6 +13,14 @@ Money is on the line. Untested code does not merge.
 - Coverage is the minimum, not the goal: every behavior needs a test that would fail if
   the behavior broke.
 
+## 1b. Small, parallel tests
+
+- One test file per unit, focused, ≤ ~200 lines. Run in parallel with `pytest-xdist` /
+  Vitest threads.
+- Tests are independent: no shared mutable state, no order dependence, no real clock,
+  no network. Any test must pass alone and in any order.
+- Shared factories, fakes and builders live in `tests/support/`; never copy-paste setup.
+
 ## 2. Every unit gets four kinds of tests
 
 | Kind | Question it answers | Example (spread max-loss check) |

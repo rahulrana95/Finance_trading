@@ -22,10 +22,13 @@
 |---|---|---|---|---|
 | T0.1 | Goal, rules, guardrails, architecture docs | — | Claude | done |
 | T0.2 | Owner decisions round (14 questions) → `DECISIONS.md` | — | You + Claude | done |
-| T0.3 | Repo skeleton: Python backend (`backend/`), Next.js UI (`ui/`), `pyproject`, lint (ruff), types (mypy strict), formatter | 4h | Claude | todo |
+| T0.3 | Repo skeleton per `ENGINEERING.md` §6: `backend/` (uv, ruff, mypy strict), `ui/` (pnpm, TS strict, ESLint, Prettier), `make` targets | 4h | Claude | todo |
 | T0.4 | CI on GitHub Actions: lint, typecheck, tests, **coverage gate 100% line + branch**, fails on any skip | 4h | Claude | todo |
 | T0.5 | Test framework: pytest, hypothesis (property tests), freezegun (time), fixtures folder, test data factory | 3h | Claude | todo |
 | T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI | 2h | Claude | todo |
+| T0.8 | `import-linter` boundaries, pre-commit hooks, dependency audit, complexity limits | 3h | Claude | todo |
+| T0.9 | Core utils: `Clock`, money (`Decimal`), structlog setup with redaction filter, error hierarchy | 5h | Claude | todo |
+| T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | todo |
 | T0.7 | Create Telegram bot (@BotFather); decide on domain | 1h | You | todo |
 
 ## M1. Historical data
@@ -44,8 +47,8 @@
 |---|---|---|---|---|
 | T2.1 | Instruments model: option contract, leg, spread, iron condor; lot size + expiry-day history | 4h | Claude | todo |
 | T2.2 | Market calendar: NSE holidays, Tuesday expiry, shifted expiries, "next week's expiry" rule | 4h | Claude | todo |
-| T2.3 | Greeks: forward from put-call parity, Black-76 IV solver, delta/gamma/theta/vega | 6h | Claude | todo |
-| T2.4 | Greeks validation vs known values + edge cases (deep OTM, near expiry, no solution) | 4h | Claude | todo |
+| T2.3 | Greeks adapter on `py_vollib(_vectorized)` (Black-76): forward from put-call parity, IV, delta/gamma/theta/vega | 5h | Claude | todo |
+| T2.4 | Greeks cross-check vs QuantLib + golden values + edge cases (deep OTM, near expiry, no IV solution) | 4h | Claude | todo |
 | T2.5 | Cost model: brokerage, STT, exchange fees, GST, stamp duty, slippage (Groww schedule) | 4h | Claude | todo |
 | T2.6 | Position P&L and max-loss calculator per position and portfolio | 4h | Claude | todo |
 

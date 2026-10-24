@@ -83,6 +83,7 @@ Data/API candidate: DhanHQ (live feed + option chain with Greeks). To be verifie
 - `AGENTS.md`: global guardrails (highest authority)
 - `ARCHITECTURE.md`: system design, brokers, storage, alerts, news sources
 - `TODO.md`: milestones and tasks (what we are working on now)
+- `ENGINEERING.md`: engineering rules (code quality, libraries, architecture)
 - `TESTING.md`: strict testing policy
 - `DECISIONS.md`: owner decisions log
 - `SCALING.md`: multi-user scaling (deferred: personal use only)

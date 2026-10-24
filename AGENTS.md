@@ -112,7 +112,7 @@ If a limit is hit, the only allowed actions are **closing positions** and **logg
 - Do not change any 🔒 item. If a task seems to need it, stop and ask the owner.
 - Every risk rule in Section 1 must have an automated test. Never delete, skip or weaken
   these tests.
-- Follow `TESTING.md`: 100% line + branch coverage, positive / negative / edge / QA tests
+- Follow `ENGINEERING.md` (code rules) and `TESTING.md`: 100% line + branch coverage, positive / negative / edge / QA tests
   for every unit. CI blocks merges that fail it.
 - Work from `TODO.md`: each change belongs to one task ID (≤ 6 hours), named in the branch
   and commit message. Update the task status and the "Now working on" table.

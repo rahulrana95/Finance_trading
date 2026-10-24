@@ -19,4 +19,11 @@ class EntryFilterConfig:
     event_blackout: bool = True  # no entry if an event is today or next trading day
 
 
+@dataclass(frozen=True, slots=True)
+class ExitConfig:
+    profit_target_pct_of_max: Decimal = Decimal(50)  # RULES.md section 4: 50-70%, backtest sets it
+    stop_loss_multiple_of_credit: Decimal = Decimal(2)  # close when loss >= 2x credit
+
+
 DEFAULT_ENTRY_FILTERS = EntryFilterConfig()
+DEFAULT_EXIT = ExitConfig()

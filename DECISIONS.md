@@ -2,6 +2,17 @@
 
 Owner decisions, newest first. Each one is reflected in the doc named.
 
+## 2026-10-24: loss-limit definitions (PENDING owner confirmation)
+
+How `core/risk/budget.py` reads the AGENTS.md §1 loss limits:
+- Equity = cumulative realized P&L + open mark-to-market
+- Weekly loss = equity now − equity at end of previous ISO week (Mon–Sun); hit at −1% of capital
+- Monthly / yearly drawdown = peak equity since previous month / year end (incl. that level)
+  − equity now; hit at 3% / 5% of capital
+- Reaching a limit exactly counts as hit
+- Remaining monthly budget for new risk = 3% − realized drawdown this month, capped by
+  what is left of the yearly 5%; open positions count by worst-case max loss
+
 ## 2026-10-24: backtest go / no-go bar
 
 Accepted as proposed (`ARCHITECTURE.md` §12): after all costs, walk-forward across all years:

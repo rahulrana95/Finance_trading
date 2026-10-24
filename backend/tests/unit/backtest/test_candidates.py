@@ -112,6 +112,7 @@ def test_other_expiry_and_other_symbol_ignored() -> None:
         {"lots": 0},
         {"rate": float("nan")},
         {"min_price": Decimal(0)},
+        {"min_contracts_traded": -1},
     ],
 )
 def test_invalid_config_rejected(kwargs: dict[str, Any]) -> None:
@@ -121,3 +122,58 @@ def test_invalid_config_rejected(kwargs: dict[str, Any]) -> None:
 
 def test_hard_limit_delta_itself_is_allowed() -> None:
     assert CandidateConfig(target_deltas=(Decimal("0.12"),)).target_deltas == (Decimal("0.12"),)
+
+
+def _with(bars: Any, option_type: OptionType, strike: Decimal, **changes: Any) -> Any:
+    out = dict(bars)
+    for contract, bar in bars.items():
+        if contract.option_type is option_type and contract.strike == strike:
+            out[contract] = replace(bar, **changes)
+    return out
+
+
+def _bull_put_120(bars: Any) -> CreditSpread | None:
+    for c in generate_candidates(DAY, bars, EXPIRY, ONE_WIDTH):
+        if c.structure is Structure.BULL_PUT and c.target_delta == Decimal("0.12"):
+            assert isinstance(c.position, CreditSpread)
+            return c.position
+    return None
+
+
+def test_illiquid_short_strike_gives_way_to_a_liquid_neighbour() -> None:
+    base = _bull_put_120(_bars())
+    assert base is not None
+    short = base.short.contract.strike
+    moved = _bull_put_120(_with(_bars(), OptionType.PUT, short, contracts_traded=99))
+    assert moved is not None
+    assert moved.short.contract.strike == short - 50  # next liquid strike further out
+
+
+def test_illiquid_hedge_drops_the_candidate() -> None:
+    base = _bull_put_120(_bars())
+    assert base is not None
+    hedge = base.long.contract.strike
+    assert _bull_put_120(_with(_bars(), OptionType.PUT, hedge, contracts_traded=0)) is None
+
+
+@pytest.mark.parametrize("hedge_price", ["500", "0.01"])
+def test_impossible_spread_prices_drop_the_candidate(hedge_price: str) -> None:
+    # hedge dearer than the short (no credit), or so cheap the credit exceeds the width
+    base = _bull_put_120(_bars())
+    assert base is not None
+    hedge = base.long.contract.strike
+    short = base.short.contract.strike
+    bars = _with(
+        _bars(), OptionType.PUT, hedge, settle=Decimal(hedge_price), close=Decimal(hedge_price)
+    )
+    if hedge_price == "0.01":
+        bars = _with(bars, OptionType.PUT, short, settle=Decimal(250), close=Decimal(250))
+    found = _bull_put_120(bars)
+    assert found is None or found.long.contract.strike != hedge
+
+
+def test_zero_volume_threshold_accepts_untraded_strikes() -> None:
+    config = replace(ONE_WIDTH, min_contracts_traded=0)
+    untraded = {c: replace(b, contracts_traded=0) for c, b in _bars().items()}
+    assert len(generate_candidates(DAY, untraded, EXPIRY, config)) == 9
+    assert generate_candidates(DAY, untraded, EXPIRY, ONE_WIDTH) == []

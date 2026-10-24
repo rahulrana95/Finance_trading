@@ -5,8 +5,11 @@ measured from mark prices (settle, else close) with time to expiry from `decisio
 
 Short strike for a target delta: the out-of-the-money strike with the largest |delta|
 that does not exceed the target (so never above the AGENTS.md limit). The hedge sits
-`width` points further out and must have a bar today. Combinations that cannot be built
-from today's chain are simply absent; nothing is guessed.
+`width` points further out. Both legs must be liquid today (`min_contracts_traded`,
+RULES.md section 3) and the spread's prices must make sense (0 < credit < width): daily
+closes of thin strikes are often stale, and about 20-40% of adjacent thin-strike pairs
+violate no-arbitrage. Combinations that cannot be built from today's chain are simply
+absent; nothing is guessed.
 """
 
 import math
@@ -16,7 +19,7 @@ from datetime import date, datetime, time
 from decimal import Decimal
 
 from fintrade.backtest.data import DECISION_TIME, DEFAULT_RATE, DayBars, chain_points
-from fintrade.core.bars import OptionType
+from fintrade.core.bars import DailyContractBar, OptionType
 from fintrade.core.errors import InvalidInputError
 from fintrade.core.instruments import (
     CreditSpread,
@@ -28,7 +31,7 @@ from fintrade.core.instruments import (
 )
 from fintrade.core.limits import HARD_LIMITS
 from fintrade.core.pricing.black76 import time_to_expiry_years
-from fintrade.core.pricing.chain import ChainGreeks, ChainPoint, chain_greeks
+from fintrade.core.pricing.chain import ChainGreeks, chain_greeks
 from fintrade.core.timezone import IST
 
 _SPREAD_TYPE = {Structure.BULL_PUT: OptionType.PUT, Structure.BEAR_CALL: OptionType.CALL}
@@ -44,6 +47,7 @@ class CandidateConfig:
     lots: int = 1
     rate: float = DEFAULT_RATE
     min_price: Decimal = Decimal("0.05")  # one tick: below this no IV is trusted
+    min_contracts_traded: int = 100  # per leg, today; placeholder until the backtest sets it
     decision_time: time = DECISION_TIME
 
     def __post_init__(self) -> None:
@@ -56,6 +60,10 @@ class CandidateConfig:
             raise InvalidInputError(f"widths must be positive: {self.widths}")
         if self.lots < 1:
             raise InvalidInputError(f"lots must be >= 1: {self.lots}")
+        if self.min_contracts_traded < 0:
+            raise InvalidInputError(
+                f"min contracts traded must be >= 0: {self.min_contracts_traded}"
+            )
         if not math.isfinite(self.rate) or self.min_price <= 0:
             raise InvalidInputError("rate must be finite and min price positive")
 
@@ -78,7 +86,7 @@ def generate_candidates(
     now = datetime.combine(day, config.decision_time, tzinfo=IST)
     years = time_to_expiry_years(now, expiry)
     chain = chain_greeks(list(points.values()), years, config.rate, config.min_price)
-    builder = _Builder(chain, points, expiry, config.lots)
+    builder = _Builder(chain, bars, expiry, config)
     found: list[Candidate] = []
     for structure in config.structures:
         for target in config.target_deltas:
@@ -97,12 +105,20 @@ class _Side:
 
 class _Builder:
     def __init__(
-        self, chain: ChainGreeks, points: Mapping[Decimal, ChainPoint], expiry: date, lots: int
+        self, chain: ChainGreeks, bars: DayBars, expiry: date, config: CandidateConfig
     ) -> None:
         self._chain = chain
-        self._points = points
+        self._bars = bars
         self._expiry = expiry
-        self._lots = lots
+        self._lots = config.lots
+        self._min_traded = config.min_contracts_traded
+
+    def _liquid_bar(self, option_type: OptionType, strike: Decimal) -> DailyContractBar | None:
+        contract = OptionContract(HARD_LIMITS.underlying, self._expiry, strike, option_type)
+        bar = self._bars.get(contract)
+        if bar is None or bar.contracts_traded < self._min_traded:
+            return None
+        return bar
 
     def build(self, structure: Structure, target: Decimal, width: Decimal) -> Candidate | None:
         if structure is Structure.IRON_CONDOR:
@@ -126,8 +142,11 @@ class _Builder:
             return None
         strike, delta = short
         hedge = strike - width if option_type is OptionType.PUT else strike + width
-        point = self._points.get(hedge)
-        if point is None or (point.put if option_type is OptionType.PUT else point.call) is None:
+        hedge_bar = self._liquid_bar(option_type, hedge)
+        short_bar = self._liquid_bar(option_type, strike)
+        if hedge_bar is None or short_bar is None:
+            return None
+        if not 0 < short_bar.mark - hedge_bar.mark < width:  # stale or impossible prices
             return None
         spread = credit_spread(
             symbol=HARD_LIMITS.underlying,
@@ -147,6 +166,8 @@ class _Builder:
         for strike, strike_greeks in self._chain.by_strike.items():
             otm = strike < forward if option_type is OptionType.PUT else strike > forward
             delta = Decimal(abs(strike_greeks.of(option_type).delta))  # exact, no rounding
-            if otm and delta <= target and (best is None or delta > best[1]):
+            if not otm or delta > target or (best is not None and delta <= best[1]):
+                continue
+            if self._liquid_bar(option_type, strike) is not None:
                 best = (strike, delta)
         return best

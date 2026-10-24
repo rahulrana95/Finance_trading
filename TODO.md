@@ -12,7 +12,7 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T4.6 Walk-forward search | M4 | `T4.6-walk-forward` | Claude |
+| T4.3b Liquid candidates | M4 | `T4.3b-liquid-candidates` | Claude |
 
 ---
 
@@ -63,7 +63,7 @@
 | T3.1 | Rule checks for every `AGENTS.md` §1 limit (delta, structure, expiry, counts, margin) | 6h | Claude | review |
 | T3.2 | Risk budget tracker: weekly / monthly / yearly loss, remaining budget, max-loss vs budget | 5h | Claude | review |
 | T3.3 | Entry filters: min credit, events, time window, VIX bands (parameters from config) | 4h | Claude | review |
-| T3.3b | Liquidity filter: min OI / volume, max bid-ask spread % per leg (`RULES.md` §3) | 3h | Claude | todo |
+| T3.3b | Liquidity filter: min OI / volume, max bid-ask spread % per leg (`RULES.md` §3). Backtest part (min contracts traded per leg, sane spread prices) done in T4.3b; live bid-ask part still todo | 3h | Claude | todo |
 | T3.4 | Exit rules: profit target, 2× stop, strike touch, time exit, budget breach; safe leg order for entry / exit (`AGENTS.md` §2) | 5h | Claude | review |
 | T3.4b | Adjustment rules: close tested side / roll untested side, ≤ 1 per position, never increases max loss (`RULES.md` §5) | 4h | Claude | todo |
 | T3.5 | Kill switch + fail-closed checks (stale data, ledger mismatch) | 3h | Claude | review |
@@ -78,6 +78,7 @@
 | T4.2 | Fill simulator: bid/ask + slippage + costs | 4h | Claude | review |
 | T4.2b | Mark price: settle, or close when NSE reports settle 0 (found by the full-history run) | 1h | Claude | review |
 | T4.3 | Candidate generator: 9 candidates/day (3 structures × 3 deltas) × widths | 5h | Claude | review |
+| T4.3b | Candidates only from liquid legs (min contracts traded) with sane prices (0 < credit < width) | 2h | Claude | review |
 | T4.4 | Counterfactual results for every candidate | 4h | Claude | review |
 | T4.5 | Metrics report: return, max DD, worst week/month, trades, win rate, avg win/loss | 4h | Claude | review |
 | T4.5b | P&L attribution: theta, delta, gamma, vega, costs per trade | 4h | Claude | review |

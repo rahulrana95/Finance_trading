@@ -59,7 +59,11 @@ If a limit is hit, the only allowed actions are **closing positions** and **logg
 
 - Default mode is **paper**. Live trading must be explicitly turned on by the owner.
 - An agent may never switch paper to live, raise size, or raise limits by itself.
-- New strategies, models or rule changes go **paper first** for at least 4 weeks.
+- New strategies, models or rule changes go **paper first** for at least **8 weeks**
+  (owner decision, 2026-10-24).
+- Auto-execution may be considered only after **3 months of manual live trading** where
+  suggestions were followed, all limits held, and there were no data or ledger failures.
+  Auto-exits first, auto-entries later. Owner approval required.
 - A model may only go live after it passes the walk-forward test in `RL.md` and the owner
   approves it.
 

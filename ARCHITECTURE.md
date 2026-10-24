@@ -39,13 +39,18 @@ These are not opinions; each one forces a design choice.
 
 ## 1b. Execution mode (current): MANUAL
 
+**Brokers:** **Groww** = execution + collateral (MFs pledged there, ₹10 L+ cash for the
+cash half of margin). **Dhan** = data only (live feed, option chain, Greeks). Dhan login
+is automated with TOTP **if Dhan's terms allow it** (to verify); otherwise a daily manual
+login before 08:15 with a critical alert at 09:10 if missing.
+
 **The owner places all orders by hand.** The system is advisory: it decides, records
 and monitors, but never sends an order. This changes four things:
 
 | Area | Manual mode (now) | Auto mode (later, optional) |
 |---|---|---|
 | M8 | **Trade ticket**: the exact legs, strikes, lots and limit prices, shown in the UI and sent to Telegram at 10:00 | Order Manager sends orders |
-| Fills | **Imported read-only** from Dhan's order / trade book (no static IP needed for read APIs), matched to the suggestion. Manual entry form in the UI as a fallback | From order responses |
+| Fills | Orders are placed on **Groww** (MF collateral is pledged there). Fills imported from Groww's API if it offers a read-only trade book, otherwise contract note upload or manual entry in the UI; matched to the suggestion | From order responses |
 | M10 | **Alarm escalator**: critical alerts repeat (Telegram → voice call → call again every 5 min) until the owner acknowledges in the UI | Can close positions itself |
 | Static IP / order relay | **Not needed** | Needed (see §7) |
 
@@ -494,6 +499,6 @@ Railway, Next.js + TypeScript for the UI.
 2. **Hedge width:** fixed at 200 pts as you described, or let the backtest test 100 / 150 / 200?
 3. **Server:** Railway for the backend (decided). Orders are manual for now, so no static
    IP / relay yet.
-5. **Multi-user:** see `SCALING.md`, especially the regulatory section, before building
-   anything for other users.
+5. **Multi-user:** decided **personal use only**. `SCALING.md` is kept for reference only.
+6. **To verify:** Dhan TOTP login for data APIs; Groww read-only trade book API.
 4. **Historical data** for the backtester: which source (still open)?

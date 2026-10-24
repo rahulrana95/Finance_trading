@@ -1,3 +1,6 @@
+> **Status: deferred.** Owner decided on 2026-10-24 that the platform is for **personal use
+> only**. This file is kept for reference in case that changes.
+
 # Scaling to Many Users (target: 5,000 users, 100 QPS)
 
 ## 0. Read this first: legal, before technical

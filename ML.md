@@ -112,7 +112,7 @@ So we measure what actually matters.
 - If calibration or performance degrades past a set threshold, **fall back to
   rules-only automatically** and alert the owner.
 - **Shadow mode first:** a new model runs alongside the live one and logs its suggestions
-  without trading, for at least 4 weeks.
+  without trading, for at least 8 weeks.
 - **Champion / challenger:** the challenger replaces the champion only if it wins out of
   sample and the owner approves.
 

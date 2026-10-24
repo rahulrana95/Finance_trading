@@ -3,7 +3,8 @@
 ## Capital
 - Total MF portfolio: ₹1 Cr (stays invested, pledged for margin)
 - Trading capital: **₹50 L** (all % below are on ₹50 L)
-- Respect the 50:50 cash/collateral rule (keep the cash portion in cash or a liquid ETF).
+- Respect the 50:50 cash/collateral rule. ₹10 L+ cash available for the cash portion.
+- Collateral pledged on Groww (trades placed there).
 - Never be forced to sell MF units because of a margin shortfall.
 
 ## Returns
@@ -74,7 +75,9 @@ Data/API candidate: DhanHQ (live feed + option chain with Greeks). To be verifie
 - Weekly loss limit: 1% (₹50 K)
 - One decision every trading day (including "do nothing"), not just Mondays
 - Stops / P&L checked every 1 min, full snapshot every 30 min
-- Orders placed manually by the owner (system is advisory for now)
+- Orders placed manually by the owner on Groww; Dhan for data (system is advisory for now)
+- Personal use only; 8 weeks paper trading before real money
+- Full list: `DECISIONS.md`
 
 ## Related docs
 - `AGENTS.md`: global guardrails (highest authority)

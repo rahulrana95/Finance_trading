@@ -43,8 +43,9 @@ All ₹ figures are on ₹50 L trading capital.
 - **Expiry:** always next week's expiry (the nearest expiry at least 6 days away).
   Never enter the current week's expiry.
 - **Short strike:** delta ≤ 0.12 (hard limit, never above). Typical range 0.08–0.12.
-- **Wing width:** fixed widths only (e.g. 100 / 150 / 200 points), chosen by rule, not by feel.
-- **Minimum credit:** credit ≥ 15% of the wing width (e.g. ≥ 15 points on a 100-point spread). Exact % to be set by backtest.
+- **Wing width:** fixed widths only (100 / 150 / 200 points). The backtest picks the width.
+- **Minimum credit:** a set % of the wing width. The backtest tests 5–15% together with the
+  width and keeps the best return per unit of worst-case loss.
   Otherwise skip.
 - **Direction:** MACD (1D) plus trend filters decide IC vs bull put vs bear call.
   Until the backtest validates it, the default is an iron condor.
@@ -60,7 +61,9 @@ All ₹ figures are on ₹50 L trading capital.
 Exit at whichever comes first:
 
 1. **Profit target:** close at 50–70% of the credit received (exact % to be set by backtest).
-2. **Stop-loss:** close when the loss reaches 2× the credit received.
+2. **Stop-loss:** close when the loss reaches 2× the credit received (checked by the engine
+   every minute). **At the broker:** right after entry, place an SL-limit buy on each short leg
+   at ~2.5–3× its entry price (exact multiple set by backtest) as protection while away.
 3. **Strike touch:** if spot reaches the short strike, close or adjust that side.
 4. **Time exit:** close everything by **15:00 the day before expiry**. Never hold into
    expiry day (gamma risk).

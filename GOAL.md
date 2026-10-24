@@ -73,7 +73,8 @@ Data/API candidate: DhanHQ (live feed + option chain with Greeks). To be verifie
 - Entries always use next week's expiry
 - Weekly loss limit: 1% (₹50 K)
 - One decision every trading day (including "do nothing"), not just Mondays
-- Live P&L check every 30 min for all open positions
+- Stops / P&L checked every 1 min, full snapshot every 30 min
+- Orders placed manually by the owner (system is advisory for now)
 
 ## Related docs
 - `AGENTS.md`: global guardrails (highest authority)

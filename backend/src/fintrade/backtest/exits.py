@@ -11,7 +11,7 @@ from datetime import date, datetime, time
 from decimal import Decimal
 
 from fintrade.backtest.data import DECISION_TIME, DEFAULT_RATE, DayBars, chain_points
-from fintrade.backtest.trades import OpenTrade, settle_pnl
+from fintrade.backtest.trades import OpenTrade, mark_pnl
 from fintrade.core.calendar import ExpiryCalendar
 from fintrade.core.pricing.black76 import time_to_expiry_years
 from fintrade.core.pricing.forward import StrikeQuote, forward_from_chain
@@ -42,7 +42,7 @@ class RuleExitPolicy:
         inputs = ExitInputs(
             position=trade.position,
             max_profit=trade.max_profit,
-            open_pnl=settle_pnl(trade, bars),
+            open_pnl=mark_pnl(trade, bars),
             spot=self._spot(bars, expiry, now),
             now=now,
             exit_deadline=self._calendar.exit_deadline(expiry),

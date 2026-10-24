@@ -2,7 +2,7 @@
 
     net = execution + delta + gamma + vega + theta + residual - costs   (exactly)
 
-- execution: fills versus settle on the entry and exit days (spread + slippage paid)
+- execution: fills versus mark price on the entry and exit days (spread + slippage paid)
 - delta / gamma / vega / theta: a second-order Taylor step per held day, per leg, using
   that day's chain Greeks (forward from parity, IV per strike from the OTM side)
 - residual: whatever the Greeks do not explain (higher-order terms, smile moves, and
@@ -100,12 +100,12 @@ def _units(leg: Leg, lot_size: int) -> int:
 
 
 def _execution(trade: ClosedTrade, entry_bars: DayBars, exit_bars: DayBars) -> Rupees:
-    """Fill price versus settle on both days, signed so that paying the spread is negative."""
+    """Fill price versus mark price on both days, signed so that paying the spread is negative."""
     total = Decimal(0)
     for leg in trade.trade.position.legs:
         units = _units(leg, trade.trade.lot_size)
         contract = leg.contract
-        entry_gap = leg_bar(entry_bars, leg).settle - trade.trade.entry_prices[contract]
-        exit_gap = trade.exit_prices[contract] - leg_bar(exit_bars, leg).settle
+        entry_gap = leg_bar(entry_bars, leg).mark - trade.trade.entry_prices[contract]
+        exit_gap = trade.exit_prices[contract] - leg_bar(exit_bars, leg).mark
         total += (entry_gap + exit_gap) * units
     return total

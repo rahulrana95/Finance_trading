@@ -23,8 +23,8 @@ from fintrade.backtest.trades import (
     OpenTrade,
     Ticket,
     close_trade,
+    mark_pnl,
     open_trade,
-    settle_pnl,
 )
 from fintrade.core.calendar import ExpiryCalendar
 from fintrade.core.instruments import OptionContract, Position
@@ -125,7 +125,7 @@ class ReplayEngine:
             self._decide(day, DecisionKind.BLOCKED, "loss limit hit")
         else:
             self._try_entry(day, bars)
-        open_mtm = sum((settle_pnl(t, bars) - t.entry_costs for t in self._open), start=_ZERO)
+        open_mtm = sum((mark_pnl(t, bars) - t.entry_costs for t in self._open), start=_ZERO)
         self._result.daily.append(DailyPnl(day, self._realized, open_mtm))
 
     def _loss_limit_hit(self) -> bool:

@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from fintrade.backtest.data import DayBars, InMemoryMarketData
 from fintrade.backtest.engine import EntryProposal
-from fintrade.backtest.trades import OpenTrade
+from fintrade.backtest.trades import ClosedTrade, OpenTrade
 from fintrade.core.bars import DailyContractBar
 from fintrade.core.instruments import CreditSpread, Side
 from tests.support.bars import make_bar
@@ -81,3 +81,11 @@ class ExitOnDays:
         if loss_limit_hit:
             return ["loss_limit_hit"]
         return ["scripted"] if day in self.days else []
+
+
+def closed_with_pnl(gross: Decimal, costs: Decimal) -> ClosedTrade:
+    """A closed trade with this gross P&L, paying `costs` on entry and again on exit."""
+    spread = bull_put()
+    day = date(2026, 10, 26)
+    trade = OpenTrade(1, spread, day, {}, 65, Decimal(0), costs, Decimal(1), Decimal(1))
+    return ClosedTrade(trade, day, {}, costs, ("scripted",), gross)

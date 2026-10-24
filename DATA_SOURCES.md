@@ -61,6 +61,28 @@ Notes:
 
 - ATM IV, ATM straddle price, IV term structure as features. Not for pricing our trades.
 
+## Accelpix: which plan?
+
+Their public plans (Pix Connect: Smart ₹1,599, Elite ₹2,099, Pro ₹2,499, Ultimate ₹3,499
+per month + GST) are **live charting subscriptions**. They keep only 45–120 days of 1-min
+history, and the pages don't say whether expired options are covered. **None of these
+plans gives us 2019 → today of expired weekly options.**
+
+What to buy instead: a **one-time historical data purchase** (a forum user reports buying
+expired options history from Accelpix). Ask sales for a quote with this spec:
+
+> Nifty 50 weekly + monthly options, **all strikes, all expiries, expired contracts
+> included**, Feb 2019 → today, **1-minute OHLC + volume + OI**, plus Nifty spot, Nifty
+> futures and India VIX 1-min for the same period. CSV or Parquet. Please confirm: strike
+> coverage (any limit by moneyness?), missing-day handling, whether bid/ask is available,
+> licence for personal research use, price, and an ongoing update option.
+
+Get the same quote from TrueData and Global Datafeeds, then compare on coverage of a few
+sample days (we check them against the NSE bhavcopy close prices).
+
+Later, for live data, **Dhan** stays the feed. An Accelpix live plan is only useful as a
+backup feed (Pro / Ultimate, because only those include options OI).
+
 ## Proposed task changes
 
 - T1.3 / T1.4 / T1.5 target **NSE bhavcopy** first.

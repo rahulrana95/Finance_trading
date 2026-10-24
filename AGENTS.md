@@ -73,6 +73,9 @@ If a limit is hit, the only allowed actions are **closing positions** and **logg
   real money.**
 - A retrained model replaces the current one only if it beats it out of sample, and the
   owner approves.
+- If live monitoring shows the model is badly calibrated or drifting, the system falls
+  back to **rules-only** automatically and alerts the owner.
+- Model uncertainty may only lead to a smaller size or `NO_ACTION`, never a bigger size.
 
 ## 5. Data and backtest integrity
 

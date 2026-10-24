@@ -22,6 +22,7 @@ Live, it only makes suggestions that are logged and reviewed.
 | Step | Method | What it learns |
 |---|---|---|
 | 1 | Rules only (baseline) | Nothing. Gives the benchmark to beat |
+| 1b | Forecasts + meta-model (`ML.md`) | Range / volatility forecasts and TAKE / SKIP on rule trades |
 | 2 | Contextual bandit | "Given today's market, which entry action is best?" Reward is that trade's final P&L. Needs much less data |
 | 3 | Full RL | Entries and exits/adjustments together, with the effect of open positions on future choices |
 

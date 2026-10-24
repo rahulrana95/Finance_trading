@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Nifty option selling decision engine"
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-dependencies = []
+dependencies = [
+    "structlog>=26.1.0",
+]
 
 [dependency-groups]
 dev = [
@@ -46,6 +48,8 @@ ignore = [
     "S101",     # assert is how pytest works
     "PLR2004",  # golden tests use literal expected values on purpose (ENGINEERING.md §4)
     "ANN",      # test functions need no annotations
+    "S105",     # fake secrets in tests prove redaction works
+    "S106",
 ]
 
 [tool.ruff.lint.mccabe]

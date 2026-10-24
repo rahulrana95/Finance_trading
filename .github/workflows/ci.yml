@@ -53,3 +53,6 @@ jobs:
 
       - name: Tests (100% line + branch coverage, no skips)
         run: make test
+
+      - name: Mutation testing (rules + risk, no survivors)
+        run: make mutation

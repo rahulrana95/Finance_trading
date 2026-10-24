@@ -25,6 +25,7 @@ dev = [
     "pip-audit>=2.10.1",
     "pyarrow-stubs>=20.0.0.20260819",
     "quantlib>=1.44",
+    "mutmut>=3.8.0",
 ]
 
 [build-system]
@@ -117,3 +118,11 @@ layers = [
 [[tool.mypy.overrides]]
 module = ["vollib.*", "py_lets_be_rational.*", "QuantLib.*"]
 ignore_missing_imports = true
+
+# ---------- mutmut (TESTING.md section 3): rules and risk code only ----------
+[tool.mutmut]
+source_paths = ["src"]
+only_mutate = ["src/fintrade/core/rules/*", "src/fintrade/core/risk/*"]
+also_copy = ["tests"]
+pytest_add_cli_args_test_selection = ["tests/unit/core/rules", "tests/unit/core/risk"]
+pytest_add_cli_args = ["-p", "no:xdist", "-q"]

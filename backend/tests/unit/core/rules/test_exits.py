@@ -90,3 +90,12 @@ def test_debit_entry_never_hits_profit_target_but_has_a_stop() -> None:
     inputs = _inputs(max_profit=Decimal(-260), open_pnl=Decimal(100))
     assert exit_reasons(inputs) == []
     assert exit_reasons(replace(inputs, open_pnl=Decimal(-520))) == [ExitReason.STOP_LOSS]
+
+
+def test_zero_credit_position_never_hits_the_profit_target() -> None:
+    assert exit_reasons(_inputs(max_profit=Decimal(0), open_pnl=Decimal(10))) == []
+
+
+def test_small_credit_position_still_has_a_profit_target() -> None:
+    inputs = _inputs(max_profit=Decimal(1), open_pnl=Decimal("0.5"))
+    assert exit_reasons(inputs) == [ExitReason.PROFIT_TARGET]

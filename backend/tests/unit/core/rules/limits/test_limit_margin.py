@@ -31,3 +31,8 @@ def test_well_under_limit_allowed() -> None:
 def test_no_margin_available_blocked(available: int) -> None:
     account = good_account(margin_available=Decimal(available))
     assert codes(check_entry(good_entry(), account)) == [EntryRule.MARGIN]
+
+
+def test_tiny_available_margin_is_still_checked_by_percentage() -> None:
+    account = good_account(margin_used=Decimal(0), margin_available=Decimal(1))
+    assert check_entry(good_entry(margin_required=Decimal("0.6")), account) == []

@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 
@@ -6,6 +7,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from fintrade.core.errors import InvalidInputError
+from fintrade.core.limits import HARD_LIMITS
 from fintrade.core.risk.budget import DailyPnl, budget_status
 
 CAPITAL = Decimal(5_000_000)  # limits: week 50K, month 1.5L, year 2.5L
@@ -94,7 +96,7 @@ def test_bad_capital_rejected(capital: Decimal) -> None:
 
 
 def test_empty_history_rejected() -> None:
-    with pytest.raises(InvalidInputError, match="history is empty"):
+    with pytest.raises(InvalidInputError, match=r"^history is empty$"):
         budget_status(CAPITAL, [])
 
 
@@ -102,7 +104,7 @@ def test_empty_history_rejected() -> None:
     "days", [[date(2026, 10, 23), date(2026, 10, 22)], [date(2026, 10, 23), date(2026, 10, 23)]]
 )
 def test_unsorted_or_duplicate_days_rejected(days: list[date]) -> None:
-    with pytest.raises(InvalidInputError, match="sorted with one entry per day"):
+    with pytest.raises(InvalidInputError, match=r"^history must be sorted with one entry per day$"):
         budget_status(CAPITAL, [_day(d, 0) for d in days])
 
 
@@ -122,3 +124,17 @@ def test_drawdowns_non_negative_and_budget_bounded(points: list[tuple[int, int]]
     assert s.month_drawdown >= 0
     assert s.year_drawdown >= 0
     assert 0 <= s.remaining_monthly_budget <= Decimal(150_000)
+
+
+def test_limits_scale_with_the_configured_percentages() -> None:
+    limits = replace(HARD_LIMITS, max_weekly_loss_pct=Decimal(2))
+    history = [_day(date(2026, 10, 23), 0), _day(date(2026, 10, 28), -99_999)]
+    assert not budget_status(CAPITAL, history, limits).weekly_hit  # limit is 100K at 2%
+    history[-1] = _day(date(2026, 10, 28), -100_000)
+    assert budget_status(CAPITAL, history, limits).weekly_hit
+
+
+def test_tiny_positive_capital_is_valid() -> None:
+    assert budget_status(
+        Decimal(1), [_day(date(2026, 10, 23), 0)]
+    ).remaining_monthly_budget == Decimal("0.03")

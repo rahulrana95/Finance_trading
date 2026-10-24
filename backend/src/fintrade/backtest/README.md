@@ -11,6 +11,7 @@ Daily replay engine (decision in `DECISIONS.md`, T4.0). Uses the same `core/` co
 | `exits` | `RuleExitPolicy(ExpiryCalendar, ExitConfig)`: `core.rules.exits` checked at each day's close; parity forward stands in for spot |
 | `counterfactuals` | `counterfactuals(Simulation, days)` → `CounterfactualRun`: each distinct candidate held alone to its exit. Labels use later prices, so read them only via `known_before(day)` |
 | `metrics` | `compute_metrics(capital, daily, closed)` → `Metrics`; `format_report` always puts max drawdown, worst week / month and trade count next to the return (AGENTS.md §5) |
+| `attribution` | `attribute(closed, data)` → `PnlAttribution`: execution, delta, gamma, vega, theta, residual, costs; sums exactly to net P&L |
 | `engine` | `ReplayEngine(data, Strategy(entry, exit, fills), ExpiryCalendar, lot_sizes, BacktestConfig).run()` → `BacktestResult` (closed / still-open trades, daily `DailyPnl`, every day's `Decision`) |
 
 The engine always enforces the `AGENTS.md` hard limits (`core.rules.entry.check_entry`),

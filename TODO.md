@@ -12,11 +12,7 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T4.1 Replay engine (PR #21) | M4 | `T4.1-replay-engine` | Claude |
-| T4.2 Fill simulator (PR #22) | M4 | `T4.2-fill-simulator` (stacked on T4.1) | Claude |
-| T4.3 Candidate generator (PR #23) | M4 | `T4.3-candidate-generator` (stacked on T4.2) | Claude |
-| T4.4 Counterfactuals (PR #24) | M4 | `T4.4-counterfactuals` (stacked on T4.3) | Claude |
-| T4.5 Metrics report | M4 | `T4.5-metrics` (stacked on T4.4) | Claude |
+| T4.5b P&L attribution | M4 | `T4.5b-pnl-attribution` | Claude |
 
 ---
 
@@ -83,7 +79,7 @@
 | T4.3 | Candidate generator: 9 candidates/day (3 structures × 3 deltas) × widths | 5h | Claude | review |
 | T4.4 | Counterfactual results for every candidate | 4h | Claude | review |
 | T4.5 | Metrics report: return, max DD, worst week/month, trades, win rate, avg win/loss | 4h | Claude | review |
-| T4.5b | P&L attribution: theta, delta, gamma, vega, costs per trade | 4h | Claude | todo |
+| T4.5b | P&L attribution: theta, delta, gamma, vega, costs per trade | 4h | Claude | review |
 | T4.6 | Walk-forward parameter search (width, min credit, target, delta, MACD on/off, VIX bands) | 6h | Claude | todo |
 | T4.7a | Stress grid: re-price book for spot / IV / time shocks + collateral stress | 5h | Claude | todo |
 | T4.7b | Volatility surface fit (SVI) for strike selection on thin quotes. IV only from OTM side and prices ≥ 1 tick (₹0.05), per T2.3/T2.4 findings | 6h | Claude | todo |

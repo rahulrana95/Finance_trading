@@ -28,7 +28,8 @@
 | T3.3 Entry filters (PR #15) | M3 | `T3.3-entry-filters` | Claude |
 | T3.4 Exit rules + safe leg order (PR #16) | M3 | `T3.4-exit-rules` | Claude |
 | T3.5 Kill switch + order gate (PR #17) | M3 | `T3.5-kill-switch-gate` | Claude |
-| T3.6 Mutation testing (PR #18) | M3 | `T3.6-mutation-testing` (stacked on T3.5) | Claude |
+| T3.6 Mutation testing (PR #18, merged) | M3 | — | Claude |
+| T2.1c Lot size timeline (PR #19) | M2 | `T2.1c-lot-size-timeline` | Claude |
 | Full download 2019 → today (after merge) | M1 | run, no code | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
@@ -67,7 +68,7 @@
 |---|---|---|---|---|
 | T2.1a | Instruments model: option contract, leg, credit spread, iron condor, with structure validation | 4h | Claude | review |
 | T2.1b | Lot size + expiry history derived from data (OI gcd per expiry), checked vs UDiFF lot sizes | 4h | Claude | review |
-| T2.1c | Lot size timeline from the full 2019→today data: neighbour-expiry consensus, revision dates, resolve UNKNOWN / long-dated monthlies; owner spot-check | 4h | Claude | todo |
+| T2.1c | Lot size timeline from the full 2019→today data: neighbour-expiry consensus, revision dates, resolve UNKNOWN / long-dated monthlies; owner spot-check | 4h | Claude | review |
 | T2.2 | Market calendar: NSE holidays, Tuesday expiry, shifted expiries, "next week's expiry" rule | 4h | Claude | review |
 | T2.3 | Greeks wrapper on `vollib` (Black-76; py_vollib is deprecated): forward from put-call parity, IV, delta/gamma/theta/vega | 5h | Claude | review |
 | T2.4 | Greeks cross-check vs QuantLib + golden values + edge cases (deep OTM, near expiry, no IV solution) | 4h | Claude | review |

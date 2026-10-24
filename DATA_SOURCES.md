@@ -84,6 +84,24 @@ sample days (we check them against the NSE bhavcopy close prices).
 Later, for live data, **Dhan** stays the feed. An Accelpix live plan is only useful as a
 backup feed (Pro / Ultimate, because only those include options OI).
 
+## Full history downloaded (2026-10-24)
+
+- NSE F&O bhavcopy 2019-02-11 → 2026-10-23: **1,898 trading days, 112 holidays, 0 failures**;
+  all 1,898 days pass validation → 131 MB curated Parquet (1.4 GB raw zips).
+- Nifty lot size by expiry, derived from the data (T2.1c), matches the known history:
+
+| Expiries from | Lot | Source |
+|---|---|---|
+| 2019-02-14 | 75 | inferred (open-interest gcd) |
+| 2021-07-29 | 50 | inferred |
+| 2024-05-02 | 25 | inferred |
+| 2025-01-02 | 75 | stated (2025-01-30 monthly kept 25, stated) |
+| 2026-01-06 | 65 | stated |
+
+  Ten long-dated or holiday-moved monthlies (gcd dragged down by positions from years
+  earlier) were corrected by neighbour consensus. Holiday-moved expiry dates (e.g.
+  2023-06-29 → 2023-06-28) are flagged with `expired_as_listed = False`.
+
 ## Proposed task changes
 
 - T1.3 / T1.4 / T1.5 target **NSE bhavcopy** first.

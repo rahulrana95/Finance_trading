@@ -12,8 +12,9 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T1.1 Historical data source research (in review) | M1 | docs only (`DATA_SOURCES.md`) | Claude |
-| T1.2 Pick data source | M1 | decision | You |
+| M0 foundations done (T0.3–T0.10), waiting for merge to `master` | M0 | `T0.3`…`T0.10` branches (stacked) | You: approve merge |
+| T1.3 NSE bhavcopy downloader (next) | M1 | `T1.3-bhavcopy-downloader` | Claude |
+| T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
 ---
 
@@ -23,13 +24,13 @@
 |---|---|---|---|---|
 | T0.1 | Goal, rules, guardrails, architecture docs | — | Claude | done |
 | T0.2 | Owner decisions round (14 questions) → `DECISIONS.md` | — | You + Claude | done |
-| T0.3 | Repo skeleton per `ENGINEERING.md` §6: `backend/` (uv, ruff, mypy strict), `ui/` (pnpm, TS strict, ESLint, Prettier), `make` targets | 4h | Claude | todo |
-| T0.4 | CI on GitHub Actions: lint, typecheck, tests, **coverage gate 100% line + branch**, fails on any skip | 4h | Claude | todo |
-| T0.5 | Test framework: pytest, hypothesis (property tests), freezegun (time), fixtures folder, test data factory | 3h | Claude | todo |
-| T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI | 2h | Claude | todo |
-| T0.8 | `import-linter` boundaries, pre-commit hooks, dependency audit, complexity limits | 3h | Claude | todo |
-| T0.9 | Core utils: `Clock`, money (`Decimal`), structlog setup with redaction filter, error hierarchy | 5h | Claude | todo |
-| T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | todo |
+| T0.3 | Repo skeleton per `ENGINEERING.md` §6: `backend/` (uv, ruff, mypy strict, pytest + 100% branch coverage), `make` targets. (UI scaffold moved to T8.1) | 4h | Claude | done |
+| T0.4 | CI on GitHub Actions: lint, typecheck, tests, **coverage gate 100% line + branch**, fails on any skip | 4h | Claude | review |
+| T0.5 | Test framework: pytest, xdist, hypothesis (deterministic CI profile), time-machine, `tests/support/` | 3h | Claude | review |
+| T0.6 | Secrets handling: `.env.example`, git-ignore, secret scan in CI (gitleaks) | 2h | Claude | review |
+| T0.8 | `import-linter` boundaries, pre-commit hooks, dependency audit, complexity limits | 3h | Claude | review |
+| T0.9 | Core utils: `Clock`, money (`Decimal`), structlog setup with redaction filter, error hierarchy | 5h | Claude | review |
+| T0.10 | `limits` module + test that it matches the `AGENTS.md` §1 table | 3h | Claude | review |
 | T0.7 | Create Telegram bot (@BotFather); decide on domain | 1h | You | todo |
 
 ## M1. Historical data
@@ -122,7 +123,7 @@
 
 | ID | Task | Est. | Owner | Status |
 |---|---|---|---|---|
-| T8.1 | Next.js app, Google login, allowlist, `/api` proxy to Railway with secret header | 5h | Claude | todo |
+| T8.1 | `ui/` scaffold (pnpm, TS strict, ESLint, Prettier, Vitest 100%) + Next.js app, Google login, allowlist, `/api` proxy to Railway with secret header | 5h | Claude | todo |
 | T8.2 | Live page: positions table, P&L, risk gauges, kill switch (Realtime) | 6h | Claude | todo |
 | T8.3 | Trades history page | 4h | Claude | todo |
 | T8.4 | Performance page: week / month / year, equity + drawdown, vs baselines | 6h | Claude | todo |

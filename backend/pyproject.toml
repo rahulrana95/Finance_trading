@@ -1,0 +1,108 @@
+[project]
+name = "fintrade"
+version = "0.1.0"
+description = "Nifty option selling decision engine"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "structlog>=26.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "ruff>=0.8",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "pytest-xdist>=3.6",
+    "hypothesis>=6.120",
+    "time-machine>=2.16",
+    "import-linter>=2.15",
+    "pip-audit>=2.10.1",
+]
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fintrade"]
+
+# ---------- ruff ----------
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "B", "C4", "UP", "SIM", "RET", "PL", "RUF",
+    "N", "S", "BLE", "A", "DTZ", "T20", "PT", "ERA", "C90", "ANN", "TRY", "PERF",
+]
+ignore = [
+    "TRY003",  # long exception messages are fine; we use typed errors
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",     # assert is how pytest works
+    "PLR2004",  # golden tests use literal expected values on purpose (ENGINEERING.md §4)
+    "ANN",      # test functions need no annotations
+    "S105",     # fake secrets in tests prove redaction works
+    "S106",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pylint]
+max-args = 6
+max-statements = 50
+
+# ---------- mypy ----------
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unreachable = true
+mypy_path = "src"
+files = ["src", "tests"]
+
+# ---------- pytest ----------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "-q",
+    "--strict-markers",
+    "--strict-config",
+    "-p", "no:cacheprovider",
+]
+xfail_strict = true
+filterwarnings = ["error"]
+
+# ---------- coverage ----------
+[tool.coverage.run]
+branch = true
+source = ["fintrade"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "@overload",
+]
+
+# ---------- import-linter (ENGINEERING.md section 6) ----------
+[tool.importlinter]
+root_package = "fintrade"
+
+[[tool.importlinter.contracts]]
+name = "Dependencies point inward: services -> adapters/backtest -> ports -> core"
+type = "layers"
+layers = [
+    "fintrade.services",
+    "fintrade.adapters | fintrade.backtest",
+    "fintrade.ports",
+    "fintrade.core",
+]

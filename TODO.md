@@ -12,7 +12,7 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T4.5b P&L attribution | M4 | `T4.5b-pnl-attribution` | Claude |
+| T4.6 Walk-forward search | M4 | `T4.6-walk-forward` | Claude |
 
 ---
 
@@ -80,7 +80,8 @@
 | T4.4 | Counterfactual results for every candidate | 4h | Claude | review |
 | T4.5 | Metrics report: return, max DD, worst week/month, trades, win rate, avg win/loss | 4h | Claude | review |
 | T4.5b | P&L attribution: theta, delta, gamma, vega, costs per trade | 4h | Claude | review |
-| T4.6 | Walk-forward parameter search (width, min credit, target, delta, MACD on/off, VIX bands) | 6h | Claude | todo |
+| T4.6 | Walk-forward parameter search (width, min credit, target, delta; MACD on/off and VIX bands once those inputs exist) | 6h | Claude | review |
+| T4.6b | Replay the walk-forward choices through the engine with account limits (needs a margin estimate per position) | 4h | Claude | todo |
 | T4.7a | Stress grid: re-price book for spot / IV / time shocks + collateral stress | 5h | Claude | todo |
 | T4.7b | Volatility surface fit (SVI) for strike selection on thin quotes. IV only from OTM side and prices ≥ 1 tick (₹0.05), per T2.3/T2.4 findings | 6h | Claude | todo |
 | T4.7c | Conservative bid/ask model when historical quotes are missing | 4h | Claude | todo |

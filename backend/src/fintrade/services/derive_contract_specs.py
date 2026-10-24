@@ -17,7 +17,12 @@ from pathlib import Path
 import structlog
 
 from fintrade.adapters.parquet.daily_bars import DailyBarStore
-from fintrade.core.contract_specs import ExpirySpec, LotSizeSource, derive_expiry_specs
+from fintrade.core.contract_specs import (
+    ExpirySpec,
+    LotSizeSource,
+    derive_expiry_specs,
+    resolve_with_neighbours,
+)
 from fintrade.core.errors import DataError
 from fintrade.services.build_daily_bars import CURATED_ROOT
 from fintrade.services.logging_setup import configure_logging
@@ -43,7 +48,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     configure_logging()
     bars = DailyBarStore(args.curated_root).read_range(args.start, args.end)
     try:
-        specs = derive_expiry_specs(bars)
+        specs = resolve_with_neighbours(derive_expiry_specs(bars))
     except DataError as exc:
         log.exception("contract_specs_failed", error=str(exc))
         return 1
@@ -54,6 +59,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         expiries=len(specs),
         lot_sizes=lot_sizes,
         unknown=sum(spec.source is LotSizeSource.UNKNOWN for spec in specs),
+        consensus=sum(spec.source is LotSizeSource.CONSENSUS for spec in specs),
         gcd_inconsistent=sum(spec.oi_gcd_consistent is False for spec in specs),
         output=str(args.output),
     )

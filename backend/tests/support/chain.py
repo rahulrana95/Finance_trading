@@ -54,12 +54,19 @@ def chain_bars(
 
 
 def chain_history(
-    forwards: Mapping[date, float], expiry: date, strikes: Iterable[int], vol: float = VOL
+    forwards: Mapping[date, float],
+    expiry: date,
+    strikes: Iterable[int],
+    vol: float = VOL,
+    vols: Mapping[date, float] | None = None,
 ) -> list[DailyContractBar]:
-    """Bars for one expiry's chain on each day, priced close-to-close at a flat vol."""
+    """Bars for one expiry's chain on each day, priced close-to-close at a flat vol
+    (`vols` overrides the vol on the days it names)."""
     strikes = list(strikes)
     bars: list[DailyContractBar] = []
     for day, forward in forwards.items():
         years = max((expiry - day).days, EXPIRY_DAY_FRACTION) / 365
-        bars.extend(chain_bars(flat_chain(strikes, forward, vol, years), day, expiry).values())
+        day_vol = (vols or {}).get(day, vol)
+        points = flat_chain(strikes, forward, day_vol, years)
+        bars.extend(chain_bars(points, day, expiry).values())
     return bars

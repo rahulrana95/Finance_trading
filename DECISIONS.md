@@ -2,6 +2,16 @@
 
 Owner decisions, newest first. Each one is reflected in the doc named.
 
+## 2026-10-24: backtest engine (T4.0)
+
+Own small replay engine for the daily backtest, not NautilusTrader. Reasons: NautilusTrader
+models option contracts and Greeks, but its options support is crypto- and live-oriented
+and nothing documents option backtests on custom daily bars; Indian specifics (STT, per-
+expiry lot sizes, holiday-moved expiries) are already built and tested in `core/`. A small
+replay loop calling the same `core/` functions gives backtest / live parity directly.
+Revisit NautilusTrader when moving to 1-minute data and live trading.
+Sources: https://nautilustrader.io/docs/latest/concepts/options/
+
 ## 2026-10-24: loss-limit definitions (PENDING owner confirmation)
 
 How `core/risk/budget.py` reads the AGENTS.md §1 loss limits:

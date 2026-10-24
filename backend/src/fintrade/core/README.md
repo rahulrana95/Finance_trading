@@ -10,6 +10,7 @@ Pure domain logic. No network, DB, or system clock. Imports nothing from `adapte
 | `bars` | `DailyContractBar`, `ContractKind`, `OptionType`: source-independent daily bar |
 | `quality.bar_checks` | `check_bar`, `check_day` → `list[Issue]` (ERROR / WARNING with stable `IssueCode`) |
 | `dates` | `weekdays(start, end)` |
+| `instruments` | `OptionContract`, `Leg`, `Side`, `CreditSpread` (bull put / bear call), `IronCondor`, `Position`, `credit_spread(...)`: invalid structures can't be constructed |
 | `limits` | `HARD_LIMITS` (frozen): the `AGENTS.md` §1 values. A test keeps them in sync with the doc |
 | `redaction` | `redact_mapping`, `redact_value`, `redact_processor` (structlog), `is_sensitive_key` |
 

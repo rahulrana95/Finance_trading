@@ -82,7 +82,10 @@ Data/API candidate: DhanHQ (live feed + option chain with Greeks). To be verifie
 ## Related docs
 - `AGENTS.md`: global guardrails (highest authority)
 - `ARCHITECTURE.md`: system design, brokers, storage, alerts, news sources
-- `SCALING.md`: multi-user scaling (5K users / 100 QPS) and legal checks
+- `TODO.md`: milestones and tasks (what we are working on now)
+- `TESTING.md`: strict testing policy
+- `DECISIONS.md`: owner decisions log
+- `SCALING.md`: multi-user scaling (deferred: personal use only)
 - `RULES.md`: global rules
 - `MONITORING.md`: live P&L tracking
 - `ML.md`: prediction models stacked on top of the rules

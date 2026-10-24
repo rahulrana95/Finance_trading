@@ -29,8 +29,9 @@ These are not opinions; each one forces a design choice.
 
 | Fact | Consequence for the design |
 |---|---|
-| **SEBI retail algo rules (from 1 Apr 2026):** API orders only from a registered app on a **whitelisted static IP**, daily 2FA login, ≤ 10 orders/sec, market orders converted to price-protected orders. | The trading engine must run on a server with a **static IP** (Mumbai region). The owner does a **daily login** each morning. We use limit orders anyway. |
-| **Vercel is serverless.** Functions are short-lived; they cannot hold a WebSocket open all day. | Vercel hosts **only the UI**. The trading engine runs on an always-on server. |
+| **SEBI retail algo rules (from 1 Apr 2026):** order APIs only from a registered app on a **whitelisted static IP traceable to us** (shared / rotating IPs don't qualify). Market data APIs can come from anywhere. Daily 2FA login, ≤ 10 orders/sec. | Order traffic must leave from a **dedicated static IP**. The owner does a **daily login** each morning. We use limit orders anyway. |
+| **Railway static outbound IPs (Pro plan) may be shared with other customers and balanced over several IPs.** No India region (nearest: Singapore). | Railway runs the backend, but **order calls go out through our own small static-IP server** (see §7). |
+| **Vercel is serverless.** Functions are short-lived; they cannot hold a WebSocket open all day. | Vercel hosts **only the UI**. The engine runs on Railway (always-on). |
 | **Historical data has no Greeks.** | We **calculate Greeks ourselves**, live and in backtests, with the same code. Broker Greeks are only a cross-check. |
 | **Backtest ≠ live is the #1 way trading systems fail.** | One shared feature/Greeks/decision codebase used by **both** the backtest and live engine. |
 | **News has weak predictive power for a 1-week index move,** but strong value as a **danger signal** (war, policy shock, crash). | News is used mainly as a **risk gate** (skip or shrink), not as a reason to trade. |
@@ -41,7 +42,7 @@ These are not opinions; each one forces a design choice.
 ## 2. Big picture
 
 ```
-                    ┌────────────────────── TRADING SERVER (always on, Mumbai, static IP) ──────────────────────┐
+                    ┌──────────────────────── RAILWAY (always-on backend, Singapore) ───────────────────────────┐
                     │                                                                                            │
  Dhan WebSocket ───▶│ M1 Feed Gateway ──▶ M2 Ingest & Store ──▶ Redis (latest state, pub/sub)                    │
  AngelOne (backup)─▶│      │                     │                    │                                          │
@@ -57,9 +58,11 @@ These are not opinions; each one forces a design choice.
                     │                                        │                       │                           │
                     │                                        └──────────┬────────────┘                           │
                     │                                                   ▼                                        │
-                    │                                     M8 Risk Gate + Order Manager ──▶ Dhan order API        │
-                    │                                                   │                                        │
-                    │      M10 Risk Watchdog (separate process) ◀───────┤  can always flatten positions          │
+                    │                                     M8 Risk Gate + Order Manager ──▶ ORDER RELAY ──▶ Dhan  │
+                    │                                                   │             (own VM, Mumbai,       │
+                    │                                                   │              dedicated static IP,  │
+                    │                                                   │              also runs M10)        │
+                    │      M10 Risk Watchdog (on the relay VM) ◀────────┤  can always flatten positions          │
                     │                                                   ▼                                        │
                     │                                     M9 Journal (decisions, counterfactuals, fills)         │
                     │                                                   │                                        │
@@ -70,6 +73,8 @@ These are not opinions; each one forces a design choice.
                                                     Auth (Google), Realtime, Storage (Parquet history, models)
                                                                         ▲
                                           VERCEL: Next.js UI (login required, read-only + kill switch)
+                                                  app.<domain>/      → UI
+                                                  app.<domain>/api/* → proxied to Railway backend (same domain, no CORS)
 
                     RESEARCH (offline, laptop or batch job): M12 Backtester + M13 Training + Model Registry
 ```
@@ -238,11 +243,13 @@ For every decision:
 > labelled examples**, not 1. Over a year that is ~2,250 labelled outcomes instead of 250.
 > The same is done on historical data in the backtest.
 
-### M10. Risk Watchdog (separate process)
+### M10. Risk Watchdog (separate process, separate machine)
 
-**Job:** keep us safe if the main engine crashes or hangs.
+**Job:** keep us safe if the main engine crashes or hangs, or Railway itself is down.
 
-- Runs as its own process with its own broker session.
+- Runs on the **order relay VM**, not on Railway, so one provider outage cannot take
+  down both the engine and the safety net.
+- Its own broker session.
 - Every minute: reads broker positions directly, checks loss limits and expiry-day rule.
 - If the main engine's heartbeat is missing for 3 min during market hours: alert. If a
   hard limit is breached and the engine is down: **closes positions itself**, safe leg order.
@@ -319,6 +326,17 @@ trades. The only write actions are the **kill switch**, **review labels**, and
 The trading server's credentials never touch the UI.
 
 **Live updates:** Supabase Realtime pushes position and P&L changes; no page refresh.
+(Vercel rewrites do not carry WebSockets, so live data never goes through the proxy.)
+
+**Same-domain proxy:**
+- Vercel rewrite: `/api/:path*` → `https://<backend>.up.railway.app/:path*`. The browser
+  only ever talks to one domain: no CORS, cookies stay first-party.
+- The browser sends the Supabase session token; the backend **verifies the token and
+  checks the allowlist on every request**. The proxy is not the security boundary.
+- The backend also requires a secret header added by the Vercel proxy, so the raw Railway
+  URL is useless if someone finds it.
+- Use the proxy only for short requests (reviews, kill switch, reports). Long jobs run in
+  the backend and report progress through Supabase.
 
 ### Pages
 
@@ -361,7 +379,8 @@ The trading server's credentials never touch the UI.
 
 | Component | Where | Approx. monthly cost |
 |---|---|---|
-| Trading server (engine + watchdog + Redis) | Cloud VM in **Mumbai** with a static IP (e.g. AWS Lightsail / EC2 ap-south-1) | ₹1,500–4,000 |
+| Backend: M1–M9, M11, Redis, scheduled jobs, `/api` | **Railway** (Pro plan; Singapore region, nearest to India) | Railway Pro + usage |
+| Order relay + M10 watchdog | Small VM in **Mumbai** with a **dedicated** static IP (e.g. AWS Lightsail ap-south-1) | ~₹500–1,000 |
 | Dhan Data API | Dhan | ~₹499 + GST |
 | AngelOne SmartAPI (backup) | AngelOne | Free |
 | Database, auth, realtime, storage | Supabase (Pro plan) | ~$25 |
@@ -369,10 +388,26 @@ The trading server's credentials never touch the UI.
 | News LLM classification | Claude API | Small (a few hundred items/day) |
 | Voice / SMS alerts | Twilio | Small (only critical alerts) |
 
-Register the server's static IP with Dhan (primary and a secondary IP if supported).
+### Why a separate order relay
 
-Tech: Python for the engine (asyncio for feeds, LightGBM / hmmlearn for ML), Redis local
-on the server, Next.js + TypeScript for the UI.
+Railway's static IPs may be shared with other customers, and SEBI wants an IP traceable to
+us. So only the **order traffic** goes through our own VM:
+
+- The relay is tiny: an authenticated HTTPS forward proxy (TLS end to end, so it only
+  passes encrypted traffic) or a small order service. Railway → relay → Dhan order API.
+- Market data (WebSocket, option chain) goes directly from Railway to Dhan; it does not
+  need the static IP.
+- Register the relay's IP with Dhan (plus a secondary IP if Dhan allows one).
+- The same VM runs the M10 watchdog, which gives us a second provider for safety.
+- If the relay is down: no new entries (fail closed) and a critical alert. The watchdog on
+  the same VM is unaffected by a Railway outage.
+
+**Simpler alternative:** run everything on one Mumbai VM and skip Railway. Fewer moving
+parts, but we manage the server ourselves. Railway + relay is chosen because deploys,
+logs and restarts are easier on Railway.
+
+Tech: Python for the engine (asyncio for feeds, LightGBM / hmmlearn for ML), Redis on
+Railway, Next.js + TypeScript for the UI.
 
 ---
 
@@ -413,5 +448,6 @@ on the server, Next.js + TypeScript for the UI.
 
 1. **News source:** free RSS (less reliable) or a paid news API?
 2. **Hedge width:** fixed at 200 pts as you described, or let the backtest test 100 / 150 / 200?
-3. **Server:** OK to run a Mumbai cloud VM with a static IP (needed for SEBI rules)?
+3. **Server:** Railway for the backend (decided). OK to add a small Mumbai VM with a
+   dedicated static IP for orders + watchdog? Confirm with Dhan how many IPs they allow.
 4. **Historical data** for the backtester: which source (still open)?

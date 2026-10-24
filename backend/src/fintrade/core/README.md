@@ -18,6 +18,7 @@ Pure domain logic. No network, DB, or system clock. Imports nothing from `adapte
 | `contract_specs` | `derive_expiry_specs(bars)` → `ExpirySpec` per expiry: lot size (STATED / INFERRED / UNKNOWN), first/last traded, `oi_gcd` check |
 | `pnl` | `risk(position, entry, lot_size)` → credit / max profit / max loss (condor: wider side only); `mark_to_market`; `portfolio_max_loss`, `portfolio_mark_to_market`; missing price → `DataError` |
 | `limits` | `HARD_LIMITS` (frozen): the `AGENTS.md` §1 values. A test keeps them in sync with the doc |
+| `reconcile` | `net_units(legs)` signed units per contract; `reconcile(ledger, broker)` → `list[Mismatch]` |
 | `redaction` | `redact_mapping`, `redact_value`, `redact_processor` (structlog), `is_sensitive_key` |
 
 Tests: `backend/tests/unit/core/`.

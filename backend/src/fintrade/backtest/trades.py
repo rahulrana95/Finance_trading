@@ -88,9 +88,9 @@ def close_trade(
     return ClosedTrade(trade, day, prices, costs, tuple(reasons), gross)
 
 
-def settle_pnl(trade: OpenTrade, bars: DayBars) -> Rupees:
-    """Mark-to-market at settle prices, before charges."""
-    marks = {leg.contract: leg_bar(bars, leg).settle for leg in trade.position.legs}
+def mark_pnl(trade: OpenTrade, bars: DayBars) -> Rupees:
+    """Mark-to-market at mark prices (settle, else close), before charges."""
+    marks = {leg.contract: leg_bar(bars, leg).mark for leg in trade.position.legs}
     return mark_to_market(trade.position, trade.entry_prices, marks, trade.lot_size)
 
 

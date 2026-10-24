@@ -135,3 +135,10 @@ def test_fills_always_worse_than_reference_and_on_tick(
     assert sell % TICK == 0
     if sell > 0:
         assert buy - sell >= 2 * TICK * (min_ticks + slip)
+
+
+@pytest.mark.parametrize("basis", [PriceBasis.SETTLE, PriceBasis.WORST])
+def test_unreported_settle_uses_close(basis: PriceBasis) -> None:
+    bar = make_bar(settle=Decimal(0), close=Decimal(40))
+    model = BarFillModel(replace(CONFIG, basis=basis), SPREAD)
+    assert model.fill(bar, Side.SELL) == Decimal("39.15")

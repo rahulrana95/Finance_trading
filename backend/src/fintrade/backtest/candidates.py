@@ -1,7 +1,7 @@
 """Candidate trades for one day: every structure x target delta x width the config allows.
 
 Daily bars are end-of-day, so a daily backtest decides and fills at the close: Greeks are
-measured from settle prices with time to expiry from `decision_time` on the day.
+measured from mark prices (settle, else close) with time to expiry from `decision_time` on the day.
 
 Short strike for a target delta: the out-of-the-money strike with the largest |delta|
 that does not exceed the target (so never above the AGENTS.md limit). The hedge sits

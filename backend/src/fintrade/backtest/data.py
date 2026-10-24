@@ -39,11 +39,12 @@ def option_contract(bar: DailyContractBar) -> OptionContract:
 
 
 def chain_points(bars: DayBars, expiry: date) -> dict[Decimal, ChainPoint]:
-    """Settle prices of the underlying's chain for one expiry, by strike (sorted)."""
+    """Mark prices (`DailyContractBar.mark`) of the underlying's chain for one expiry,
+    by strike (sorted)."""
     prices: dict[Decimal, dict[OptionType, Decimal]] = {}
     for contract, bar in bars.items():
         if contract.expiry == expiry and contract.symbol == HARD_LIMITS.underlying:
-            prices.setdefault(contract.strike, {})[contract.option_type] = bar.settle
+            prices.setdefault(contract.strike, {})[contract.option_type] = bar.mark
     return {
         strike: ChainPoint(strike, by_type.get(OptionType.CALL), by_type.get(OptionType.PUT))
         for strike, by_type in sorted(prices.items())

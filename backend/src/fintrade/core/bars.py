@@ -36,3 +36,12 @@ class DailyContractBar:
     change_in_oi: int
     underlying: Decimal | None  # not in the old NSE format
     lot_size: int | None  # not in the old NSE format
+
+    @property
+    def mark(self) -> Decimal:
+        """Price to value the contract at: settle, or close when NSE reports no settle.
+
+        Bhavcopies carry settle 0 for some far strikes that still have a close (about 2%
+        of option bars before 2024-07); 0 there means "not reported", not "worthless".
+        """
+        return self.settle if self.settle > 0 else self.close

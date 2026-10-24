@@ -23,9 +23,9 @@ _PCT = Decimal(100)
 
 
 class PriceBasis(StrEnum):
-    SETTLE = "settle"
+    SETTLE = "settle"  # the bar's mark: settle, or close when no settle is reported
     CLOSE = "close"
-    WORST = "worst"  # BUY from the higher of close/settle, SELL from the lower
+    WORST = "worst"  # BUY from the higher of close / mark, SELL from the lower
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,8 +98,8 @@ class BarFillModel:
     def _reference(self, bar: DailyContractBar, order_side: Side) -> Rupees:
         basis = self._config.basis
         if basis is PriceBasis.SETTLE:
-            return bar.settle
+            return bar.mark
         if basis is PriceBasis.CLOSE:
             return bar.close
         worse = max if order_side is Side.BUY else min
-        return worse(bar.settle, bar.close)
+        return worse(bar.mark, bar.close)

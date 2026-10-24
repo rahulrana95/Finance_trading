@@ -76,6 +76,7 @@
 | T4.0 | Spike: evaluate NautilusTrader for backtest + live parity with Indian options data → decided: own replay engine for daily backtest (`DECISIONS.md`) | 2h | Claude | done |
 | T4.1 | Replay engine (own, per T4.0): steps through history, no look-ahead (guard tests) | 6h | Claude | review |
 | T4.2 | Fill simulator: bid/ask + slippage + costs | 4h | Claude | review |
+| T4.2b | Mark price: settle, or close when NSE reports settle 0 (found by the full-history run) | 1h | Claude | review |
 | T4.3 | Candidate generator: 9 candidates/day (3 structures × 3 deltas) × widths | 5h | Claude | review |
 | T4.4 | Counterfactual results for every candidate | 4h | Claude | review |
 | T4.5 | Metrics report: return, max DD, worst week/month, trades, win rate, avg win/loss | 4h | Claude | review |

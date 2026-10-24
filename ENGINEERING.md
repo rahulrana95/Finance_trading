@@ -45,7 +45,7 @@ If anything here conflicts with `AGENTS.md`, `AGENTS.md` wins.
 | Lint / format | `ruff` | ESLint + Prettier |
 | Types | `mypy --strict` | TypeScript `strict` |
 | Validation / models | `pydantic` v2, `pydantic-settings` | `zod` |
-| Option pricing / Greeks / IV | `py_vollib` / `py_vollib_vectorized` (Black-76, Jäckel "Let's Be Rational" IV); **QuantLib** as a cross-check in tests | — |
+| Option pricing / Greeks / IV | `vollib` (successor of the deprecated `py_vollib`; Black-76, Jäckel "Let's Be Rational" IV); **QuantLib** as a cross-check in tests | — |
 | Numbers / data | `numpy`, `pandas`, `pyarrow` (Parquet) | — |
 | Money | `decimal.Decimal` (see §5) | integer paise / `decimal.js` |
 | Time | `zoneinfo` (IST), `exchange_calendars` if it covers NSE well, else our calendar table | `date-fns-tz` |

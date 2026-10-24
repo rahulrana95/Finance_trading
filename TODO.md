@@ -15,7 +15,8 @@
 | T1.3 NSE bhavcopy downloader (PR open) | M1 | `T1.3-bhavcopy-downloader` | Claude |
 | T1.4a Bhavcopy parser (PR #3) | M1 | `T1.4a-bhavcopy-parser` | Claude |
 | T1.4b Data validator (PR #4) | M1 | `T1.4b-data-validator` (stacked on T1.4a) | Claude |
-| T1.5 Parquet store (next) | M1 | `T1.5-parquet-store` | Claude |
+| T1.5 Parquet store (PR #5) | M1 | `T1.5-parquet-store` (stacked on T1.4b) | Claude |
+| Full download 2019 → today (after merge) | M1 | run, no code | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
 ---
@@ -45,7 +46,7 @@
 | T1.3 | NSE bhavcopy downloader: both formats, resumable, SHA-256 manifest, limited retries | 5h | Claude | review |
 | T1.4a | Bhavcopy parser: both formats → one normalized daily bar (Nifty options + futures), strict schema check | 5h | Claude | review |
 | T1.4b | Data validator: gaps, bad prices (high < low, negative), duplicates, expiry checks, report | 5h | Claude | review |
-| T1.5 | Store as Parquet (partitioned by date/expiry) + loader API | 4h | Claude | todo |
+| T1.5 | Store as Parquet (one file per day, source checksum) + loader API + build CLI | 4h | Claude | review |
 
 ## M2. Core domain (pure logic, no network)
 

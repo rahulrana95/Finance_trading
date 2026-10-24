@@ -12,7 +12,8 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T1.1 Historical data source research | M1 | docs only (`DATA_SOURCES.md`) | Claude |
+| T1.1 Historical data source research (in review) | M1 | docs only (`DATA_SOURCES.md`) | Claude |
+| T1.2 Pick data source | M1 | decision | You |
 
 ---
 
@@ -35,7 +36,7 @@
 
 | ID | Task | Est. | Owner | Status |
 |---|---|---|---|---|
-| T1.1 | Research sources (Dhan expired options, NSE bhavcopy, paid minute vendors): years, granularity, bid/ask, cost → `DATA_SOURCES.md` | 4h | Claude | doing |
+| T1.1 | Research sources (Dhan expired options, NSE bhavcopy, paid minute vendors): years, granularity, bid/ask, cost → `DATA_SOURCES.md` | 4h | Claude | review |
 | T1.2 | Pick source | — | You | todo |
 | T1.2b | Confirm the go / no-go bar for the backtest (`ARCHITECTURE.md` §12) | — | You | done |
 | T1.3 | Data downloader for chosen source (resumable, checksums) | 5h | Claude | todo |

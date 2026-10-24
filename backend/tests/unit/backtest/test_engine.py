@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 
 from fintrade.backtest.engine import BacktestConfig, DecisionKind, ReplayEngine, Strategy
+from fintrade.backtest.fills import BarFillModel, FillConfig, ProportionalSpread
 from fintrade.core.charges import order_charges
 from fintrade.core.errors import DataError
 from fintrade.core.instruments import Side
@@ -146,3 +147,15 @@ def test_entry_after_the_first_day_uses_the_running_budget() -> None:
         DecisionKind.NO_ACTION,
     ]
     assert result.still_open[0].entry_day == TUE
+
+
+def test_realistic_fills_cost_more_than_settle_fills() -> None:
+    data = market(spread_bars(bull_put(), PRICES))
+    fills = BarFillModel(FillConfig(), ProportionalSpread())
+    strategy = Strategy(ScriptedEntry({MON}), ExitOnDays({WED}), fills)
+    (real,) = ReplayEngine(data, strategy, expiry_calendar(), LOTS, CONFIG).run().closed
+    (ideal,) = _engine(ScriptedEntry({MON}), ExitOnDays({WED}), PRICES).run().closed
+    assert real.trade.entry_prices[bull_put().short.contract] < Decimal("42.50")
+    assert real.trade.entry_prices[bull_put().long.contract] > Decimal(12)
+    assert real.net_pnl < ideal.net_pnl
+    assert real.trade.max_loss > ideal.trade.max_loss

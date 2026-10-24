@@ -12,26 +12,8 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T1.3 NSE bhavcopy downloader (PR open) | M1 | `T1.3-bhavcopy-downloader` | Claude |
-| T1.4a Bhavcopy parser (PR #3) | M1 | `T1.4a-bhavcopy-parser` | Claude |
-| T1.4b Data validator (PR #4) | M1 | `T1.4b-data-validator` (stacked on T1.4a) | Claude |
-| T1.5 Parquet store (PR #5) | M1 | `T1.5-parquet-store` | Claude |
-| T2.1a Instruments model (PR #6) | M2 | `T2.1a-instruments` | Claude |
-| T2.1b Contract specs from data (PR #7) | M2 | `T2.1b-contract-specs` | Claude |
-| T2.2 Market calendar (PR #8) | M2 | `T2.2-market-calendar` | Claude |
-| T2.3 Greeks / IV (PR #9) | M2 | `T2.3-greeks` | Claude |
-| T2.4 QuantLib cross-check (PR #10) | M2 | `T2.4-quantlib-crosscheck` | Claude |
-| T2.5 Cost model (PR #11) | M2 | `T2.5-cost-model` | Claude |
-| T2.6 Position P&L / max loss (PR #12) | M2 | `T2.6-pnl` | Claude |
-| T3.1 Entry rule checks (PR #13) | M3 | `T3.1-entry-rule-checks` | Claude |
-| T3.2 Risk budget tracker (PR #14) | M3 | `T3.2-risk-budget` | Claude |
-| T3.3 Entry filters (PR #15) | M3 | `T3.3-entry-filters` | Claude |
-| T3.4 Exit rules + safe leg order (PR #16) | M3 | `T3.4-exit-rules` | Claude |
-| T3.5 Kill switch + order gate (PR #17) | M3 | `T3.5-kill-switch-gate` | Claude |
-| T3.6 Mutation testing (PR #18, merged) | M3 | — | Claude |
-| T2.1c Lot size timeline (PR #19) | M2 | `T2.1c-lot-size-timeline` | Claude |
-| Full download 2019 → today (after merge) | M1 | run, no code | Claude |
-| T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
+| T4.1 Replay engine (PR #21) | M4 | `T4.1-replay-engine` | Claude |
+| T4.2 Fill simulator | M4 | `T4.2-fill-simulator` (stacked on T4.1) | Claude |
 
 ---
 
@@ -94,7 +76,7 @@
 |---|---|---|---|---|
 | T4.0 | Spike: evaluate NautilusTrader for backtest + live parity with Indian options data → decided: own replay engine for daily backtest (`DECISIONS.md`) | 2h | Claude | done |
 | T4.1 | Replay engine (own, per T4.0): steps through history, no look-ahead (guard tests) | 6h | Claude | review |
-| T4.2 | Fill simulator: bid/ask + slippage + costs | 4h | Claude | todo |
+| T4.2 | Fill simulator: bid/ask + slippage + costs | 4h | Claude | review |
 | T4.3 | Candidate generator: 9 candidates/day (3 structures × 3 deltas) × widths | 5h | Claude | todo |
 | T4.4 | Counterfactual results for every candidate | 4h | Claude | todo |
 | T4.5 | Metrics report: return, max DD, worst week/month, trades, win rate, avg win/loss | 4h | Claude | todo |

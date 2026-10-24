@@ -19,7 +19,8 @@
 | T2.1a Instruments model (PR #6) | M2 | `T2.1a-instruments` | Claude |
 | T2.1b Contract specs from data (PR #7) | M2 | `T2.1b-contract-specs` | Claude |
 | T2.2 Market calendar (PR #8) | M2 | `T2.2-market-calendar` | Claude |
-| T2.3 Greeks / IV (PR #9) | M2 | `T2.3-greeks` (stacked on T2.2) | Claude |
+| T2.3 Greeks / IV (PR #9) | M2 | `T2.3-greeks` | Claude |
+| T2.4 QuantLib cross-check (PR #10) | M2 | `T2.4-quantlib-crosscheck` (stacked on T2.3) | Claude |
 | Full download 2019 → today (after merge) | M1 | run, no code | Claude |
 | T1.2 Send quote requests (Accelpix, TrueData, Global Datafeeds) | M1 | — | You |
 
@@ -61,7 +62,7 @@
 | T2.1c | Lot size timeline from the full 2019→today data: neighbour-expiry consensus, revision dates, resolve UNKNOWN / long-dated monthlies; owner spot-check | 4h | Claude | todo |
 | T2.2 | Market calendar: NSE holidays, Tuesday expiry, shifted expiries, "next week's expiry" rule | 4h | Claude | review |
 | T2.3 | Greeks wrapper on `vollib` (Black-76; py_vollib is deprecated): forward from put-call parity, IV, delta/gamma/theta/vega | 5h | Claude | review |
-| T2.4 | Greeks cross-check vs QuantLib + golden values + edge cases (deep OTM, near expiry, no IV solution) | 4h | Claude | todo |
+| T2.4 | Greeks cross-check vs QuantLib + golden values + edge cases (deep OTM, near expiry, no IV solution) | 4h | Claude | review |
 | T2.5 | Cost model: brokerage, STT, exchange fees, GST, stamp duty, slippage (Groww schedule) | 4h | Claude | todo |
 | T2.6 | Position P&L and max-loss calculator per position and portfolio | 4h | Claude | todo |
 
@@ -88,7 +89,7 @@
 | T4.5b | P&L attribution: theta, delta, gamma, vega, costs per trade | 4h | Claude | todo |
 | T4.6 | Walk-forward parameter search (width, min credit, target, delta, MACD on/off, VIX bands) | 6h | Claude | todo |
 | T4.7a | Stress grid: re-price book for spot / IV / time shocks + collateral stress | 5h | Claude | todo |
-| T4.7b | Volatility surface fit (SVI) for strike selection on thin quotes | 6h | Claude | todo |
+| T4.7b | Volatility surface fit (SVI) for strike selection on thin quotes. IV only from OTM side and prices ≥ 1 tick (₹0.05), per T2.3/T2.4 findings | 6h | Claude | todo |
 | T4.7c | Conservative bid/ask model when historical quotes are missing | 4h | Claude | todo |
 | T4.7d | Overfitting statistics: deflated Sharpe, CSCV, bootstrap intervals | 5h | Claude | todo |
 | T4.7e | Cross-check a few results against AlgoTest / Opstra | 3h | Claude | todo |

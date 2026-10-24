@@ -25,7 +25,7 @@ All ₹ figures are on ₹50 L trading capital.
   every 30 minutes. A stop can slip on a gap, which is why the hard layer exists.
 
 > Reality check: if the total max loss is ≤ 1% of capital, credits collected are usually
-> only 0.3–0.5% per week at 0.10–0.20 delta. Reaching 1% per week needs more size, which
+> only ~0.2–0.4% per week at ≤ 0.12 delta. Reaching 1% per week needs more size, which
 > is only allowed because the stop-loss layer cuts losses well before max loss.
 
 ## 2. Instruments
@@ -42,9 +42,9 @@ All ₹ figures are on ₹50 L trading capital.
 
 - **Expiry:** always next week's expiry (the nearest expiry at least 6 days away).
   Never enter the current week's expiry.
-- **Short strike:** 0.10–0.20 delta.
+- **Short strike:** delta ≤ 0.12 (hard limit, never above). Typical range 0.08–0.12.
 - **Wing width:** fixed widths only (e.g. 100 / 150 / 200 points), chosen by rule, not by feel.
-- **Minimum credit:** credit ≥ 1/4 of the wing width (e.g. ≥ 25 points on a 100-point spread).
+- **Minimum credit:** credit ≥ 15% of the wing width (e.g. ≥ 15 points on a 100-point spread). Exact % to be set by backtest.
   Otherwise skip.
 - **Direction:** MACD (1D) plus trend filters decide IC vs bull put vs bear call.
   Until the backtest validates it, the default is an iron condor.

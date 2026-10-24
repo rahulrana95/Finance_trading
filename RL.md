@@ -48,7 +48,7 @@ Move to the next step only if it beats the previous one **out of sample**.
 `NO_ACTION`, `OPEN_IC`, `OPEN_BULL_PUT`, `OPEN_BEAR_CALL`, `ADJUST`, `CLOSE`.
 
 Each `OPEN` also picks from fixed choices:
-- Short delta: 0.10 / 0.15 / 0.20
+- Short delta: 0.08 / 0.10 / 0.12 (never above 0.12)
 - Wing width: 100 / 150 / 200 points
 - Size: 1 / 2 / 3 units (unit size set by the risk budget)
 

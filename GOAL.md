@@ -33,14 +33,14 @@ If a limit is hit: stop trading for the rest of that period and review.
   - Iron condor (range view)
   - Bear call spread (bearish view)
   - Bull put spread (bullish view)
-- Short strikes around 0.10–0.20 delta (≈80–90% probability of expiring OTM)
+- Short strikes at delta ≤ 0.12 (≈88%+ probability of expiring OTM)
 - Option buying allowed later if the backtest supports it
 - Directional bias: MACD (1D), to be validated in the backtest
 - Monitoring: end of day, 1–2 checks per day max
 
 ## System
 1. **Backtest engine:** test the rules on historical Nifty options data.
-2. **Weekly suggestion:** every Monday, generate the trade for the week and log it.
+2. **Daily suggestion:** every trading day, generate the day's decision (including "do nothing") and log it.
 3. **Review loop:** score each suggestion as right or wrong and log why.
 4. **Learning:** use the logged results to tune the rules (ML/RL later, once enough data exists).
 5. **Live deployment:** later, after the backtest and paper trading pass.
@@ -54,6 +54,7 @@ Data/API candidate: DhanHQ (live feed + option chain with Greeks). To be verifie
 - Live P&L check every 30 min for all open positions
 
 ## Related docs
+- `AGENTS.md`: global guardrails (highest authority)
 - `RULES.md`: global rules
 - `MONITORING.md`: live P&L tracking
 - `RL.md`: what the RL system needs

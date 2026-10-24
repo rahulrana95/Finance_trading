@@ -9,6 +9,7 @@ dependencies = [
     "pyarrow>=26.0.0",
     "structlog>=26.1.0",
     "tenacity>=9.2.1",
+    "vollib>=1.0.11",
 ]
 
 [dependency-groups]
@@ -110,3 +111,8 @@ layers = [
     "fintrade.ports",
     "fintrade.core",
 ]
+
+# vollib ships without type hints; it is wrapped by fintrade.core.pricing (typed).
+[[tool.mypy.overrides]]
+module = ["vollib.*", "py_lets_be_rational.*"]
+ignore_missing_imports = true

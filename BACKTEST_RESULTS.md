@@ -185,3 +185,40 @@ With call IV at 0.85 or 0.80 x VIX the holdout turns negative (-0.4% and -1.1% a
 Use the calm score as a skip / trade filter candidate, not as proof of profit. The next
 evidence has to come from real option prices (the 2019-2026 bhavcopy through the engine) and
 from forward paper trading, which is the only unseen data left.
+
+---
+
+## 2026-11-16 · Combination comparison on modelled prices (T4.8)
+
+**Verdict: the symmetric iron condor at 0.12 delta with 200-300 point hedges was the best and
+most consistent combination. Narrow 100-point hedges, call-heavy mixes and a 50% profit target
+all made results worse. Returns stay small: +2.4% a year on the 2022-2026 period.**
+
+Research only, **modelled option prices** (call IV 0.92 x VIX, put IV 1.12 x VIX), same data,
+costs and calm gate (score >= 0.5) as the entry above. 18 combinations x management x profit
+target x gate = 200 configurations, each sized to a max loss of 4% of capital. The 2022-2026
+period had already been seen, so no period here is unseen. Code: `combos.py`.
+
+| Combination (calm weeks, hold, close on a close beyond a short strike) | Train | Validation | 2022-26 | All years | Max drawdown | Worst month | Win rate | Avg loss / avg win |
+|---|---|---|---|---|---|---|---|---|
+| Condor 0.12, 300 wide | +6.1% | +9.7% | +2.4% | +6.0% | -10.2% | -8.7% | 80% | 2.1 |
+| Condor 0.12, 200 wide | +5.5% | +9.3% | +2.0% | +5.6% | -10.7% | -8.7% | 80% | 2.2 |
+| Call 0.08 + put 0.12, 200 wide | +4.6% | +9.1% | +2.0% | +5.1% | -10.6% | -7.4% | 82% | 2.6 |
+| Condor 0.10, 300 wide | +5.0% | +8.4% | +1.5% | +5.0% | -9.4% | -8.3% | 84% | 2.7 |
+| Condor 0.10, 200 wide | +4.6% | +8.3% | +1.2% | +4.7% | -10.0% | -8.3% | 82% | 2.5 |
+| Put spread 0.10, 200 wide | +3.0% | +4.8% | +1.1% | +3.0% | -8.1% | -5.0% | 89% | 4.5 |
+| Call 0.12 + put 0.08, 200 wide | +3.9% | +7.4% | +0.6% | +4.0% | -13.1% | -8.9% | 81% | 2.7 |
+| Condor 0.08, 200 wide | +3.0% | +7.4% | +0.6% | +3.5% | -12.3% | -7.6% | 83% | 3.0 |
+| Condor 0.10, 100 wide | +4.6% | +5.6% | -1.9% | +3.2% | -21.7% | -8.3% | 80% | 2.8 |
+| Call spread 0.10, 200 wide | +1.3% | +2.9% | 0.0% | +1.4% | -9.3% | -9.0% | 86% | 4.6 |
+
+Returns are % of capital per year. Median effect of each choice across the calm-week
+configurations (all-years return, max drawdown):
+
+- Hold to the time exit: +3.6%, -12.3%. Take profit at 50%: +1.5%, -14.2%.
+- Two-sided position, close on a close beyond a short strike: +3.0%, -10.7%. No stop: +2.2%, -16.5%.
+  Closing only the breached side gave the same result as closing everything.
+- Calm gate on: +2.5%, -13.1%. Gate off: +0.4%, -31.6%.
+
+Limits: as in the entry above. Costs are charged per leg, so narrow hedges (more lots for the
+same max loss) pay more; that result depends on the assumed cost per leg.

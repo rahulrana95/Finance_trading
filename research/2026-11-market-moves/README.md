@@ -19,6 +19,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 it4.py             # regime exit, score-based sizing (no gain)
     python3 final.py           # frozen rule on the 2022-2026 holdout (run once)
     python3 xmkt.py            # same signal on S&P 500 and Nasdaq 100
+    python3 combos.py          # structure / width / skew / ratio / management comparison
 
 Split used: train to 2016-12, validation 2017-2021, holdout 2022-01 to 2026-10.
 The holdout has now been looked at; it can no longer count as unseen data.

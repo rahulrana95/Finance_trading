@@ -98,3 +98,90 @@ strategy as it stands. The cheapest next evidence, in order:
    drawdown and worst month against the §12 bar.
 3. **Simpler, fewer choices** (e.g. iron condor 0.12 / 300 only) to cut overfitting, then
    compare with "always iron condor" and cash as §12 requires.
+
+---
+
+## 2026-11-16 · Market-move research: a "calm score" for the week ahead (T4.8)
+
+**Verdict: the signal is real and repeats in other markets, but the trading rule built on it
+earned almost nothing on the 2022-2026 holdout. Not a strategy yet. No 20-30% result found.**
+
+Research only. Option prices here are **modelled from India VIX with an assumed skew**, not
+real quotes, so every P&L figure below is an estimate, not a backtest on traded prices.
+
+### Setup
+
+| Item | Value |
+|---|---|
+| Data | Nifty daily OHLC and India VIX (Yahoo), 2008-04 to 2026-10; S&P 500 / VIX 1990-2026 and Nasdaq 100 / VXN 2001-2026 as independent checks |
+| Window | Enter at the open, watch the next 6 sessions |
+| Strike distance | 1.28 x VIX-implied move (about 0.10 delta); "touch" = Nifty reached it during the window |
+| Split | Train to 2016-12, validation 2017-2021, holdout 2022-01 to 2026-10 (run once, after freezing the rule) |
+| Code | `research/2026-11-market-moves/` |
+
+### Findings on market moves (no option prices involved)
+
+- **Direction is not predictable after the open.** MACD, 50-day average, yesterday's move and
+  the US overnight move all scored 48.7-50.5% on open-to-close direction (4,580 days). The US
+  overnight move predicts the opening gap 68% of the time, which is in the price by 09:15.
+- **Following MACD to pick the side does not help**: short strike touched 15.5% of weeks
+  following it, 14.6% doing the opposite (973 weeks).
+- **Size is predictable.** Yesterday's VIX has a 0.64 rank correlation with today's range.
+- **Calm score** = average 3-year percentile of 22-day return, MACD, distance from the 50-day
+  average, RSI(14) and (inverted) share of downside volatility. All inputs known at the
+  previous close; nothing fitted.
+
+| Sample | Touched when calm >= 0.5 | Touched when calm < 0.5 |
+|---|---|---|
+| Nifty 2008-2012 | 21.5% | 36.0% |
+| Nifty 2013-2017 | 19.3% | 35.1% |
+| Nifty 2018-2022 | 19.4% | 35.1% |
+| Nifty 2023-2026 | 25.8% | 32.5% |
+| S&P 500 1990-2026 | 13.6% | 22.9% |
+| Nasdaq 100 2001-2026 | 16.8% | 27.6% |
+
+The gap held in every 5-year block of the S&P 500 from 1995. On Nifty it vanished in 2023
+and 2024 (27.0% vs 27.7%, 32.3% vs 27.0%, average VIX 12.5 and 14.6) and returned in 2025-26.
+A gradient-boosted model on 79 features did no better than this score (validation AUC 0.625
+vs 0.636).
+
+### Frozen rule, modelled prices
+
+Iron condor, short strikes 0.10 delta, hedge about 0.8% of spot away, enter the first session
+of the week only if calm >= 0.5, exit at the close if Nifty closes beyond a short strike,
+otherwise the day before expiry. Sized so each trade's max loss is 4% of capital. Assumed
+call IV 0.92 x VIX, put IV 1.12 x VIX; costs 2.5% of each leg price plus a fixed tick amount.
+
+| Period | Trades | Return / yr | Max drawdown | Worst trade | Worst month | Worst year | Win rate |
+|---|---|---|---|---|---|---|---|
+| Train 2008-2016 | 215 | +4.6% | -9.4% | -5.1% | -8.3% | -4.4% | 82% |
+| Validation 2017-2021 | 143 | +8.3% | -2.9% | -2.5% | -2.4% | +4.0% | 83% |
+| **Holdout 2022-2026** | 106 | **+1.2%** | **-10.1%** | -4.1% | -5.0% | -0.4% | 77% |
+| Same holdout, trading every week | 252 | +1.8% | -9.5% | -4.1% | -6.2% | -4.5% | 75% |
+
+With call IV at 0.85 or 0.80 x VIX the holdout turns negative (-0.4% and -1.1% a year).
+
+### Other results
+
+- **Stops** (condor 0.10, flat-vol prices, 2008-2026): an intraday stop at 2x credit was hit in
+  25% of trades and 41% of those would have ended in profit; a stop on a close beyond the short
+  strike was hit in 12% and 9% would have ended in profit.
+- **Entry day**: Monday was the weakest of five (-1.2% a year against +0.7% to +2.9%); the gaps
+  are within noise. Shorter time to expiry looked better (research only; conflicts with the
+  locked next-week-expiry rule).
+- **Butterfly**: loss-to-win ratio 1.3 but only 56% winners; no better return.
+- A regime exit and score-based sizing added nothing.
+
+### Limits
+
+- No real option prices: credits, skew and exit costs are assumptions.
+- Daily data: no 10:00 entry, no intraday path; stops are approximated from the day's high/low.
+- The holdout has been used once and is no longer unseen. The S&P and Nasdaq checks were run
+  after seeing it.
+- No event calendar, flows or open-interest data.
+
+### What it means
+
+Use the calm score as a skip / trade filter candidate, not as proof of profit. The next
+evidence has to come from real option prices (the 2019-2026 bhavcopy through the engine) and
+from forward paper trading, which is the only unseen data left.

@@ -12,7 +12,7 @@
 
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
-| T4.6c First walk-forward results | M4 | `T4.6c-first-walk-forward-results` | Claude |
+| T4.8 Market-move research (calm score) | M4 | `claude/wizardly-shannon-w509vv` | Claude |
 
 ---
 
@@ -93,6 +93,7 @@
 | T4.7d | Overfitting statistics: deflated Sharpe, CSCV, bootstrap intervals | 5h | Claude | todo |
 | T4.7e | Cross-check a few results against AlgoTest / Opstra | 3h | Claude | todo |
 | T4.7f | Run tracking (MLflow or run table): data hash, params, results | 4h | Claude | todo |
+| T4.8 | Research: what predicts Nifty's weekly move (calm score), train / validation / holdout, logged in `BACKTEST_RESULTS.md`; scripts in `research/2026-11-market-moves/` | 6h | Claude | review |
 | T4.7 | Baseline results vs go / no-go bar (`ARCHITECTURE.md` §12); approve parameter set | 2h | You | todo |
 
 ## M5. Live data (Dhan) and storage

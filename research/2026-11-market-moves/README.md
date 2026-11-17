@@ -32,6 +32,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 dips.py ICICI 2016-01-01 126   # falls of 5-30% from the 6-month high and time to recover
     python3 dipalgo.py         # buy-the-dip rule across ~49 large and ~16 collapsed stocks (needs stocks/*.json from Yahoo)
     python3 ladder.py          # dip ladder in ICICI Bank futures with margin, Rs 20 L capital
+    python3 ladder_fut.py      # same ladder with a fixed 700-unit lot in every year
 
 Split used: train to 2016-12, validation 2017-2021, holdout 2022-01 to 2026-10.
 The holdout has now been looked at; it can no longer count as unseen data.

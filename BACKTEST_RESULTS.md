@@ -222,3 +222,43 @@ configurations (all-years return, max drawdown):
 
 Limits: as in the entry above. Costs are charged per leg, so narrow hedges (more lots for the
 same max loss) pay more; that result depends on the assumed cost per leg.
+
+---
+
+## 2026-11-17 · Chart patterns on Nifty, daily / 4-hour / 1-hour (T4.8)
+
+**Verdict: no pattern or pair of patterns predicted Nifty's direction reliably. The best pairs
+won 60-70% of the time against a 50-57% baseline on 20-45 signals, and the share of pairs that
+worked in both periods was what chance alone would produce.**
+
+Research only. Index prices, no costs, no volume. Code: `research/2026-11-market-moves/patterns.py`.
+
+| Item | Value |
+|---|---|
+| Data | Nifty daily 2007-09 to 2026-11 (train before 2017, test after); hourly 2023-12 to 2026-11 from Yahoo, split in half; 4-hour bars built as 09:15-13:15 and 13:15-15:30 |
+| Patterns | High/low breakouts (20, 55, 250 bars), moving-average crosses, gaps, tight-range breakout, flag, support bounce / resistance rejection, head and shoulders, double top / bottom, triangle, engulfing, hammer / shooting star; rule-based definitions with swing points confirmed 3 bars late |
+| Pairs | Each pattern with a trend state (price > 50 > 200 average, MACD above / below zero, above / below 200 average) or with another pattern in the last 3 bars |
+| Trade | Signal at a bar's close, enter next open, exit at the close 5 or 10 bars later; repeat signals inside the hold dropped |
+
+| Timeframe, hold | Single patterns better than baseline in both periods | Pairs better in both periods | Rank correlation of pair results, train vs test |
+|---|---|---|---|
+| Daily, 5 bars | 3 of 21 | 14 of 78 | 0.03 |
+| Daily, 10 bars | 5 of 21 | 14 of 72 | 0.02 |
+| 1-hour, 5 bars | 9 of 24 | 18 of 67 | -0.01 |
+| 1-hour, 10 bars | 5 of 24 | 13 of 63 | -0.02 |
+| 4-hour | 2 of 8 | too few signals | n/a |
+
+Most consistent pairs (win rate against the baseline for the same side and period):
+
+| Pair | Timeframe, hold | Train | Test |
+|---|---|---|---|
+| Price crosses above 50-bar average, in an uptrend | Daily, 5 | 68% vs 54% (n=31) | 61% vs 55% (n=44) |
+| Price crosses above 50-bar average, in an uptrend | Daily, 10 | 61% vs 55% (n=28) | 71% vs 57% (n=38) |
+| Bounce off support, in an uptrend | Daily, 5 | 58% vs 54% (n=19) | 79% vs 55% (n=19) |
+| 20-bar high breakout, in an uptrend | 1-hour, 5 | 67% vs 51% (n=39) | 63% vs 50% (n=30) |
+| 20-bar high breakout, MACD above zero | 1-hour, 5 | 63% vs 51% (n=52) | 57% vs 50% (n=42) |
+
+Double tops and bottoms, triangles (long), hammers and gaps were below baseline. Head and
+shoulders fired fewer than 8 times per period on every timeframe and could not be scored.
+The 1-hour edges are 0.1-0.2% per trade before costs. With about 150 pairs tested and no
+persistence between periods, the listed pairs are leads, not findings.

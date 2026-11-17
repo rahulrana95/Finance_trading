@@ -25,6 +25,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 causes.py          # why Nifty moves more than 0.5% in a day (uses fomc_dates.json)
     python3 probmodel.py       # prototype touch-probability model, fitted 2008-2016, checked 2017-2026
     python3 macd_tf.py         # MACD timeframe and setting comparison (hourly needs nsei_1h.json)
+    python3 patterns.py        # ten chart patterns and their pairs on daily, 4-hour and 1-hour bars
 
 Split used: train to 2016-12, validation 2017-2021, holdout 2022-01 to 2026-10.
 The holdout has now been looked at; it can no longer count as unseen data.

@@ -1,11 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
-import { api } from '../api'
+import { api, LIVE } from '../api'
 import type { StockStatus } from '../api/types'
+import { DecisionCard } from '../components/DecisionCard'
 import { Card, Meter, NeedsList, Pill, State } from '../components/ui'
-import { HARD_EXIT_PCT, STOCK_STATUS_KIND, STOCK_STATUS_LABEL } from '../constants'
+import { HARD_EXIT_PCT, SNAPSHOT_SOURCE } from '../constants'
 import { linePath, scaleY } from '../lib/chart'
 import { levelPrice } from '../api/mock/engine'
-import { pct, price } from '../lib/format'
+import { pct, price, priceOrNeeds } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 import { zoneLabel } from './Stocks'
 
@@ -44,8 +45,8 @@ export function StockDetail() {
               <p className="muted">{s.industry} · {s.zone > 0 ? <Pill kind="accent">{zoneLabel(s)}</Pill> : zoneLabel(s)}</p>
             </div>
             <div className="right">
-              <div className="big num">{price(s.lastPrice)}</div>
-              <div className="muted">{pct(s.belowHighPct)} below its 6-month high · close on {s.priceAsOf}</div>
+              <div className="big num">{priceOrNeeds(s)}</div>
+              <div className="muted">{pct(s.belowHighPct)} below its 6-month high · close on {s.priceAsOf} · {s.priceSource ?? SNAPSHOT_SOURCE}</div>
             </div>
           </header>
           <div className="grid two">
@@ -96,14 +97,7 @@ export function StockDetail() {
               <p className="note"><span className="strong">Watch:</span> {s.business.watch}</p>
             </Card>
           </div>
-          <Card title="Your decision" aside={<Pill kind={STOCK_STATUS_KIND[s.status]}>{STOCK_STATUS_LABEL[s.status]}</Pill>}>
-            <p className="muted">Only approved stocks get buy ideas.</p>
-            <div className="actions">
-              <button type="button" className="button primary" disabled={s.status === 'approved'} onClick={() => setStatus('approved')}>Approve</button>
-              <button type="button" className="button" disabled={s.status === 'watching'} onClick={() => setStatus('watching')}>Keep watching</button>
-              <button type="button" className="button" disabled={s.status === 'rejected'} onClick={() => setStatus('rejected')}>Reject</button>
-            </div>
-          </Card>
+          <DecisionCard status={s.status} readOnly={LIVE} onChange={setStatus} />
         </>
       )}
     </State>

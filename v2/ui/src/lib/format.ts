@@ -1,3 +1,5 @@
+import { BANNER_LIVE, BANNER_MOCK, NEEDS_DATA } from '../constants'
+
 const inr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 })
 const inr2 = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
@@ -10,6 +12,10 @@ export const signedRupees = (value: number): string =>
   value === 0 ? '₹0' : `${value > 0 ? '▲ +' : '▼ −'}₹${inr.format(Math.abs(Math.round(value)))}`
 export const pct = (value: number, digits = 1): string => `${value.toFixed(digits)}%`
 export const tone = (value: number): 'gain' | 'loss' | 'flat' => (value > 0 ? 'gain' : value < 0 ? 'loss' : 'flat')
+/** A stock's price, or a note when the price source did not answer. */
+export const priceOrNeeds = (stock: { lastPrice: number; priceAsOf: string }): string => (stock.priceAsOf ? price(stock.lastPrice) : NEEDS_DATA)
+/** The banner under the menu, by where the data comes from. */
+export const bannerText = (live: boolean): string => (live ? BANNER_LIVE : BANNER_MOCK)
 /** How many items of data a stock still needs, in words. */
 export const needsSummary = (count: number): string => (count === 0 ? 'Complete' : `${count} item${count === 1 ? '' : 's'}`)
 export const dateTime = (iso: string): string =>

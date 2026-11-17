@@ -4,7 +4,7 @@ import { api } from '../api'
 import type { Stock, StockStatus } from '../api/types'
 import { Card, Meter, Pill, State } from '../components/ui'
 import { STOCK_STATUS_KIND, STOCK_STATUS_LABEL } from '../constants'
-import { needsSummary, pct, price } from '../lib/format'
+import { needsSummary, pct, priceOrNeeds } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
 type SortKey = 'evidence' | 'below' | 'name'
@@ -80,7 +80,7 @@ export function Stocks() {
                       <div className="muted small">{s.industry}</div>
                     </td>
                     <td><Pill kind={STOCK_STATUS_KIND[s.status]}>{STOCK_STATUS_LABEL[s.status]}</Pill></td>
-                    <td className="right num">{price(s.lastPrice)}</td>
+                    <td className="right num">{priceOrNeeds(s)}</td>
                     <td className="right num">{pct(s.belowHighPct)}</td>
                     <td>{s.zone > 0 ? <Pill kind="accent">{zoneLabel(s)}</Pill> : <span className="muted">{zoneLabel(s)}</span>}</td>
                     <td>

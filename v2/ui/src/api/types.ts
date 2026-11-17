@@ -33,7 +33,9 @@ export interface Stock {
   industry: string
   status: StockStatus
   lastPrice: number
+  /** Empty when the price source did not answer. */
   priceAsOf: string
+  priceSource?: string
   referenceHigh: number
   belowHighPct: number
   zone: number

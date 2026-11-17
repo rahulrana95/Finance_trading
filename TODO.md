@@ -13,7 +13,7 @@
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
 | T4.8 Market-move research (calm score) | M4 | `claude/wizardly-shannon-w509vv` | Claude |
-| V2.12 / V2.13 v2 interface on mock data, then deploy | v2 | `claude/wizardly-shannon-w509vv` | Claude |
+| V2.8 stock table live; next V2.9 algo runs and ideas | v2 | `claude/wizardly-shannon-w509vv` | Claude |
 
 ---
 
@@ -200,13 +200,13 @@ the decisions in `v2/docs/PRD.md` section 8.
 | V2.0 | PRD, architecture, design and test plan for owner approval | 4h | Claude | review |
 | V2.0b | Approve the documents; decide D1 to D7 (`v2/docs/PRD.md` section 8). Owner said "start coding, frontend first" on 2026-11-17; D1 (the `AGENTS.md` instrument rule) is still open | — | You | doing |
 | V2.1 | Scaffold `v2/backend` and `v2/ui`, tooling, health endpoint, one container serving both (CI job for v2 still to add) | 5h | Claude | review |
-| V2.2 | Metrics: reference high, falls, recovery, drawdown | 4h | Claude | blocked |
-| V2.3 | Financial checks, stability and evidence scores, "needs data" | 5h | Claude | blocked |
-| V2.4 | Zones and stepped plan, cash / future / combo | 5h | Claude | blocked |
+| V2.2 | Metrics: reference high, falls, recovery, drawdown | 4h | Claude | review |
+| V2.3 | Financial checks, stability and evidence scores, "needs data" | 5h | Claude | review |
+| V2.4 | Zones (done) and stepped plan, cash / future / combo (still to do, with the ideas route) | 5h | Claude | doing |
 | V2.5 | Risk check, charges, profit or loss | 5h | Claude | blocked |
 | V2.6 | Database models, migrations, repositories, seed data | 5h | Claude | blocked |
-| V2.7 | Price and financials adapters | 5h | Claude | blocked |
-| V2.8 | Screener service and API | 5h | Claude | blocked |
+| V2.7 | Price adapter (done: public source) and financials adapter (still a seed file) | 5h | Claude | doing |
+| V2.8 | Stock table service and read-only API (done, live); screener run and status changes wait for the database and sign-in | 5h | Claude | doing |
 | V2.9 | Algo run service, run log, API | 6h | Claude | blocked |
 | V2.10 | Paper broker, trading and portfolio services, API | 6h | Claude | blocked |
 | V2.11 | Sign-in and settings API | 4h | Claude | blocked |

@@ -5,6 +5,8 @@ RUN npm install -g pnpm@10
 COPY ui/package.json ui/pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY ui/ ./
+# The hosted build reads the stock table from the server; everything else is still sample data.
+ENV VITE_API_MODE=live
 RUN pnpm build
 
 FROM python:3.13-slim

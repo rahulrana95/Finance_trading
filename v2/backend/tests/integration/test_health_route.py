@@ -48,7 +48,7 @@ def test_health_only_answers_get(make_client: ClientFactory):
 def test_the_schema_and_docs_are_published_under_api(make_client: ClientFactory):
     client = make_client(None)
     schema = client.get("/api/openapi.json").json()
-    assert list(schema["paths"]) == ["/api/health"]
+    assert "/api/health" in schema["paths"]
     assert client.get("/api/docs").status_code == 200
 
 

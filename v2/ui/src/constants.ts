@@ -3,6 +3,12 @@ import type { Instrument, InstrumentType, Mode, RecStatus, RunKind, StockStatus 
 
 export const SESSION_KEY = 'steady.session'
 export const HEALTH_URL = '/api/health'
+export const STOCKS_URL = '/api/stocks'
+export const LIVE_MODE = 'live'
+export const BANNER_MOCK = 'Sample data: prices are a snapshot from 17 Nov 2026 and trades are paper only. Nothing here is sent to a broker.'
+export const BANNER_LIVE = 'Stock prices and scores are live from the server (daily closes from a public source). Ideas, trades and runs still use sample data. Nothing is sent to a broker.'
+export const NEEDS_DATA = 'Needs data'
+export const SNAPSHOT_SOURCE = 'sample snapshot'
 export const MOCK_DELAY_MS = 150
 export const HARD_EXIT_PCT = 40
 export const DEFAULT_ERROR = 'Something went wrong.'

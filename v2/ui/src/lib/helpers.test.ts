@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { linePath, scaleY } from './chart'
 import { messageOf } from './errors'
-import { needsSummary } from './format'
+import { bannerText, needsSummary, priceOrNeeds } from './format'
 import { readJson, remove, writeJson } from './storage'
 
 const blocked = {
@@ -44,6 +44,15 @@ describe('chart', () => {
   it('centres a flat series', () => expect(scaleY(5, 5, 5, 200)).toBe(100))
   it('draws a path across the width', () => expect(linePath([0, 100], 0, 100, 800, 200)).toBe('M0.0 190.0 L800.0 10.0'))
   it('handles a single point', () => expect(linePath([5], 5, 5, 800, 200)).toBe('M0.0 100.0'))
+})
+
+describe('priceOrNeeds and bannerText', () => {
+  it('shows the price when there is one', () => expect(priceOrNeeds({ lastPrice: 85, priceAsOf: '2026-11-17' })).toBe('₹85.00'))
+  it('says needs data when the source did not answer', () => expect(priceOrNeeds({ lastPrice: 0, priceAsOf: '' })).toBe('Needs data'))
+  it('describes where the data comes from', () => {
+    expect(bannerText(true)).toContain('live from the server')
+    expect(bannerText(false)).toContain('Sample data')
+  })
 })
 
 describe('needsSummary', () => {

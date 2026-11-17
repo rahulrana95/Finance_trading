@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { LIVE } from '../api'
 import { NAV_LINKS } from '../constants'
+import { bannerText } from '../lib/format'
 
 export function Logo() {
   return (
@@ -36,7 +38,7 @@ export function Layout() {
       </nav>
       <main className="main">
         <div className="banner" role="note">
-          Sample data: prices are a snapshot from 17 Nov 2026 and trades are paper only. Nothing here is sent to a broker.
+          {bannerText(LIVE)}
         </div>
         <Outlet />
       </main>

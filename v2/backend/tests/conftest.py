@@ -9,12 +9,15 @@ from fastapi.testclient import TestClient
 
 from steady.config import Settings
 from steady.main import create_app
+from tests.support import FakePrices, closes
 
 FIXED_NOW = datetime(2026, 11, 17, 10, 0, tzinfo=UTC)
 TEST_VERSION = "1.2.3"
 INDEX_BODY = "<html>steady interface</html>"
 
-ClientFactory = Callable[[Path | None], TestClient]
+ClientFactory = Callable[..., TestClient]
+# 60 flat days, then a slide to 15% below the high: one open fall, buy zone 1.
+SLIDE = closes([100.0] * 60 + [95.0, 90.0, 85.0])
 
 
 @pytest.fixture
@@ -30,8 +33,9 @@ def static_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def make_client() -> ClientFactory:
-    def make(static: Path | None) -> TestClient:
+    def make(static: Path | None, prices: FakePrices | None = None) -> TestClient:
         settings = Settings(static_dir=static, version=TEST_VERSION)
-        return TestClient(create_app(settings, clock=lambda: FIXED_NOW))
+        source = prices or FakePrices(default=SLIDE)
+        return TestClient(create_app(settings, clock=lambda: FIXED_NOW, prices=source))
 
     return make

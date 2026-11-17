@@ -3,14 +3,17 @@
 from fastapi import APIRouter, HTTPException, status
 
 from steady.api.health import health_router
+from steady.api.stocks import stocks_router
 from steady.clock import Clock
 from steady.config import Settings
 from steady.constants import ALL_METHODS, API_PREFIX, MSG_NOT_FOUND
+from steady.services.stocks import StockService
 
 
-def api_router(settings: Settings, clock: Clock) -> APIRouter:
+def api_router(settings: Settings, clock: Clock, stocks: StockService) -> APIRouter:
     router = APIRouter(prefix=API_PREFIX)
     router.include_router(health_router(settings, clock))
+    router.include_router(stocks_router(stocks))
 
     @router.api_route("/{rest:path}", methods=ALL_METHODS, include_in_schema=False)
     def unknown(rest: str) -> None:

@@ -2,6 +2,18 @@
 
 Owner decisions, newest first. Each one is reflected in the doc named.
 
+## 2026-11-17: v2 build order
+
+Owner decision, in conversation: start coding v2 with the **interface first, on mock
+data, and deploy it**; then build the backend routes one at a time and switch each screen
+from mock to live as its route lands. This reorders the tasks in `v2/docs/DESIGN.md`
+section 8 (V2.12 and V2.13 before V2.1 to V2.11). The interface talks only to the `Api`
+interface in `v2/ui/src/api/`, so each route replaces one mock method.
+
+The mock places no orders and connects to no broker. Decision D1 in `v2/docs/PRD.md`
+(the `AGENTS.md` rule limiting the project to Nifty 50 options) is still the owner's to
+make before any v2 trading code, paper included, is written in the backend.
+
 ## 2026-11-17: app stack and hosting
 
 Owner decision, in conversation:

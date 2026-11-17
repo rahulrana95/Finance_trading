@@ -48,37 +48,38 @@ def pick(a,b,ddlim):
         key=(ok,e if ok else dd)
         if best is None or key>best[0]: best=(key,g,e,dd,f)
     return best[1:]
-print("settings tried each time: %d\n"%len(GRID))
-years=list(range(2018,2027))
-def walk(window,ddlim):
-    eq=20.0; rows=[]; curve_hi=20.0; worst=0
-    for y in years:
-        g,te,tdd,tf=pick(yi(y-window),yi(y),ddlim); a,b=yi(y),(yi(y+1) if y<2026 else n)
-        e,dd,f=seg(a,b,*g,eq0=eq); rows.append(dict(year=y,ret=100*(e/eq-1),dd=100*dd,forced=f,train_ret=100*(te/20-1),choice=lab(g))); eq=e
-    R=pd.DataFrame(rows); yrs=(idx[-1]-idx[yi(2018)]).days/365.25
-    return eq,100*((max(eq,1e-9)/20)**(1/yrs)-1),R
-def fixed(g):
-    eq=20.0; rows=[]
-    for y in years:
-        a,b=yi(y),(yi(y+1) if y<2026 else n); e,dd,f=seg(a,b,*g,eq0=eq); rows.append((y,100*(e/eq-1),100*dd,f)); eq=e
-    yrs=(idx[-1]-idx[yi(2018)]).days/365.25; return eq,100*((max(eq,1e-9)/20)**(1/yrs)-1),rows
-print("TEST PERIOD 2018 to Nov 2026, Rs 20 L at the start. Each January the settings are chosen using only earlier data.")
-for window in(1,2):
-    for ddlim in(0.25,0.35,1.0):
-        eq,cg,R=walk(window,ddlim)
-        print("\nchosen from the previous %d year(s); rule: highest return with no margin call and drawdown within %s -> final Rs %.1f L, %.1f%% a year, worst year %+.0f%%, worst drawdown inside a year %.0f%%, margin calls %d"%(window,"%.0f%%"%(100*ddlim) if ddlim<1 else "any size",eq,cg,R.ret.min(),R.dd.min(),R.forced.sum()))
-        if ddlim==0.35: print(R.assign(ret=R.ret.round(1),dd=R.dd.round(1),train_ret=R.train_ret.round(1)).rename(columns={"ret":"result %","dd":"worst dip %","train_ret":"looked like % in training"}).to_string(index=False))
-print("\nFIXED SETTINGS over the same period, for comparison:")
-for nm,g in(("hold the shares only (100%)",(1.0,None,0.05,0,3)),("your ladder only: 2 lots per 5%, max 5",(0,None,0.05,2,5)),("shares 50% + 1 lot per 10%, max 3",(0.5,None,0.10,1,3)),
-            ("shares 100% + 0.5 lot per 10%, max 3",(1.0,None,0.10,0.5,3)),("shares 75% + 1 lot per 10%, max 3",(0.75,None,0.10,1,3)),("shares 100%, sell at +20% and rebuy on dips",(1.0,0.20,0.05,0,3))):
-    eq,cg,rows=fixed(g); print("  %-44s final Rs %6.1f L | %5.1f%% a year | worst year %+4.0f%% | worst dip %4.0f%% | margin calls %d"%(nm,eq,cg,min(r[1] for r in rows),min(r[2] for r in rows),sum(r[3] for r in rows)))
-allr=[]
-for g in GRID:
-    eq,cg,rows=fixed(g); allr.append((cg,min(r[2] for r in rows),sum(r[3] for r in rows),g))
-allr.sort(key=lambda x:-x[0]); print("\nBest fixed settings WITH HINDSIGHT (not achievable in advance):")
-for cg,dd,f,g in allr[:5]: print("  %5.1f%% a year | worst dip %4.0f%% | margin calls %d | %s"%(cg,dd,f,lab(g)))
-safe=[x for x in allr if x[2]==0 and x[1]>=-35]; print("Best with hindsight among those with no margin call and dips within 35%:")
-for cg,dd,f,g in safe[:3]: print("  %5.1f%% a year | worst dip %4.0f%% | %s"%(cg,dd,lab(g)))
-print("\nWHAT THE ALGO WOULD CHOOSE TODAY (drawdown limit 35%, no margin call):")
-for window in(1,2):
-    a=idx.searchsorted(idx[-1]-pd.Timedelta(days=365*window)); g,e,dd,f=pick(a,n,0.35); print("  from the last %d year(s): %s  (made %+.1f%% in that window, worst dip %.0f%%)"%(window,lab(g),100*(e/20-1),100*dd))
+if __name__=='__main__':
+    print("settings tried each time: %d\n"%len(GRID))
+    years=list(range(2018,2027))
+    def walk(window,ddlim):
+        eq=20.0; rows=[]; curve_hi=20.0; worst=0
+        for y in years:
+            g,te,tdd,tf=pick(yi(y-window),yi(y),ddlim); a,b=yi(y),(yi(y+1) if y<2026 else n)
+            e,dd,f=seg(a,b,*g,eq0=eq); rows.append(dict(year=y,ret=100*(e/eq-1),dd=100*dd,forced=f,train_ret=100*(te/20-1),choice=lab(g))); eq=e
+        R=pd.DataFrame(rows); yrs=(idx[-1]-idx[yi(2018)]).days/365.25
+        return eq,100*((max(eq,1e-9)/20)**(1/yrs)-1),R
+    def fixed(g):
+        eq=20.0; rows=[]
+        for y in years:
+            a,b=yi(y),(yi(y+1) if y<2026 else n); e,dd,f=seg(a,b,*g,eq0=eq); rows.append((y,100*(e/eq-1),100*dd,f)); eq=e
+        yrs=(idx[-1]-idx[yi(2018)]).days/365.25; return eq,100*((max(eq,1e-9)/20)**(1/yrs)-1),rows
+    print("TEST PERIOD 2018 to Nov 2026, Rs 20 L at the start. Each January the settings are chosen using only earlier data.")
+    for window in(1,2):
+        for ddlim in(0.25,0.35,1.0):
+            eq,cg,R=walk(window,ddlim)
+            print("\nchosen from the previous %d year(s); rule: highest return with no margin call and drawdown within %s -> final Rs %.1f L, %.1f%% a year, worst year %+.0f%%, worst drawdown inside a year %.0f%%, margin calls %d"%(window,"%.0f%%"%(100*ddlim) if ddlim<1 else "any size",eq,cg,R.ret.min(),R.dd.min(),R.forced.sum()))
+            if ddlim==0.35: print(R.assign(ret=R.ret.round(1),dd=R.dd.round(1),train_ret=R.train_ret.round(1)).rename(columns={"ret":"result %","dd":"worst dip %","train_ret":"looked like % in training"}).to_string(index=False))
+    print("\nFIXED SETTINGS over the same period, for comparison:")
+    for nm,g in(("hold the shares only (100%)",(1.0,None,0.05,0,3)),("your ladder only: 2 lots per 5%, max 5",(0,None,0.05,2,5)),("shares 50% + 1 lot per 10%, max 3",(0.5,None,0.10,1,3)),
+                ("shares 100% + 0.5 lot per 10%, max 3",(1.0,None,0.10,0.5,3)),("shares 75% + 1 lot per 10%, max 3",(0.75,None,0.10,1,3)),("shares 100%, sell at +20% and rebuy on dips",(1.0,0.20,0.05,0,3))):
+        eq,cg,rows=fixed(g); print("  %-44s final Rs %6.1f L | %5.1f%% a year | worst year %+4.0f%% | worst dip %4.0f%% | margin calls %d"%(nm,eq,cg,min(r[1] for r in rows),min(r[2] for r in rows),sum(r[3] for r in rows)))
+    allr=[]
+    for g in GRID:
+        eq,cg,rows=fixed(g); allr.append((cg,min(r[2] for r in rows),sum(r[3] for r in rows),g))
+    allr.sort(key=lambda x:-x[0]); print("\nBest fixed settings WITH HINDSIGHT (not achievable in advance):")
+    for cg,dd,f,g in allr[:5]: print("  %5.1f%% a year | worst dip %4.0f%% | margin calls %d | %s"%(cg,dd,f,lab(g)))
+    safe=[x for x in allr if x[2]==0 and x[1]>=-35]; print("Best with hindsight among those with no margin call and dips within 35%:")
+    for cg,dd,f,g in safe[:3]: print("  %5.1f%% a year | worst dip %4.0f%% | %s"%(cg,dd,lab(g)))
+    print("\nWHAT THE ALGO WOULD CHOOSE TODAY (drawdown limit 35%, no margin call):")
+    for window in(1,2):
+        a=idx.searchsorted(idx[-1]-pd.Timedelta(days=365*window)); g,e,dd,f=pick(a,n,0.35); print("  from the last %d year(s): %s  (made %+.1f%% in that window, worst dip %.0f%%)"%(window,lab(g),100*(e/20-1),100*dd))

@@ -1,7 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api'
 import type { StockStatus } from '../api/types'
-import { Card, Meter, Pill, State } from '../components/ui'
+import { Card, Meter, NeedsList, Pill, State } from '../components/ui'
+import { HARD_EXIT_PCT, STOCK_STATUS_KIND, STOCK_STATUS_LABEL } from '../constants'
+import { linePath, scaleY } from '../lib/chart'
 import { levelPrice } from '../api/mock/engine'
 import { pct, price } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
@@ -13,14 +15,13 @@ function Spark({ values, lines }: { values: number[]; lines: number[] }) {
   const all = [...values, ...lines]
   const lo = Math.min(...all)
   const hi = Math.max(...all)
-  const y = (v: number) => 190 - ((v - lo) / (hi - lo || 1)) * 180
-  const path = values.map((v, i) => `${i ? 'L' : 'M'}${(i / (values.length - 1 || 1)) * 800} ${y(v).toFixed(1)}`).join(' ')
+  const y = (v: number) => scaleY(v, lo, hi, 200)
   return (
     <svg className="chart" role="img" aria-label="Closing price over the last year with the sell target and buy levels" viewBox="0 0 800 200" preserveAspectRatio="none">
       {lines.map((v, i) => (
         <line key={v} x1="0" x2="800" y1={y(v)} y2={y(v)} className={i === 0 ? 'line-target' : i === lines.length - 1 ? 'line-exit' : 'line-level'} vectorEffect="non-scaling-stroke" />
       ))}
-      <path d={path} className="line-price" vectorEffect="non-scaling-stroke" />
+      <path d={linePath(values, lo, hi, 800, 200)} className="line-price" vectorEffect="non-scaling-stroke" />
     </svg>
   )
 }
@@ -49,13 +50,13 @@ export function StockDetail() {
           </header>
           <div className="grid two">
             <Card title="Price and buy levels" aside={<span className="muted small">Last 12 months</span>}>
-              <Spark values={s.history} lines={[s.referenceHigh, ...LEVELS.map((l) => levelPrice(s.referenceHigh, l)), levelPrice(s.referenceHigh, 40)]} />
+              <Spark values={s.history} lines={[s.referenceHigh, ...LEVELS.map((l) => levelPrice(s.referenceHigh, l)), levelPrice(s.referenceHigh, HARD_EXIT_PCT)]} />
               <dl className="rows">
                 <div><dt>Sell target (6-month high)</dt><dd className="num">{price(s.referenceHigh)}</dd></div>
                 {LEVELS.map((l, i) => (
                   <div key={l}><dt>Buy step {i + 1} · {l}% below</dt><dd className="num">{price(levelPrice(s.referenceHigh, l))}</dd></div>
                 ))}
-                <div className="loss"><dt>Exit and stop · 40% below</dt><dd className="num">{price(levelPrice(s.referenceHigh, 40))}</dd></div>
+                <div className="loss"><dt>Exit and stop · {HARD_EXIT_PCT}% below</dt><dd className="num">{price(levelPrice(s.referenceHigh, HARD_EXIT_PCT))}</dd></div>
               </dl>
             </Card>
             <Card title="Evidence score" aside={<span className="big num">{s.scores.evidence}</span>}>
@@ -64,7 +65,7 @@ export function StockDetail() {
                 <div key={label} className="part"><span>{label}</span><span className="num strong">{value}</span><Meter value={value} label={label} /></div>
               ))}
               <h3>Needs data</h3>
-              {s.needs.length ? <ul className="needs">{s.needs.map((n) => <li key={n}>{n}</li>)}</ul> : <p className="muted">Nothing missing.</p>}
+              <NeedsList needs={s.needs} />
             </Card>
           </div>
           <div className="grid two">
@@ -95,7 +96,7 @@ export function StockDetail() {
               <p className="note"><span className="strong">Watch:</span> {s.business.watch}</p>
             </Card>
           </div>
-          <Card title="Your decision" aside={<Pill kind={s.status === 'approved' ? 'good' : s.status === 'rejected' ? 'bad' : 'neutral'}>{s.status}</Pill>}>
+          <Card title="Your decision" aside={<Pill kind={STOCK_STATUS_KIND[s.status]}>{STOCK_STATUS_LABEL[s.status]}</Pill>}>
             <p className="muted">Only approved stocks get buy ideas.</p>
             <div className="actions">
               <button type="button" className="button primary" disabled={s.status === 'approved'} onClick={() => setStatus('approved')}>Approve</button>

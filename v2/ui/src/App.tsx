@@ -8,21 +8,22 @@ import { SignIn } from './pages/SignIn'
 import { StockDetail } from './pages/StockDetail'
 import { Stocks } from './pages/Stocks'
 import { Trades } from './pages/Trades'
+import { ROUTES } from './constants'
 
 export function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/sign-in" element={<SignIn />} />
+        <Route path={ROUTES.signIn} element={<SignIn />} />
         <Route element={<RequireAuth><Layout /></RequireAuth>}>
-          <Route path="/stocks" element={<Stocks />} />
-          <Route path="/stocks/:symbol" element={<StockDetail />} />
-          <Route path="/ideas" element={<Ideas />} />
-          <Route path="/trades" element={<Trades />} />
-          <Route path="/runs" element={<Runs />} />
-          <Route path="/settings" element={<Settings />} />
+          <Route path={ROUTES.stocks} element={<Stocks />} />
+          <Route path={`${ROUTES.stocks}/:symbol`} element={<StockDetail />} />
+          <Route path={ROUTES.ideas} element={<Ideas />} />
+          <Route path={ROUTES.trades} element={<Trades />} />
+          <Route path={ROUTES.runs} element={<Runs />} />
+          <Route path={ROUTES.settings} element={<Settings />} />
         </Route>
-        <Route path="*" element={<Navigate to="/stocks" replace />} />
+        <Route path="*" element={<Navigate to={ROUTES.stocks} replace />} />
       </Routes>
     </AuthProvider>
   )

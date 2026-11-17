@@ -44,6 +44,11 @@ describe('financial score', () => {
     expect(r.score).toBe(0)
     expect(r.needs).toEqual(expect.arrayContaining(['Five years of revenue', 'Five years of net profit', 'Debt and equity', 'Promoter pledge']))
   })
+  it('cannot judge growth when the first or latest year is missing', () => {
+    expect(financialScore({ ...good, financials: years([1, 2, 3, 4, 5], [null, 2, 3, 4, 5]) }).score).toBe(80)
+    expect(financialScore({ ...good, financials: years([null, 2, 3, 4, 5]) }).score).toBe(55)
+    expect(financialScore({ ...good, financials: years([1, 2, 3, 4, null]) }).score).toBe(55)
+  })
   it('names missing revenue years', () =>
     expect(financialScore({ ...good, financials: years([1, 2, 3, 4, 5], [1, null, 3, 4, 5]) }).needs).toContain('Revenue for FY2023'))
 })

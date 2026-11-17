@@ -16,20 +16,30 @@ import {
   type StockStatus,
   type TradeLogEntry,
 } from '../types'
-import { DEFAULT_SETTINGS, DEMO_EMAIL, DEMO_PASSWORD, MOCK_NOW, SEED_STOCKS, SNAPSHOT } from './data'
+import { MOCK_DELAY_MS } from '../../constants'
+import { DEFAULT_SETTINGS, DEMO_EMAIL, DEMO_PASSWORD, MOCK_NOW, SEED_STOCKS, SNAPSHOT, type Snapshot } from './data'
 import { belowHighPct, buildPlan, evidence, financialScore, mockCharges, round2, stabilityScore, zone } from './engine'
 
 const clone = <T>(x: T): T => structuredClone(x)
 const PRICE_SOURCE = 'Public daily close (snapshot)'
+
+/** The price snapshot for a seeded stock; a seed without one is a build mistake. */
+export function snapshotFor(symbol: string, snapshots: Snapshot[] = SNAPSHOT): Snapshot {
+  const snap = snapshots.find((s) => s.symbol === symbol)
+  if (!snap) throw new Error(`No price snapshot for ${symbol}`)
+  return snap
+}
+
+/** Latest year's net profit in words, for an idea's reasons. */
+export const latestProfit = (financials: Array<{ netProfit: number | null }>): string =>
+  financials[financials.length - 1]?.netProfit?.toLocaleString('en-IN') ?? 'not known'
 
 export interface MockOptions {
   delayMs?: number
   now?: () => Date
 }
 
-export function createMockApi(options: MockOptions = {}): Api {
-  const delayMs = options.delayMs ?? 150
-  const now = options.now ?? (() => new Date(MOCK_NOW))
+export function createMockApi({ delayMs = MOCK_DELAY_MS, now = () => new Date(MOCK_NOW) }: MockOptions = {}): Api {
   const wait = <T>(value: T): Promise<T> =>
     new Promise((resolve) => (delayMs ? setTimeout(() => resolve(clone(value)), delayMs) : resolve(clone(value))))
 
@@ -39,8 +49,7 @@ export function createMockApi(options: MockOptions = {}): Api {
   const id = (prefix: string): string => `${prefix}-${++seq}`
 
   const stocks: Stock[] = SEED_STOCKS.map((seed) => {
-    const snap = SNAPSHOT.find((s) => s.symbol === seed.symbol)
-    if (!snap) throw new Error(`No price snapshot for ${seed.symbol}`)
+    const snap = snapshotFor(seed.symbol)
     const stability = stabilityScore({
       falls10: snap.falls10,
       recovered12mPct: snap.rec12,
@@ -111,7 +120,6 @@ export function createMockApi(options: MockOptions = {}): Api {
       filledSteps: filledSteps(stock.symbol),
     })
     if (!plan.steps.some((s) => s.reached && !s.filled)) return null
-    const last = stock.financials[stock.financials.length - 1]
     return {
       id: id('rec'),
       symbol: stock.symbol,
@@ -125,7 +133,7 @@ export function createMockApi(options: MockOptions = {}): Api {
       reasons: [
         `${stock.belowHighPct}% below its 6-month high of ${stock.referenceHigh.toLocaleString('en-IN')}.`,
         `Back within a year after ${stock.recovered12mPct}% of its ${stock.falls10} past 10% falls.`,
-        `Latest year net profit ${last?.netProfit?.toLocaleString('en-IN') ?? 'not known'} crore; business rated ${stock.business.durability.toLowerCase()}.`,
+        `Latest year net profit ${latestProfit(stock.financials)} crore; business rated ${stock.business.durability.toLowerCase()}.`,
       ],
       risks: [stock.business.watch, `Its worst fall since 2016 was ${Math.abs(stock.maxDrawdownPct)}%.`],
       futuresNote: plan.futuresNote,
@@ -145,8 +153,7 @@ export function createMockApi(options: MockOptions = {}): Api {
     if (settings.killSwitch) add('Safety', 'warn', 'New orders are stopped. Checking exits only.')
     for (const stock of stocks.filter((s) => s.status === 'approved')) {
       if (stock.zone === 0) {
-        const first = settings.levels[0] ?? 0
-        add(stock.name, 'info', `${stock.belowHighPct}% below its high. First buy needs ${first}%. Nothing to do.`)
+        add(stock.name, 'info', `${stock.belowHighPct}% below its high. First buy needs ${settings.levels[0]}%. Nothing to do.`)
         continue
       }
       const open = recommendations.find((r) => r.symbol === stock.symbol && r.status === 'new')

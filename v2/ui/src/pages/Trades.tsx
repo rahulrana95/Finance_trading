@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api'
 import type { ModeFilter } from '../api/types'
 import { Card, ModeTabs, Money, Pill, State } from '../components/ui'
+import { INSTRUMENT_LABEL, MODE_LABEL, ROUTES, SIDE_LABEL } from '../constants'
 import { dateTime, price, rupees } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
@@ -37,8 +38,8 @@ export function Trades() {
                 {open.data?.map((p) => (
                   <tr key={p.id}>
                     <td><Link to={`/stocks/${p.symbol}`} className="strong">{p.name}</Link></td>
-                    <td><Pill kind={p.mode === 'paper' ? 'warn' : 'accent'}>{p.mode === 'paper' ? 'Paper' : 'Real'}</Pill></td>
-                    <td>{p.instrument === 'cash' ? 'Shares' : 'Futures'}</td>
+                    <td><Pill kind="warn">{MODE_LABEL[p.mode]}</Pill></td>
+                    <td>{INSTRUMENT_LABEL[p.instrument]}</td>
                     <td className="right num">{p.quantity}</td>
                     <td className="right num">{price(p.avgPrice)}</td>
                     <td className="right num">{price(p.lastPrice)}</td>
@@ -49,7 +50,7 @@ export function Trades() {
             </table>
           </div>
         </State>
-        {!open.data?.length && mode !== 'real' && <p><Link to="/ideas">See ideas waiting for you</Link></p>}
+        {!open.data?.length && mode !== 'real' && <p><Link to={ROUTES.ideas}>See ideas waiting for you</Link></p>}
       </Card>
       <Card title="Trade log">
         <State loading={log.loading} error={log.error} empty={!log.data?.length && 'Nothing logged yet.'}>
@@ -61,8 +62,8 @@ export function Trades() {
               <tbody>
                 {log.data?.map((t) => (
                   <tr key={t.id}>
-                    <td>{dateTime(t.at)}</td><td>{t.symbol}</td><td>{t.mode === 'paper' ? 'Paper' : 'Real'}</td>
-                    <td>{t.side === 'buy' ? 'Bought' : 'Sold'} {t.instrument === 'cash' ? 'shares' : 'futures'}</td>
+                    <td>{dateTime(t.at)}</td><td>{t.symbol}</td><td>{MODE_LABEL[t.mode]}</td>
+                    <td>{SIDE_LABEL[t.side]} {INSTRUMENT_LABEL[t.instrument].toLowerCase()}</td>
                     <td className="right num">{t.quantity}</td><td className="right num">{price(t.price)}</td><td className="right num">{price(t.charges)}</td><td className="small">{t.source}</td>
                   </tr>
                 ))}

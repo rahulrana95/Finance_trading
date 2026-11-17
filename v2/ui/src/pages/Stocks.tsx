@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom'
 import { api } from '../api'
 import type { Stock, StockStatus } from '../api/types'
 import { Card, Meter, Pill, State } from '../components/ui'
-import { pct, price } from '../lib/format'
+import { STOCK_STATUS_KIND, STOCK_STATUS_LABEL } from '../constants'
+import { needsSummary, pct, price } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
 type SortKey = 'evidence' | 'below' | 'name'
-const STATUS_LABEL: Record<StockStatus, string> = { approved: 'Approved', watching: 'Watching', rejected: 'Rejected' }
-const STATUS_KIND = { approved: 'good', watching: 'neutral', rejected: 'bad' } as const
 
 export function zoneLabel(stock: Stock): string {
   return stock.zone > 0 ? `Buy zone ${stock.zone}` : 'Not in a buy zone'
@@ -80,14 +79,14 @@ export function Stocks() {
                       <Link to={`/stocks/${s.symbol}`} className="strong">{s.name}</Link>
                       <div className="muted small">{s.industry}</div>
                     </td>
-                    <td><Pill kind={STATUS_KIND[s.status]}>{STATUS_LABEL[s.status]}</Pill></td>
+                    <td><Pill kind={STOCK_STATUS_KIND[s.status]}>{STOCK_STATUS_LABEL[s.status]}</Pill></td>
                     <td className="right num">{price(s.lastPrice)}</td>
                     <td className="right num">{pct(s.belowHighPct)}</td>
                     <td>{s.zone > 0 ? <Pill kind="accent">{zoneLabel(s)}</Pill> : <span className="muted">{zoneLabel(s)}</span>}</td>
                     <td>
                       <div className="score"><span className="num strong">{s.scores.evidence}</span><Meter value={s.scores.evidence} label={`${s.name} evidence score`} /></div>
                     </td>
-                    <td className="small">{s.needs.length ? `${s.needs.length} item${s.needs.length === 1 ? '' : 's'}` : 'Complete'}</td>
+                    <td className="small">{needsSummary(s.needs.length)}</td>
                   </tr>
                 ))}
               </tbody>

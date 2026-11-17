@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 import { api } from '../api'
 import type { InstrumentType, Mode, RecStatus, Recommendation } from '../api/types'
 import { Card, Meter, Pill, State } from '../components/ui'
+import { INSTRUMENT_LABEL, INSTRUMENT_TYPE_LABEL, REC_STATUS_LABEL } from '../constants'
+import { messageOf } from '../lib/errors'
 import { price, rupees } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
-const TYPE_LABEL: Record<InstrumentType, string> = { cash: 'Shares', future: 'Futures', combo: 'Shares and futures' }
-const STATUS_LABEL: Record<RecStatus, string> = { new: 'Waiting for you', approved: 'Approved', skipped: 'Skipped', expired: 'Expired' }
 
 function IdeaCard({ rec, onChanged }: { rec: Recommendation; onChanged: () => void }) {
   const [mode, setMode] = useState<Mode>('paper')
@@ -22,7 +22,7 @@ function IdeaCard({ rec, onChanged }: { rec: Recommendation; onChanged: () => vo
       await action()
       onChanged()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.')
+      setError(messageOf(e))
     } finally {
       setBusy(false)
     }
@@ -35,8 +35,8 @@ function IdeaCard({ rec, onChanged }: { rec: Recommendation; onChanged: () => vo
           <Link to={`/stocks/${rec.symbol}`} className="idea-name">{rec.name}</Link>
           <div className="muted small">Dip ladder · buy zone {rec.zone}</div>
         </div>
-        <Pill kind={rec.status === 'new' ? 'accent' : 'neutral'}>{STATUS_LABEL[rec.status]}</Pill>
-        <Pill kind="good">Buy: {TYPE_LABEL[rec.instrumentType]}</Pill>
+        <Pill kind={rec.status === 'new' ? 'accent' : 'neutral'}>{REC_STATUS_LABEL[rec.status]}</Pill>
+        <Pill kind="good">Buy: {INSTRUMENT_TYPE_LABEL[rec.instrumentType]}</Pill>
         <div className="idea-score">
           <span className="muted small">Evidence score</span>
           <span className="big num">{rec.evidenceScore}</span>
@@ -64,7 +64,7 @@ function IdeaCard({ rec, onChanged }: { rec: Recommendation; onChanged: () => vo
               <tr key={s.step} className={s === next ? 'row-next' : undefined}>
                 <td className="strong">{s.step}{s.step === 1 ? ' · minimum start' : ''}</td>
                 <td>{s.levelPct}% below, at {price(s.levelPrice)}</td>
-                <td>{s.instrument === 'cash' ? 'Shares' : 'Futures'}</td>
+                <td>{INSTRUMENT_LABEL[s.instrument]}</td>
                 <td className="right num">{s.quantity}</td>
                 <td className="right num">{rupees(s.amount)}</td>
                 <td className="right num">{s.step}</td>

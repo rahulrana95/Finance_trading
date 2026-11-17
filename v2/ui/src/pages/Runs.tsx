@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { api } from '../api'
 import type { RunKind } from '../api/types'
 import { Card, State } from '../components/ui'
+import { RUN_KIND_LABEL as KIND } from '../constants'
 import { dateTime } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
-const KIND: Record<RunKind, string> = { scheduled: 'Scheduled', on_demand: 'On demand', dry_run: 'Dry run', screener: 'Screener' }
 
 export function Runs() {
   const runs = useAsync(() => api.listRuns(), [])

@@ -4,6 +4,8 @@ import { useAuth } from '../auth/AuthContext'
 import { Logo } from '../components/Layout'
 import { DEMO_EMAIL, DEMO_PASSWORD } from '../api/mock/data'
 import { USING_MOCK } from '../api'
+import { ROUTES, SIGN_IN_ERROR } from '../constants'
+import { messageOf } from '../lib/errors'
 
 export function SignIn() {
   const { session, signIn } = useAuth()
@@ -13,7 +15,7 @@ export function SignIn() {
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({})
   const [busy, setBusy] = useState(false)
-  const from = (location.state as { from?: string } | null)?.from ?? '/stocks'
+  const from = (location.state as { from?: string } | null)?.from ?? ROUTES.stocks
 
   if (session) return <Navigate to={from} replace />
 
@@ -31,7 +33,7 @@ export function SignIn() {
       navigate(from, { replace: true })
     } catch (e) {
       setPassword('')
-      setErrors({ form: e instanceof Error ? e.message : 'Could not sign in.' })
+      setErrors({ form: messageOf(e, SIGN_IN_ERROR) })
     } finally {
       setBusy(false)
     }

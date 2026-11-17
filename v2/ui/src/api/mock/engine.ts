@@ -64,7 +64,7 @@ export function financialScore(f: FinancialInput): { score: number; needs: strin
   )
   check(
     25,
-    !enough || profMissing.length ? null : years.every((y) => (y.netProfit ?? 0) > 0),
+    !enough || profMissing.length ? null : years.every((y) => y.netProfit! > 0),
     profMissing.length ? `Net profit for ${profMissing.join(', ')}` : 'Five years of net profit',
   )
   check(
@@ -131,7 +131,7 @@ export function buildPlan(p: PlanInput): Plan {
   let futuresNote = 'Futures are only considered from step ' + p.futuresFromStep + '.'
   const steps: PlanStep[] = p.levels.map((pct, i) => {
     const step = i + 1
-    const amount = Math.floor((allocation * (p.parts[i] ?? 0)) / totalParts)
+    const amount = Math.floor((allocation * p.parts[i]!) / totalParts)
     let instrument: Instrument = 'cash'
     let quantity = Math.floor(amount / p.lastPrice)
     if (step >= p.futuresFromStep) {

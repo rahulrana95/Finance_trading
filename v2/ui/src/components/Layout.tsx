@@ -1,13 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
-
-const LINKS = [
-  { to: '/stocks', label: 'Stocks' },
-  { to: '/ideas', label: 'Ideas' },
-  { to: '/trades', label: 'Trades' },
-  { to: '/runs', label: 'Algo runs' },
-  { to: '/settings', label: 'Settings' },
-]
+import { NAV_LINKS } from '../constants'
 
 export function Logo() {
   return (
@@ -28,7 +21,7 @@ export function Layout() {
       <nav className="side" aria-label="Main">
         <Logo />
         <div className="side-links">
-          {LINKS.map((link) => (
+          {NAV_LINKS.map((link) => (
             <NavLink key={link.to} to={link.to} className={({ isActive }) => (isActive ? 'side-link on' : 'side-link')}>
               {link.label}
             </NavLink>

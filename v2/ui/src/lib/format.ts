@@ -10,6 +10,8 @@ export const signedRupees = (value: number): string =>
   value === 0 ? '₹0' : `${value > 0 ? '▲ +' : '▼ −'}₹${inr.format(Math.abs(Math.round(value)))}`
 export const pct = (value: number, digits = 1): string => `${value.toFixed(digits)}%`
 export const tone = (value: number): 'gain' | 'loss' | 'flat' => (value > 0 ? 'gain' : value < 0 ? 'loss' : 'flat')
+/** How many items of data a stock still needs, in words. */
+export const needsSummary = (count: number): string => (count === 0 ? 'Complete' : `${count} item${count === 1 ? '' : 's'}`)
 export const dateTime = (iso: string): string =>
   new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' })
 export const day = (iso: string): string =>

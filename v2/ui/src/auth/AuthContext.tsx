@@ -2,8 +2,8 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 import { Navigate, useLocation } from 'react-router-dom'
 import { api } from '../api'
 import type { Session } from '../api/types'
-
-const KEY = 'steady.session'
+import { ROUTES, SESSION_KEY } from '../constants'
+import { readJson, remove, writeJson } from '../lib/storage'
 
 interface AuthValue {
   session: Session | null
@@ -13,35 +13,18 @@ interface AuthValue {
 
 const AuthContext = createContext<AuthValue | null>(null)
 
-function stored(): Session | null {
-  try {
-    const raw = sessionStorage.getItem(KEY)
-    return raw ? (JSON.parse(raw) as Session) : null
-  } catch {
-    return null
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(stored)
+  const [session, setSession] = useState<Session | null>(() => readJson<Session>(SESSION_KEY))
   const value = useMemo<AuthValue>(
     () => ({
       session,
       async signIn(email, password) {
         const next = await api.signIn(email, password)
-        try {
-          sessionStorage.setItem(KEY, JSON.stringify(next))
-        } catch {
-          /* storage can be blocked; the session then lasts until reload */
-        }
+        writeJson(SESSION_KEY, next)
         setSession(next)
       },
       signOut() {
-        try {
-          sessionStorage.removeItem(KEY)
-        } catch {
-          /* nothing to clear */
-        }
+        remove(SESSION_KEY)
         setSession(null)
       },
     }),
@@ -59,6 +42,6 @@ export function useAuth(): AuthValue {
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { session } = useAuth()
   const location = useLocation()
-  if (!session) return <Navigate to="/sign-in" replace state={{ from: location.pathname }} />
+  if (!session) return <Navigate to={ROUTES.signIn} replace state={{ from: location.pathname }} />
   return <>{children}</>
 }

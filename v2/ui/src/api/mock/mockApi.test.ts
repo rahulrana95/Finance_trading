@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import type { Api } from '../types'
 import { DEMO_EMAIL, DEMO_PASSWORD } from './data'
-import { createMockApi } from './mockApi'
+import { createMockApi, latestProfit, snapshotFor } from './mockApi'
 
 let api: Api
 beforeEach(() => {
@@ -159,5 +159,39 @@ describe('timing', () => {
     const started = Date.now()
     await slow.getSettings()
     expect(Date.now() - started).toBeGreaterThanOrEqual(4)
+  })
+})
+
+describe('helpers', () => {
+  it('finds a price snapshot and fails loudly for a seed without one', () => {
+    expect(snapshotFor('TITAN').symbol).toBe('TITAN')
+    expect(() => snapshotFor('NOPE')).toThrow('No price snapshot for NOPE')
+  })
+  it('puts the latest profit in words', () => {
+    expect(latestProfit([{ netProfit: 3499 }])).toBe('3,499')
+    expect(latestProfit([{ netProfit: null }])).toBe('not known')
+    expect(latestProfit([])).toBe('not known')
+  })
+  it('defaults to a short delay and the fixed clock', async () => {
+    const [run] = await createMockApi().listRuns()
+    expect(run!.startedAt).toBe('2026-11-17T09:55:00.000Z')
+  })
+})
+
+describe('edge cases', () => {
+  it('proposes two ideas in one run and says so', async () => {
+    const [rec] = await api.listRecommendations()
+    await api.skip(rec!.id, '')
+    await api.setStockStatus('KEI', 'approved')
+    expect((await api.startRun('on_demand')).summary).toBe('2 ideas proposed')
+  })
+  it('refuses a step that is smaller than one share', async () => {
+    const [rec] = await api.listRecommendations()
+    await api.skip(rec!.id, '')
+    await api.updateSettings({ paperCapital: 10000 })
+    await api.startRun('on_demand')
+    const small = (await api.listRecommendations({ status: 'new' }))[0]!
+    expect(small.steps[0]!.quantity).toBe(0)
+    await expect(api.approve(small.id, 'paper')).rejects.toThrow('smaller than one share')
   })
 })

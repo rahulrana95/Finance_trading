@@ -107,6 +107,11 @@ describe('stocks', () => {
     expect(screen.getAllByText('Needs data').length).toBeGreaterThan(1)
     expect(screen.getByRole('img', { name: /Recovery from falls/ })).toBeInTheDocument()
   })
+  it('shows a stock that is not in a buy zone', async () => {
+    await openSignedIn('/stocks/TITAN')
+    expect(await screen.findByRole('heading', { name: 'Titan' })).toBeInTheDocument()
+    expect(screen.getByText(/Not in a buy zone/)).toBeInTheDocument()
+  })
   it('lets you approve, watch or reject a stock', async () => {
     const user = await openSignedIn('/stocks/KEI')
     await user.click(await screen.findByRole('button', { name: 'Approve' }))

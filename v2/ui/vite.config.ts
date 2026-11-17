@@ -15,6 +15,7 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/main.tsx', 'src/test/**', 'src/**/*.test.{ts,tsx}', 'src/api/types.ts'],
       reporter: ['text-summary'],
+      thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },
   },
 })

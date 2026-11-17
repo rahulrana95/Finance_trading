@@ -1,10 +1,10 @@
 import { api } from '../api'
 import { fetchHealth } from '../api/health'
 import { Card, Pill, State } from '../components/ui'
+import { BROKERS } from '../constants'
 import { rupees } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
-const BROKERS = ['Zerodha', 'Dhan', 'Groww']
 
 export function Settings() {
   const { data: s, error, loading, reload } = useAsync(() => api.getSettings(), [])

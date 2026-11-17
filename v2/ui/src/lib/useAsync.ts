@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { messageOf } from './errors'
 
 export interface AsyncState<T> {
   data: T | undefined
@@ -18,7 +19,7 @@ export function useAsync<T>(load: () => Promise<T>, deps: readonly unknown[]): A
     setLoading(true)
     load()
       .then((value) => live && (setData(value), setError(undefined)))
-      .catch((e: unknown) => live && setError(e instanceof Error ? e.message : 'Something went wrong.'))
+      .catch((e: unknown) => live && setError(messageOf(e)))
       .finally(() => live && setLoading(false))
     return () => {
       live = false

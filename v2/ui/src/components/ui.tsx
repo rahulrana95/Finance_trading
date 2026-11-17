@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { ModeFilter } from '../api/types'
+import { MODE_LABEL } from '../constants'
 import { signedRupees, tone } from '../lib/format'
 
 export function Card({ title, aside, children }: { title?: string; aside?: ReactNode; children: ReactNode }) {
@@ -40,10 +41,21 @@ export function State({ loading, error, empty, children }: { loading: boolean; e
 }
 
 const MODES: Array<{ value: ModeFilter; label: string }> = [
-  { value: 'paper', label: 'Paper' },
-  { value: 'real', label: 'Real' },
+  { value: 'paper', label: MODE_LABEL.paper },
+  { value: 'real', label: MODE_LABEL.real },
   { value: 'all', label: 'All' },
 ]
+
+export function NeedsList({ needs }: { needs: string[] }) {
+  if (!needs.length) return <p className="muted">Nothing missing.</p>
+  return (
+    <ul className="needs">
+      {needs.map((n) => (
+        <li key={n}>{n}</li>
+      ))}
+    </ul>
+  )
+}
 
 export function ModeTabs({ value, onChange }: { value: ModeFilter; onChange: (mode: ModeFilter) => void }) {
   return (

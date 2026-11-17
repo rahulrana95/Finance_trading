@@ -30,6 +30,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 rel90.py           # reversal and breakout signals with target / stop outcomes
     python3 stock_study.py ICICI   # same search on one stock (needs data/ICICI.json from Yahoo ICICIBANK.NS)
     python3 dips.py ICICI 2016-01-01 126   # falls of 5-30% from the 6-month high and time to recover
+    python3 dipalgo.py         # buy-the-dip rule across ~49 large and ~16 collapsed stocks (needs stocks/*.json from Yahoo)
 
 Split used: train to 2016-12, validation 2017-2021, holdout 2022-01 to 2026-10.
 The holdout has now been looked at; it can no longer count as unseen data.

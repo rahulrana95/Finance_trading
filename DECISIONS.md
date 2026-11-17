@@ -2,6 +2,29 @@
 
 Owner decisions, newest first. Each one is reflected in the doc named.
 
+## 2026-11-17: app stack and hosting
+
+Owner decision, in conversation:
+
+- **One app on Railway.** A single always-on Python service runs the API, the scheduler
+  (5-minute loop, daily backfill, quarterly screen) and serves the built interface. No
+  separate Vercel deployment and no server-side rendering.
+- **Backend:** typed Python (FastAPI, Pydantic, mypy strict).
+- **Interface:** React with TypeScript, built as a single-page app and served by the
+  Python service.
+- **Database:** Supabase (Postgres).
+
+This replaces the earlier "UI on Vercel with same-domain `/api` proxy" line below.
+`ARCHITECTURE.md` still describes the Vercel layout and needs updating when the UI
+milestone (M8) starts.
+
+Still open, owner to decide:
+
+- **Broker** for data and orders (Zerodha Kite Connect, or Dhan + Groww as decided earlier).
+- **Instruments.** `AGENTS.md` section 1 locks trading to Nifty 50 index options. The
+  share-plus-futures research in `research/2026-11-market-moves/` is research only until
+  the owner changes that rule in their own commit.
+
 ## 2026-10-24: backtest engine (T4.0)
 
 Own small replay engine for the daily backtest, not NautilusTrader. Reasons: NautilusTrader

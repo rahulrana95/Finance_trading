@@ -17,4 +17,5 @@ COPY backend/src ./src
 RUN uv sync --frozen --no-dev
 COPY --from=ui /ui/dist /app/static
 ENV STEADY_STATIC_DIR=/app/static
+ENV STEADY_SCHEDULER=true
 CMD ["sh", "-c", "STEADY_VERSION=${RAILWAY_GIT_COMMIT_SHA:-dev} exec uv run --no-dev uvicorn steady.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

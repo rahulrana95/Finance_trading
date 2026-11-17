@@ -8,6 +8,13 @@ address.
 | `GET /api/health` | Status, version and time |
 | `GET /api/stocks` | The stock table: price, distance below the 6-month high, zone, recovery figures, scores and missing data |
 | `GET /api/stocks/{symbol}` | One stock |
+| `GET /api/runs`, `GET /api/runs/{id}` | Algo runs with every step in plain words |
+| `POST /api/runs` | Start a run (`on_demand` or `dry_run`). Answers 202 at once; the run finishes in the background |
+| `GET /api/recommendations` | Ideas the algo proposed, with the stepped plan. Filters: `instrumentType`, `status`, `minZone`, `minScore` |
+
+With `STEADY_SCHEDULER=true` the algo runs once at start and then every 5 minutes, Monday to
+Friday, 09:15 to 15:30 India time. Runs and ideas are kept in memory until the database
+exists, so a restart clears them. The algo only proposes ideas: there is no order code.
 
 Prices are daily closes fetched from a public, unofficial source and cached for 30 minutes.
 The stock list and business figures are a seed file (`src/steady/seeds/stocks.json`) until

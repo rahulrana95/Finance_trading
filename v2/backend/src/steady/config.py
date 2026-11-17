@@ -15,6 +15,7 @@ class Settings(BaseSettings):
 
     static_dir: Path | None = None
     version: str = DEFAULT_VERSION
+    scheduler: bool = False  # run the algo by itself during market hours
 
     @field_validator("static_dir")
     @classmethod

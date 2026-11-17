@@ -33,8 +33,10 @@ def static_dir(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def make_client() -> ClientFactory:
-    def make(static: Path | None, prices: FakePrices | None = None) -> TestClient:
-        settings = Settings(static_dir=static, version=TEST_VERSION)
+    def make(
+        static: Path | None, prices: FakePrices | None = None, scheduler: bool = False
+    ) -> TestClient:
+        settings = Settings(static_dir=static, version=TEST_VERSION, scheduler=scheduler)
         source = prices or FakePrices(default=SLIDE)
         return TestClient(create_app(settings, clock=lambda: FIXED_NOW, prices=source))
 

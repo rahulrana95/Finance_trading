@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { api } from '../api'
+import { api, LIVE } from '../api'
 import type { RunKind } from '../api/types'
+import { AlwaysOnCard } from '../components/AlwaysOnCard'
 import { Card, State } from '../components/ui'
 import { RUN_KIND_LABEL as KIND } from '../constants'
 import { dateTime } from '../lib/format'
@@ -38,16 +39,11 @@ export function Runs() {
         </div>
       </header>
       <div className="grid two">
-        <Card title="Always on" aside={
-          <button type="button" role="switch" aria-checked={settings.data?.alwaysOn ?? false} aria-label="Always on" className={settings.data?.alwaysOn ? 'switch on' : 'switch'} onClick={toggleAlwaysOn}><span /></button>
-        }>
-          <p>Checks every 5 minutes while the market is open, and updates data at 18:30 every day.</p>
-          <p className={settings.data?.alwaysOn ? 'gain strong' : 'muted'}>{settings.data?.alwaysOn ? 'Running' : 'Paused. Runs only when you press Run now.'}</p>
-        </Card>
+        <AlwaysOnCard server={LIVE} on={settings.data?.alwaysOn ?? false} onToggle={toggleAlwaysOn} />
         <Card title="Run on demand">
           <p>Run one check now with the same rules. A dry run shows the reasoning without creating ideas.</p>
           <div className="actions">
-            <button type="button" className="button primary" disabled={busy} onClick={() => start('on_demand')}>Run now</button>
+            <button type="button" className="button primary" disabled={busy} onClick={() => start('on_demand')}>{busy ? 'Running…' : 'Run now'}</button>
             <button type="button" className="button" disabled={busy} onClick={() => start('dry_run')}>Dry run</button>
           </div>
         </Card>

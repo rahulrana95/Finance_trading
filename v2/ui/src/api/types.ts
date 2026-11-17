@@ -5,6 +5,7 @@ export type Instrument = 'cash' | 'future'
 export type InstrumentType = 'cash' | 'future' | 'combo'
 export type RecStatus = 'new' | 'approved' | 'skipped' | 'expired'
 export type RunKind = 'scheduled' | 'on_demand' | 'dry_run' | 'screener'
+export type RunStatus = 'running' | 'done' | 'failed'
 export type StepLevel = 'ok' | 'info' | 'action' | 'warn' | 'error'
 
 export interface FinYear {
@@ -128,6 +129,8 @@ export interface RunStep {
 export interface Run {
   id: string
   kind: RunKind
+  /** Set by the server; the sample data has finished runs only. */
+  status?: RunStatus
   startedAt: string
   summary: string
   steps: RunStep[]

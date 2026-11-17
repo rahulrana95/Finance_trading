@@ -84,3 +84,54 @@ YAHOO_USER_AGENT = "Mozilla/5.0 (compatible; steady/0.1)"
 YAHOO_TIMEOUT_SECONDS = 15.0
 PRICE_FETCH_ATTEMPTS = 2
 MARKET_UTC_OFFSET_MINUTES = 330
+
+# --- plan and paper settings (v2/docs/DESIGN.md section 3.6; PRD decisions D6, D7) ---
+PAPER_CAPITAL = 2_000_000
+PER_STOCK_CAP_PCT = 20.0
+PLAN_PARTS = (1, 2, 3)
+FUTURES_FROM_STEP = 3
+INSTRUMENT_CASH = "cash"
+INSTRUMENT_FUTURE = "future"
+TYPE_COMBO = "combo"
+STATUS_APPROVED = "approved"
+
+NOTE_FUTURES_FROM = "Futures are only considered from step {step}."
+NOTE_LOT_UNKNOWN = "Futures not offered: lot size needs data."
+NOTE_LOT_TOO_BIG = (
+    "Futures not offered: one lot is worth about {lot}, more than the {amount} for this step."
+)
+NOTE_FUTURES_USED = "Step {step} uses one futures lot."
+
+# --- algo runs and ideas ---
+RUNS_PATH = "/runs"
+IDEAS_PATH = "/recommendations"
+MAX_RUNS_KEPT = 50
+KIND_SCHEDULED = "scheduled"
+KIND_ON_DEMAND = "on_demand"
+KIND_DRY_RUN = "dry_run"
+RUN_RUNNING = "running"
+RUN_DONE = "done"
+RUN_FAILED = "failed"
+IDEA_NEW = "new"
+IDEA_EXPIRED = "expired"
+LEVEL_OK = "ok"
+LEVEL_INFO = "info"
+LEVEL_ACTION = "action"
+LEVEL_WARN = "warn"
+LEVEL_ERROR = "error"
+MSG_UNKNOWN_RUN = "Unknown run"
+SUMMARY_RUNNING = "Running"
+SUMMARY_NO_ACTION = "No action"
+SUMMARY_DRY_RUN = "Dry run, no ideas created"
+SUMMARY_NO_PRICES = "No prices available"
+SUMMARY_FAILED = "The run failed"
+
+# --- schedule (India time; exchange holidays are not known yet) ---
+MARKET_TIMEZONE = "Asia/Kolkata"
+MARKET_OPEN = (9, 15)
+MARKET_CLOSE = (15, 30)
+SCHEDULE_DAYS = "mon-fri"
+SCHEDULE_HOURS = "9-15"
+SCHEDULE_MINUTES = "*/5"
+SCHEDULER_JOB_ID = "algo-run"
+SCHEDULER_START_JOB_ID = "algo-run-at-start"

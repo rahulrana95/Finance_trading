@@ -1,8 +1,9 @@
 """Plain data shapes shared by adapters and services."""
 
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, field
+from datetime import date, datetime
 
+from steady.core.plan import Plan
 from steady.core.scoring import FinYear
 
 
@@ -32,3 +33,39 @@ class StockSeed:
     debt_to_equity: float | None
     promoter_pledge_pct: float | None
     business: Business
+
+
+@dataclass(frozen=True)
+class RunStep:
+    seq: int
+    at: datetime
+    subject: str
+    level: str
+    message: str
+
+
+@dataclass
+class Run:
+    id: str
+    kind: str
+    status: str
+    started_at: datetime
+    summary: str
+    finished_at: datetime | None = None
+    steps: list[RunStep] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class Idea:
+    id: str
+    symbol: str
+    name: str
+    zone: int
+    plan: Plan
+    target_price: float
+    hard_exit_price: float
+    evidence_score: int
+    reasons: tuple[str, ...]
+    risks: tuple[str, ...]
+    status: str
+    created_at: datetime

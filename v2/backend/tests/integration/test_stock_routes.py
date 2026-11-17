@@ -86,4 +86,11 @@ def test_the_stock_routes_are_read_only(make_client: ClientFactory):
 
 def test_the_routes_are_in_the_published_schema(make_client: ClientFactory):
     paths = make_client(None).get("/api/openapi.json").json()["paths"]
-    assert list(paths) == ["/api/health", "/api/stocks", "/api/stocks/{symbol}"]
+    assert list(paths) == [
+        "/api/health",
+        "/api/stocks",
+        "/api/stocks/{symbol}",
+        "/api/runs",
+        "/api/runs/{run_id}",
+        "/api/recommendations",
+    ]

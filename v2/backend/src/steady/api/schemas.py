@@ -1,6 +1,7 @@
 """Response shapes for the API."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
@@ -64,3 +65,53 @@ class StockOut(CamelModel):
     scores: ScoresOut
     needs: list[str]
     history: list[float]
+
+
+class RunStepOut(CamelModel):
+    seq: int
+    at: datetime
+    subject: str
+    level: str
+    message: str
+
+
+class RunOut(CamelModel):
+    id: str
+    kind: str
+    status: str
+    started_at: datetime
+    finished_at: datetime | None
+    summary: str
+    steps: list[RunStepOut]
+
+
+class RunRequest(BaseModel):
+    kind: Literal["on_demand", "dry_run"] = "on_demand"
+
+
+class PlanStepOut(CamelModel):
+    step: int
+    level_pct: float
+    level_price: float
+    amount: int
+    instrument: str
+    quantity: int
+    reached: bool
+    filled: bool
+
+
+class IdeaOut(CamelModel):
+    id: str
+    symbol: str
+    name: str
+    zone: int
+    instrument_type: str
+    steps: list[PlanStepOut]
+    target_price: float
+    hard_exit_price: float
+    evidence_score: int
+    reasons: list[str]
+    risks: list[str]
+    futures_note: str
+    status: str
+    created_at: datetime

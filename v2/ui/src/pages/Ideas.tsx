@@ -1,15 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../api'
+import { api, LIVE } from '../api'
 import type { InstrumentType, Mode, RecStatus, Recommendation } from '../api/types'
 import { Card, Meter, Pill, State } from '../components/ui'
-import { INSTRUMENT_LABEL, INSTRUMENT_TYPE_LABEL, REC_STATUS_LABEL } from '../constants'
+import { IDEA_READ_ONLY, INSTRUMENT_LABEL, INSTRUMENT_TYPE_LABEL, REC_STATUS_LABEL } from '../constants'
 import { messageOf } from '../lib/errors'
 import { price, rupees } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
 
-function IdeaCard({ rec, onChanged }: { rec: Recommendation; onChanged: () => void }) {
+interface IdeaCardProps {
+  rec: Recommendation
+  /** True while the server cannot save a decision yet (it needs sign-in first). */
+  readOnly: boolean
+  onChanged: () => void
+}
+
+export function IdeaCard({ rec, readOnly, onChanged }: IdeaCardProps) {
   const [mode, setMode] = useState<Mode>('paper')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>()
@@ -75,7 +82,8 @@ function IdeaCard({ rec, onChanged }: { rec: Recommendation; onChanged: () => vo
         </table>
       </div>
       <p className="muted small">{rec.futuresNote} Sell everything at {price(rec.targetPrice)}; close at {price(rec.hardExitPrice)}.</p>
-      {rec.status === 'new' && next && (
+      {readOnly && rec.status === 'new' && <p className="note">{IDEA_READ_ONLY}</p>}
+      {!readOnly && rec.status === 'new' && next && (
         <div className="idea-actions">
           <fieldset className="mode-choice">
             <legend>Place this as</legend>
@@ -122,7 +130,7 @@ export function Ideas() {
           </label>
           <label>State
             <select value={status} onChange={(e) => setStatus(e.target.value as RecStatus | 'any')}>
-              <option value="any">All</option><option value="new">Waiting for you</option><option value="approved">Approved</option><option value="skipped">Skipped</option>
+              <option value="any">All</option><option value="new">Waiting for you</option><option value="approved">Approved</option><option value="skipped">Skipped</option><option value="expired">Expired</option>
             </select>
           </label>
           <label>Deepest zone at least
@@ -138,7 +146,7 @@ export function Ideas() {
         </div>
       </Card>
       <State loading={loading} error={error} empty={!data?.length && 'No ideas match. Ideas appear when an approved stock falls 10% or more below its 6-month high.'}>
-        {data?.map((rec) => <IdeaCard key={rec.id} rec={rec} onChanged={reload} />)}
+        {data?.map((rec) => <IdeaCard key={rec.id} rec={rec} readOnly={LIVE} onChanged={reload} />)}
       </State>
       <p className="muted small">Ideas come from fixed rules, not advice. Nothing is bought without your approval.</p>
     </>

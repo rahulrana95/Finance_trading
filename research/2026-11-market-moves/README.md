@@ -36,6 +36,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 combo.py           # shares + futures ladder, settings re-chosen yearly from the prior 1 or 2 years
     python3 live_combo.py      # same, settings re-chosen weekly or monthly, orders triggered inside the day, 10 years
     python3 screen.py          # which large stocks suited the rule, and whether past fit carried over (needs stocks/*.json)
+    python3 fetch500.py; python3 screen300.py   # top 300 by traded value: recovery from falls, shortlist (needs lists/n500.csv)
 
 Split used: train to 2016-12, validation 2017-2021, holdout 2022-01 to 2026-10.
 The holdout has now been looked at; it can no longer count as unseen data.

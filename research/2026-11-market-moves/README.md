@@ -27,6 +27,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 macd_tf.py         # MACD timeframe and setting comparison (hourly needs nsei_1h.json)
     python3 patterns.py        # ten chart patterns and their pairs on daily, 4-hour and 1-hour bars
     python3 search80.py        # exhaustive search for an 80% direction signal, three-way split
+    python3 rel90.py           # reversal and breakout signals with target / stop outcomes
 
 Split used: train to 2016-12, validation 2017-2021, holdout 2022-01 to 2026-10.
 The holdout has now been looked at; it can no longer count as unseen data.

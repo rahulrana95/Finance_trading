@@ -1,7 +1,7 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import { api, resetMockApi } from './api'
 import { DEMO_EMAIL, DEMO_PASSWORD } from './api/mock/data'
@@ -26,6 +26,7 @@ async function openSignedIn(route: string) {
 }
 
 beforeEach(() => resetMockApi())
+afterEach(() => vi.unstubAllGlobals())
 
 describe('sign in', () => {
   it('sends you to sign in when there is no session', () => {
@@ -229,5 +230,23 @@ describe('settings', () => {
     expect(await screen.findByText('Stopped')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Allow new orders' }))
     expect(await screen.findByText('Allowed')).toBeInTheDocument()
+  })
+})
+
+describe('backend status', () => {
+  const answer = (ok: boolean, body: unknown) => vi.fn().mockResolvedValue({ ok, json: () => Promise.resolve(body) })
+  it('says connected, with the version, when the server answers', async () => {
+    vi.stubGlobal('fetch', answer(true, { status: 'ok', service: 'steady', version: 'abcdef1234', time: 'now' }))
+    await openSignedIn('/settings')
+    expect(await screen.findByText('Connected')).toBeInTheDocument()
+    expect(screen.getByText(/version abcdef1\)/)).toBeInTheDocument()
+  })
+  it('says not connected when the server is missing, failing or unhealthy', async () => {
+    for (const fetchMock of [vi.fn().mockRejectedValue(new Error('offline')), answer(false, {}), answer(true, { status: 'down' })]) {
+      vi.stubGlobal('fetch', fetchMock)
+      await openSignedIn('/settings')
+      expect(await screen.findByText(/No server is answering/)).toBeInTheDocument()
+      cleanup()
+    }
   })
 })

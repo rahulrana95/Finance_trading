@@ -1,4 +1,5 @@
 import { api } from '../api'
+import { fetchHealth } from '../api/health'
 import { Card, Pill, State } from '../components/ui'
 import { rupees } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
@@ -7,6 +8,7 @@ const BROKERS = ['Zerodha', 'Dhan', 'Groww']
 
 export function Settings() {
   const { data: s, error, loading, reload } = useAsync(() => api.getSettings(), [])
+  const health = useAsync(fetchHealth, [])
   async function toggleKill() {
     await api.updateSettings({ killSwitch: !s?.killSwitch })
     reload()
@@ -42,6 +44,13 @@ export function Settings() {
                 ))}
               </ul>
               <p className="muted small">Broker connections arrive with the backend. Until then prices come from a public snapshot.</p>
+            </Card>
+            <Card title="Backend" aside={<Pill kind={health.data ? 'good' : 'neutral'}>{health.loading ? 'Checking' : health.data ? 'Connected' : 'Not connected'}</Pill>}>
+              <p>
+                {health.data
+                  ? `The server is running (version ${health.data.version.slice(0, 7)}). Screens still use sample data until each one is switched over.`
+                  : 'No server is answering. Every screen is running on sample data in your browser.'}
+              </p>
             </Card>
             <Card title="Limits">
               <dl className="rows">

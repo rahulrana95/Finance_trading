@@ -199,7 +199,7 @@ the decisions in `v2/docs/PRD.md` section 8.
 |---|---|---|---|---|
 | V2.0 | PRD, architecture, design and test plan for owner approval | 4h | Claude | review |
 | V2.0b | Approve the documents; decide D1 to D7 (`v2/docs/PRD.md` section 8). Owner said "start coding, frontend first" on 2026-11-17; D1 (the `AGENTS.md` instrument rule) is still open | — | You | doing |
-| V2.1 | Scaffold `v2/backend` and `v2/ui`, tooling, CI job, health endpoint | 5h | Claude | blocked |
+| V2.1 | Scaffold `v2/backend` and `v2/ui`, tooling, health endpoint, one container serving both (CI job for v2 still to add) | 5h | Claude | review |
 | V2.2 | Metrics: reference high, falls, recovery, drawdown | 4h | Claude | blocked |
 | V2.3 | Financial checks, stability and evidence scores, "needs data" | 5h | Claude | blocked |
 | V2.4 | Zones and stepped plan, cash / future / combo | 5h | Claude | blocked |

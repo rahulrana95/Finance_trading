@@ -13,6 +13,7 @@
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
 | T4.8 Market-move research (calm score) | M4 | `claude/wizardly-shannon-w509vv` | Claude |
+| V2.0 v2 design docs (PRD, architecture, design, test plan), waiting for owner approval | v2 | `claude/wizardly-shannon-w509vv` | Claude |
 
 ---
 
@@ -188,3 +189,27 @@
 | T12.1 | Live with small size, owner approval | — | You | todo |
 | T12.2 | Bandit / RL (`RL.md`), after L2 proven | split later | Claude | todo |
 | T12.3 | Auto-exit (after 3 months live, `AGENTS.md` §3) | split later | Claude | todo |
+
+## v2. Stock screener and dip-buying assistant (small first build)
+
+Design in `v2/docs/`. Build starts only after the owner approves the documents and makes
+the decisions in `v2/docs/PRD.md` section 8.
+
+| ID | Task | Est. | Owner | Status |
+|---|---|---|---|---|
+| V2.0 | PRD, architecture, design and test plan for owner approval | 4h | Claude | review |
+| V2.0b | Approve the documents; decide D1 to D7 (`v2/docs/PRD.md` section 8) | — | You | todo |
+| V2.1 | Scaffold `v2/backend` and `v2/ui`, tooling, CI job, health endpoint | 5h | Claude | blocked |
+| V2.2 | Metrics: reference high, falls, recovery, drawdown | 4h | Claude | blocked |
+| V2.3 | Financial checks, stability and evidence scores, "needs data" | 5h | Claude | blocked |
+| V2.4 | Zones and stepped plan, cash / future / combo | 5h | Claude | blocked |
+| V2.5 | Risk check, charges, profit or loss | 5h | Claude | blocked |
+| V2.6 | Database models, migrations, repositories, seed data | 5h | Claude | blocked |
+| V2.7 | Price and financials adapters | 5h | Claude | blocked |
+| V2.8 | Screener service and API | 5h | Claude | blocked |
+| V2.9 | Algo run service, run log, API | 6h | Claude | blocked |
+| V2.10 | Paper broker, trading and portfolio services, API | 6h | Claude | blocked |
+| V2.11 | Sign-in and settings API | 4h | Claude | blocked |
+| V2.12 | Interface: sign in, stocks, stock detail | 6h | Claude | blocked |
+| V2.13 | Interface: ideas, trades, algo runs, settings | 6h | Claude | blocked |
+| V2.14 | Scheduler, end-to-end journeys, deploy | 5h | Claude | blocked |

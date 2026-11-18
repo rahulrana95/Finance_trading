@@ -311,3 +311,28 @@ and 59-66% in the test period against 64-66% needed (about zero). The only posit
 periods is "always sell the put side" for the longer expiry, which is the market's upward drift,
 not the signal; its worst single trade is a full loss and its worst run was 14-20 full losses.
 The modelled credit ignores skew and real bid/ask, so real results would be lower.
+
+---
+
+## 2026-11-18 · "Win big, lose small" on Nifty: fixed stop with a larger target or trailing stop (T4.8)
+
+**Verdict: the wins can be made larger than the losses (1.4 to 2.4 times), but the win rate then
+falls to 30-46%, never 50-60%. The two cancel: the best rules made 2-5 R a year (about 2-5% a
+year at 1% risk per trade) with drawdowns of 9-28 R. No rule came near 20-30% a year.**
+
+Research only. Index prices as a stand-in for the future, 0.05% cost per trade, stop assumed
+first when stop and target share a day. Code: `research/2026-11-market-moves/skew.py`.
+Nifty daily 2007-09 to 2026-11-06, train before 2017, test from 2017. R = amount risked per trade.
+
+| Entry, exit | Win rate (train / test) | Win size / loss size | R per year | Max drawdown, R |
+|---|---|---|---|---|
+| MACD above zero, long only; stop 1.5 ATR, trail 2.5 ATR | 34% / 41% | 2.3 / 2.1 | 1.9 / 4.4 | -10.9 / -8.9 |
+| MACD above zero, long only; stop 1 ATR, target 3 ATR | 32% / 36% | 2.4 / 2.4 | 2.0 / 5.5 | -14.8 / -12.0 |
+| Breakout up in an uptrend; stop 1.5 ATR, trail 2.5 ATR | 44% / 45% | 1.9 / 1.9 | 1.3 / 1.9 | -4.1 / -10.6 |
+| MACD and RSI agree; stop 1 ATR, target 2 ATR | 38% / 37% | 1.8 / 1.8 | 3.3 / 1.4 | -15.6 / -21.0 |
+| Always long; stop 1.5 ATR, trail 2.5 ATR | 34% / 36% | 2.2 / 2.2 | 2.4 / 4.1 | -14.0 / -17.5 |
+| 20-day breakout, long and short; stop 1 ATR, target 2 ATR | 37% / 34% | 1.8 / 1.8 | 1.0 / -1.1 | -15.6 / -35.9 |
+
+17 of 32 entry/exit pairs were positive in both periods, all with an average of 0.0-0.25 R per
+trade. Raising risk per trade to reach 20% a year would scale the drawdown the same way (4-10
+times), past the 5% yearly limit in `AGENTS.md`.

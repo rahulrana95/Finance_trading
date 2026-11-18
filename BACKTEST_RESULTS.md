@@ -262,3 +262,52 @@ Double tops and bottoms, triangles (long), hammers and gaps were below baseline.
 shoulders fired fewer than 8 times per period on every timeframe and could not be scored.
 The 1-hour edges are 0.1-0.2% per trade before costs. With about 150 pairs tested and no
 persistence between periods, the listed pairs are leads, not findings.
+
+---
+
+## 2026-11-18 · Monday open as the line: MACD + RSI direction, and an at-the-money hedged spread (T4.8)
+
+**Verdict: MACD plus RSI does not tell which side of Monday's open Nifty will close on. Every
+version was right 47-55% of the time, the same as a coin or as "always up". An at-the-money
+spread with a 200-point hedge needs a 57-66% win rate to break even; the signals did not reach
+it in both periods.**
+
+Research only. Index prices; option credits are **modelled** (Black-Scholes, India VIX as
+volatility, no skew), not traded prices. Code: `research/2026-11-market-moves/monday.py`.
+
+| Item | Value |
+|---|---|
+| Data | Nifty daily 2007-09 to 2026-11-06, 986 weeks. Train before 2017, test from 2017 |
+| Signal | MACD 12/26/9 and RSI 14 at the previous close; entry at the week's first open |
+| Exit | Close of the same day, +1 day (this Tuesday), +4 (Friday), +6 (next Tuesday) |
+| Spread | Sell at the money on the side the call says is safe, hedge 0.83% away (200 points at 24,000), hold to the expiry close, 3.5 points of costs |
+
+Close on the called side of Monday's open, exit next Tuesday (+6), train / test:
+
+| Call | Weeks | Right side | Right by 0.4%+ | Wrong by 0.4%+ |
+|---|---|---|---|---|
+| Always up (no signal) | 472 / 513 | 55% / 56% | 49% / 50% | 42% / 37% |
+| MACD above its signal line | 472 / 513 | 52% / 50% | 48% / 43% | 43% / 45% |
+| MACD above zero | 472 / 513 | 49% / 54% | 45% / 48% | 47% / 40% |
+| RSI above 50 | 472 / 513 | 52% / 50% | 46% / 45% | 45% / 42% |
+| MACD > signal and RSI > 50 (or both opposite) | 347 / 368 | 52% / 50% | 47% / 44% | 43% / 44% |
+| MACD > signal, MACD > 0 and RSI > 50 (or all opposite) | 276 / 304 | 51% / 53% | 46% / 47% | 44% / 42% |
+| Reversal: RSI < 35 up, RSI > 70 down | 80 / 85 | 45% / 47% | 39% / 44% | 49% / 46% |
+
+Same-day and +1 day exits were 47-53% right for every call in both periods.
+
+At-the-money spread, expiry next Tuesday, credit priced at 0.85 x VIX, train / test:
+
+| Call | Win rate | Break-even win rate | Average per trade, % of money at risk | Worst run of losses, in full-loss units |
+|---|---|---|---|---|
+| Always sell the put side | 58% / 62% | 57% / 59% | +3.4 / +8.0 | 14 / 20 |
+| Always sell the call side | 50% / 50% | 58% / 60% | -13.0 / -15.8 | 65 / 87 |
+| MACD above its signal line | 57% / 55% | 58% / 60% | -0.1 / -5.3 | 20 / 38 |
+| MACD > signal and RSI > 50 (or both opposite) | 57% / 56% | 58% / 60% | 0.0 / -3.7 | 14 / 29 |
+| All three agree | 56% / 57% | 58% / 60% | -1.3 / -1.0 | 14 / 17 |
+
+Expiry the next day (+1): win rates 53-58% in training against 61-63% needed (all negative),
+and 59-66% in the test period against 64-66% needed (about zero). The only positive line in both
+periods is "always sell the put side" for the longer expiry, which is the market's upward drift,
+not the signal; its worst single trade is a full loss and its worst run was 14-20 full losses.
+The modelled credit ignores skew and real bid/ask, so real results would be lower.

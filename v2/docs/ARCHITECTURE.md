@@ -2,7 +2,8 @@
 
 **Status: DRAFT, waiting for owner approval.** Date: 2026-11-17.
 Stack decided in `DECISIONS.md` (2026-11-17): one Python service on Railway that also serves
-a React single-page app; Supabase for Postgres and sign-in.
+a React single-page app; Railway Postgres for data (owner decision, 2026-11-19). Sign-in
+was planned on Supabase Auth and is to be re-decided; mentions of it below are the old plan.
 
 ## 1. Shape
 
@@ -20,7 +21,7 @@ Browser (React SPA) ───►│ FastAPI                                     
                         │ services ──► core (pure rules) ──► ports ◄── adapters               │
                         └───────────────────────────────┬─────────────────────────────────────┘
                                                         │
-                    Supabase Postgres ◄─────────────────┤──► Price source (public now, broker later)
+                    Railway Postgres  ◄─────────────────┤──► Price source (public now, broker later)
                     Supabase Auth                       └──► Paper broker (in-process)
                                                              Real broker adapter (locked stub)
 ```

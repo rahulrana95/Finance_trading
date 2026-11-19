@@ -21,6 +21,7 @@ from steady.constants import (
     RUN_RUNNING,
     SUMMARY_DRY_RUN,
     SUMMARY_FAILED,
+    SUMMARY_INTERRUPTED,
     SUMMARY_NO_ACTION,
     SUMMARY_NO_PRICES,
 )
@@ -174,3 +175,17 @@ def test_ids_are_unique_by_default():
     stocks = StockService(load_seed_stocks(), FakePrices(default=FLAT), clock)
     algo = AlgoService(stocks, MemoryStore(), clock)
     assert algo.run(KIND_ON_DEMAND).id != algo.run(KIND_ON_DEMAND).id
+
+
+def test_runs_left_running_by_a_restart_are_closed():
+    store = MemoryStore()
+    stuck, _ = make(store=store).start(KIND_ON_DEMAND)
+    restarted = make(store=store)
+    assert restarted.recover() == 1
+    assert (stuck.status, stuck.summary, stuck.finished_at) == (
+        RUN_FAILED,
+        SUMMARY_INTERRUPTED,
+        NOW,
+    )
+    assert restarted.recover() == 0
+    assert restarted.start(KIND_ON_DEMAND)[1] is True

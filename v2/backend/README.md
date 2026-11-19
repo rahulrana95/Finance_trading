@@ -13,8 +13,10 @@ address.
 | `GET /api/recommendations` | Ideas the algo proposed, with the stepped plan. Filters: `instrumentType`, `status`, `minZone`, `minScore` |
 
 With `STEADY_SCHEDULER=true` the algo runs once at start and then every 5 minutes, Monday to
-Friday, 09:15 to 15:30 India time. Runs and ideas are kept in memory until the database
-exists, so a restart clears them. The algo only proposes ideas: there is no order code.
+Friday, 09:15 to 15:30 India time. Runs and ideas are kept in Postgres when
+`STEADY_DATABASE_URL` is set (tables are brought up to date at start by Alembic, migrations
+in `src/steady/db/migrations`); without it they live in memory and a restart clears them.
+The algo only proposes ideas: there is no order code.
 
 Prices are daily closes fetched from a public, unofficial source and cached for 30 minutes.
 The stock list and business figures are a seed file (`src/steady/seeds/stocks.json`) until

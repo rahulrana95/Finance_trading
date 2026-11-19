@@ -13,7 +13,7 @@
 | Task | Milestone | Branch / change | Owner |
 |---|---|---|---|
 | T4.8 Market-move research (calm score) | M4 | `claude/wizardly-shannon-w509vv` | Claude |
-| V2.4 and V2.9 live (plan, algo runs, ideas; kept in memory); next V2.6 database | v2 | `claude/wizardly-shannon-w509vv` | Claude |
+| V2.6 database live for runs and ideas (Railway Postgres); next V2.11 sign-in, then trades after decision D1 | v2 | `claude/wizardly-shannon-w509vv` | Claude |
 
 ---
 
@@ -204,10 +204,10 @@ the decisions in `v2/docs/PRD.md` section 8.
 | V2.3 | Financial checks, stability and evidence scores, "needs data" | 5h | Claude | review |
 | V2.4 | Zones and stepped plan, cash / future / combo | 5h | Claude | review |
 | V2.5 | Risk check, charges, profit or loss | 5h | Claude | blocked |
-| V2.6 | Database models, migrations, repositories, seed data | 5h | Claude | blocked |
+| V2.6 | Database: Railway Postgres, migrations, store for runs and ideas (trade tables wait for decision D1) | 5h | Claude | review |
 | V2.7 | Price adapter (done: public source) and financials adapter (still a seed file) | 5h | Claude | doing |
 | V2.8 | Stock table service and read-only API (done, live); screener run and status changes wait for the database and sign-in | 5h | Claude | doing |
-| V2.9 | Algo run service, run log, API (runs and ideas kept in memory until V2.6; read-only ideas, no orders) | 6h | Claude | review |
+| V2.9 | Algo run service, run log, API (read-only ideas, no orders) | 6h | Claude | review |
 | V2.10 | Paper broker, trading and portfolio services, API | 6h | Claude | blocked |
 | V2.11 | Sign-in and settings API | 4h | Claude | blocked |
 | V2.12 | Interface: sign in, stocks, stock detail (built first, on mock data, at the owner's request) | 6h | Claude | review |

@@ -135,3 +135,9 @@ SCHEDULE_HOURS = "9-15"
 SCHEDULE_MINUTES = "*/5"
 SCHEDULER_JOB_ID = "algo-run"
 SCHEDULER_START_JOB_ID = "algo-run-at-start"
+
+# --- database ---
+POSTGRES_PREFIXES = ("postgres://", "postgresql://")
+POSTGRES_DRIVER_PREFIX = "postgresql+psycopg://"
+SQLITE_PREFIX = "sqlite"
+SUMMARY_INTERRUPTED = "Interrupted by a restart"

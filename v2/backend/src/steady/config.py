@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic import field_validator
+from pydantic import SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from steady.constants import DEFAULT_VERSION, ENV_PREFIX, INDEX_FILE
@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     static_dir: Path | None = None
     version: str = DEFAULT_VERSION
     scheduler: bool = False  # run the algo by itself during market hours
+    database_url: SecretStr | None = None  # without it, runs and ideas live in memory
 
     @field_validator("static_dir")
     @classmethod

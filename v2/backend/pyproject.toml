@@ -5,11 +5,14 @@ description = "v2 stock screener and paper-trading assistant: API and static int
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "alembic>=1.14",
     "apscheduler>=3.10,<4",
     "asgi-correlation-id>=4.3",
     "fastapi>=0.115",
     "httpx2>=2.16",
+    "psycopg[binary]>=3.2",
     "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0",
     "tzdata>=2024.1",
     "tenacity>=9.0",
     "uvicorn[standard]>=0.32",

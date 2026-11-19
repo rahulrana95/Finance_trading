@@ -17,6 +17,9 @@ class MemoryStore:
     def add_run(self, run: Run) -> None:
         self._runs.appendleft(run)
 
+    def save_run(self, run: Run) -> None:
+        """Nothing to do: the stored run is the same object the caller changed."""
+
     def runs(self) -> list[Run]:
         return list(self._runs)
 
@@ -36,3 +39,6 @@ class MemoryStore:
 
     def expire(self, idea: Idea) -> None:
         self._ideas[idea.id] = replace(idea, status=IDEA_EXPIRED)
+
+    def close(self) -> None:
+        """Nothing to release."""

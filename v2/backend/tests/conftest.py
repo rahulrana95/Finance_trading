@@ -1,11 +1,12 @@
 """Shared fixtures: a fixed clock, a built-interface folder, and a client factory."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from steady.config import Settings
 from steady.main import create_app
@@ -32,12 +33,25 @@ def static_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def make_client() -> ClientFactory:
-    def make(
-        static: Path | None, prices: FakePrices | None = None, scheduler: bool = False
-    ) -> TestClient:
-        settings = Settings(static_dir=static, version=TEST_VERSION, scheduler=scheduler)
-        source = prices or FakePrices(default=SLIDE)
-        return TestClient(create_app(settings, clock=lambda: FIXED_NOW, prices=source))
+def make_client() -> Iterator[ClientFactory]:
+    clients: list[TestClient] = []
 
-    return make
+    def make(
+        static: Path | None,
+        prices: FakePrices | None = None,
+        scheduler: bool = False,
+        database_url: str | None = None,
+    ) -> TestClient:
+        settings = Settings(
+            static_dir=static,
+            version=TEST_VERSION,
+            scheduler=scheduler,
+            database_url=SecretStr(database_url) if database_url else None,
+        )
+        source = prices or FakePrices(default=SLIDE)
+        clients.append(TestClient(create_app(settings, clock=lambda: FIXED_NOW, prices=source)))
+        return clients[-1]
+
+    yield make
+    for client in clients:
+        client.app.state.store.close()  # type: ignore[attr-defined]

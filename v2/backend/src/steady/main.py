@@ -12,12 +12,23 @@ from steady.api import api_router
 from steady.clock import Clock, utc_now
 from steady.config import Settings
 from steady.constants import DOCS_PATH, OPENAPI_PATH, SERVICE_NAME
+from steady.db.engine import make_engine
+from steady.db.migrate import upgrade
+from steady.db.store import SqlStore
 from steady.middleware import add_middleware
-from steady.ports import PriceSource
+from steady.ports import PriceSource, Store
 from steady.scheduler import build_scheduler
 from steady.services.algo import AlgoService
 from steady.services.stocks import StockService
 from steady.web.spa import mount_interface
+
+
+def make_store(settings: Settings) -> Store:
+    if settings.database_url is None:
+        return MemoryStore()
+    url = settings.database_url.get_secret_value()
+    upgrade(url)
+    return SqlStore(make_engine(url))
 
 
 def create_app(
@@ -25,7 +36,9 @@ def create_app(
 ) -> FastAPI:
     source = prices or YahooPriceSource(new_client(), clock)
     stocks = StockService(load_seed_stocks(), source, clock)
-    algo = AlgoService(stocks, MemoryStore(), clock)
+    store = make_store(settings)
+    algo = AlgoService(stocks, store, clock)
+    algo.recover()
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -35,6 +48,7 @@ def create_app(
         yield
         if scheduler:
             scheduler.shutdown(wait=False)
+        store.close()
 
     app = FastAPI(
         title=SERVICE_NAME.title(),
@@ -44,7 +58,7 @@ def create_app(
         redoc_url=None,
         lifespan=lifespan,
     )
-    app.state.algo = algo
+    app.state.algo, app.state.store = algo, store
     add_middleware(app)
     app.include_router(api_router(settings, clock, stocks, algo))
     mount_interface(app, settings.static_dir)  # last: it answers every remaining address

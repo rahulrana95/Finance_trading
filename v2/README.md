@@ -4,7 +4,7 @@
 
 A small personal app: a table of stable, recovering stocks, buy-zone recommendations
 (shares, futures or both), paper trading against real prices, and open trades with profit
-or loss. One Python service on Railway serving a React single-page app; Supabase for the
+or loss. One Python service on Railway serving a React single-page app; Railway Postgres for the
 database and sign-in.
 
 | Document | Contents |

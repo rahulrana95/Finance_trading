@@ -5,7 +5,6 @@ import uuid
 from collections.abc import Callable
 from dataclasses import replace
 
-from steady.adapters.memory import MemoryStore
 from steady.clock import Clock
 from steady.constants import (
     BUY_LEVELS_PCT,
@@ -21,11 +20,13 @@ from steady.constants import (
     STATUS_APPROVED,
     SUMMARY_DRY_RUN,
     SUMMARY_FAILED,
+    SUMMARY_INTERRUPTED,
     SUMMARY_NO_ACTION,
     SUMMARY_NO_PRICES,
     SUMMARY_RUNNING,
 )
 from steady.domain import Idea, Run, RunStep
+from steady.ports import Store
 from steady.services.ideas import build_idea
 from steady.services.stocks import StockService, StockView
 
@@ -44,7 +45,7 @@ class AlgoService:
     def __init__(
         self,
         stocks: StockService,
-        store: MemoryStore,
+        store: Store,
         clock: Clock,
         new_id: Callable[[], str] = _new_id,
     ) -> None:
@@ -88,7 +89,20 @@ class AlgoService:
         if run.summary == SUMMARY_NO_PRICES:
             run.status = RUN_FAILED
         run.finished_at = self._clock()
+        self._store.save_run(run)
         return run
+
+    def recover(self) -> int:
+        """After a restart nothing is running, so runs still marked running are closed."""
+        stuck = [r for r in self._store.runs() if r.status == RUN_RUNNING]
+        for run in stuck:
+            run.status, run.summary, run.finished_at = (
+                RUN_FAILED,
+                SUMMARY_INTERRUPTED,
+                self._clock(),
+            )
+            self._store.save_run(run)
+        return len(stuck)
 
     def run(self, kind: str) -> Run:
         """Starts and finishes a run in one call. Joins nothing: a running one is left alone."""

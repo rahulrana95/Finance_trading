@@ -24,7 +24,9 @@ Owner decision, in conversation:
 - **Backend:** typed Python (FastAPI, Pydantic, mypy strict).
 - **Interface:** React with TypeScript, built as a single-page app and served by the
   Python service.
-- **Database:** Supabase (Postgres).
+- **Database:** Railway Postgres, in the same project as the app (owner decision, 2026-11-19;
+  replaces Supabase for v2). Plain Postgres, so moving later is a copy. Sign-in is still to
+  be chosen: it no longer comes with the database.
 
 This replaces the earlier "UI on Vercel with same-domain `/api` proxy" line below.
 `ARCHITECTURE.md` still describes the Vercel layout and needs updating when the UI

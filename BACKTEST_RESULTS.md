@@ -361,3 +361,35 @@ exit next Tuesday close. Data to 2026-11-03.
 
 By year the rule won 44-54% in every year except 2020 (63%). 2026 was a falling year (Nifty
 closed above the Wednesday entry in only 45% of weeks), which is why "below" calls did better.
+
+---
+
+## 2026-11-20 · 9 / 21 EMA crossover on Nifty daily: when it worked and when not (T4.8)
+
+**Verdict: the crossover wins only about 35% of the time and lives on a few large trends: the
+best 18 of 185 trades made more than the whole profit. Buy crosses were positive in both
+periods; sell crosses lost in both. No condition made it reliable in the sense of winning most
+of the time.**
+
+Research only, index prices, 0.05% cost per trade. Code: `research/2026-11-market-moves/ema_cross.py`.
+Nifty daily 2008-07 to 2026-11-06, 185 crossovers (about 10 a year, median hold 19 days). Signal
+at the cross close, entry next open, exit at the opposite cross. Train before 2017 / test from 2017.
+
+| Condition at the cross | Win rate | Average per trade |
+|---|---|---|
+| Every crossover | 34% / 35% | +0.48% / +0.71% |
+| Buy cross | 39% / 47% | +1.45% / +1.96% |
+| Sell cross | 30% / 23% | -0.49% / -0.56% |
+| In the direction of the 200-day trend | 43% / 40% | +1.21% / +0.99% |
+| Against the 200-day trend | 25% / 31% | -0.26% / +0.44% |
+| Sell cross while price is above the 200-day average | 24% / 25% | -1.39% / -0.30% |
+| MACD already on the same side of zero | 43% / 41% | +0.81% / +0.68% |
+| Cross made by one bar larger than 1 ATR | 36% / 21% | -0.46% / -0.82% |
+| Cross made by a normal bar | 33% / 41% | +0.79% / +1.36% |
+| VIX 20 or more | 28% / 24% | +0.74% / +0.55% |
+
+Average win +6.05%, average loss -2.28%, best +51.1%, worst -8.1%. ADX level, the slope of the
+21 EMA and the time since the previous cross gave results that flipped between periods.
+2026 had 12 crossovers; 3 of the 11 closed ones made money.
+With about 30 condition groups tested on 40-100 trades each, only differences that hold in both
+periods (buy vs sell, with vs against trend, large cross bar) should be given any weight.

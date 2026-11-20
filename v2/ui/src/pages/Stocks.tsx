@@ -2,12 +2,25 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import type { Stock, StockStatus } from '../api/types'
+import { PageNote } from '../components/PageNote'
+import { SortTh } from '../components/SortTh'
 import { Card, Meter, Pill, State } from '../components/ui'
-import { STOCK_STATUS_KIND, STOCK_STATUS_LABEL } from '../constants'
-import { needsSummary, pct, priceOrNeeds } from '../lib/format'
+import { PAGE_NOTES, PRICES_NOT_LIVE, STOCK_STATUS_KIND, STOCK_STATUS_LABEL } from '../constants'
+import { day, needsSummary, pct, priceOrNeeds } from '../lib/format'
+import { sortRows, useSort, type SortValue } from '../lib/sort'
 import { useAsync } from '../lib/useAsync'
 
-type SortKey = 'evidence' | 'below' | 'name'
+type StockColumn = 'name' | 'status' | 'price' | 'below' | 'zone' | 'evidence' | 'needs'
+
+export function stockValue(stock: Stock, column: StockColumn): SortValue {
+  const values: Record<StockColumn, SortValue> = {
+    name: stock.name, status: stock.status, price: stock.lastPrice, below: stock.belowHighPct, zone: stock.zone, evidence: stock.scores.evidence, needs: stock.needs.length,
+  }
+  return values[column]
+}
+
+/** The newest price date in the table, or nothing when no price arrived. */
+export const latestDay = (stocks: Stock[]): string | undefined => stocks.map((s) => s.priceAsOf).filter(Boolean).sort().at(-1)
 
 export function zoneLabel(stock: Stock): string {
   return stock.zone > 0 ? `Buy zone ${stock.zone}` : 'Not in a buy zone'
@@ -17,14 +30,14 @@ export function Stocks() {
   const { data, error, loading } = useAsync(() => api.listStocks(), [])
   const [status, setStatus] = useState<StockStatus | 'all'>('all')
   const [onlyZone, setOnlyZone] = useState(false)
-  const [sort, setSort] = useState<SortKey>('evidence')
+  const [sort, onSort] = useSort<StockColumn>({ key: 'evidence', dir: 'desc' })
 
-  const rows = useMemo(() => {
-    const filtered = (data ?? []).filter((s) => (status === 'all' || s.status === status) && (!onlyZone || s.zone > 0))
-    return [...filtered].sort((a, b) =>
-      sort === 'name' ? a.name.localeCompare(b.name) : sort === 'below' ? b.belowHighPct - a.belowHighPct : b.scores.evidence - a.scores.evidence,
-    )
-  }, [data, status, onlyZone, sort])
+  const rows = useMemo(
+    () => sortRows((data ?? []).filter((s) => (status === 'all' || s.status === status) && (!onlyZone || s.zone > 0)), sort, stockValue),
+    [data, status, onlyZone, sort],
+  )
+  const priced = latestDay(data ?? [])
+  const head = { sort, onSort }
 
   return (
     <>
@@ -34,6 +47,7 @@ export function Stocks() {
           <p className="muted">Stocks that have recovered from falls and passed a business check. Scores describe the past.</p>
         </div>
       </header>
+      <PageNote lines={[...PAGE_NOTES.stocks, `${PRICES_NOT_LIVE}${priced ? ` Latest price: ${day(priced)}.` : ''} They refresh every 30 minutes.`]} />
       <Card>
         <div className="filters">
           <label>
@@ -43,14 +57,6 @@ export function Stocks() {
               <option value="approved">Approved</option>
               <option value="watching">Watching</option>
               <option value="rejected">Rejected</option>
-            </select>
-          </label>
-          <label>
-            Sort by
-            <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
-              <option value="evidence">Evidence score</option>
-              <option value="below">Furthest below high</option>
-              <option value="name">Name</option>
             </select>
           </label>
           <label className="check">
@@ -63,13 +69,13 @@ export function Stocks() {
             <table>
               <thead>
                 <tr>
-                  <th>Stock</th>
-                  <th>Status</th>
-                  <th className="right">Price</th>
-                  <th className="right">Below 6-month high</th>
-                  <th>Zone</th>
-                  <th>Evidence score</th>
-                  <th>Needs data</th>
+                  <SortTh label="Stock" column="name" {...head} />
+                  <SortTh label="Status" column="status" {...head} />
+                  <SortTh label="Price" column="price" numeric {...head} />
+                  <SortTh label="Below 6-month high" column="below" numeric {...head} />
+                  <SortTh label="Zone" column="zone" numeric {...head} />
+                  <SortTh label="Evidence score" column="evidence" numeric {...head} />
+                  <SortTh label="Needs data" column="needs" numeric {...head} />
                 </tr>
               </thead>
               <tbody>

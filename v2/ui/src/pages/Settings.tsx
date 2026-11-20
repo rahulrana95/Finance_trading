@@ -1,7 +1,8 @@
+import { PageNote } from '../components/PageNote'
 import { api } from '../api'
 import { fetchHealth } from '../api/health'
 import { Card, Pill, State } from '../components/ui'
-import { BROKERS } from '../constants'
+import { BROKERS, PAGE_NOTES } from '../constants'
 import { rupees } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
@@ -21,6 +22,7 @@ export function Settings() {
           <p className="muted">How the app trades, and through which broker.</p>
         </div>
       </header>
+      <PageNote lines={PAGE_NOTES.settings} />
       <State loading={loading} error={error}>
         {s && (
           <>

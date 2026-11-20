@@ -136,9 +136,12 @@ export interface Run {
   steps: RunStep[]
 }
 
+export type MarketState = 'deep' | 'down' | 'fine'
+export type Confidence = 'high' | 'medium' | 'low'
+
 export interface Odds {
   level: number
-  marketDown: boolean
+  market: MarketState
   events: number
   gain10In6mPct: number
   gain20In6mPct: number
@@ -147,6 +150,12 @@ export interface Odds {
   gain30In12mPct: number
   higherAfter12mPct: number
   fellFurtherPct: number
+}
+
+export interface Evidence {
+  label: string
+  met: boolean
+  detail: string
 }
 
 export interface ScreenRow {
@@ -162,6 +171,8 @@ export interface ScreenRow {
   ownHigherAfterYear: number
   ownFallsWithYear: number
   worstDayPct: number
+  confidence: Confidence
+  evidence: Evidence[]
 }
 
 export interface Screen {
@@ -170,7 +181,7 @@ export interface Screen {
   universe: number
   priced: number
   marketBelowPct: number
-  marketDown: boolean
+  market: MarketState
   odds: Odds[]
   rows: ScreenRow[]
 }

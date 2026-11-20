@@ -1,9 +1,10 @@
+import { PageNote } from '../components/PageNote'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, LIVE } from '../api'
 import type { InstrumentType, Mode, RecStatus, Recommendation } from '../api/types'
 import { Card, Meter, Pill, State } from '../components/ui'
-import { IDEA_READ_ONLY, INSTRUMENT_LABEL, INSTRUMENT_TYPE_LABEL, REC_STATUS_LABEL } from '../constants'
+import { IDEA_READ_ONLY, INSTRUMENT_LABEL, INSTRUMENT_TYPE_LABEL, REC_STATUS_LABEL, PAGE_NOTES } from '../constants'
 import { messageOf } from '../lib/errors'
 import { price, rupees } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
@@ -121,6 +122,7 @@ export function Ideas() {
           <p className="muted">Approved stocks that are in a buy zone right now, with a plan for each.</p>
         </div>
       </header>
+      <PageNote lines={PAGE_NOTES.ideas} />
       <Card>
         <div className="filters">
           <label>Buy with

@@ -5,12 +5,12 @@ import threading
 import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, timedelta
 
 from steady.clock import Clock
 from steady.constants import (
-    MARKET_DOWN_PCT,
+    CONFIDENCE_ORDER,
     MARKET_SYMBOL,
     SCREEN_LEVELS_PCT,
     SCREEN_MAX_AGE_HOURS,
@@ -19,13 +19,16 @@ from steady.constants import (
 from steady.core.screen import (
     DipEvent,
     below_high_series,
+    confidence,
     dip_events,
     level_reached,
+    market_state,
     odds_table,
     worst_day_pct,
 )
 from steady.domain import Close, Listing, Screen, ScreenRow
 from steady.ports import PriceSource, PriceSourceError, Store
+from steady.services.evidence import build_evidence
 
 log = logging.getLogger(__name__)
 
@@ -46,8 +49,8 @@ def check_stock(
 ) -> tuple[list[DipEvent], ScreenRow | None]:
     """A stock's past falls, and its row if it is in a deep fall today."""
     prices = [c.close for c in closes]
-    down = [market_below.get(c.day, 0.0) >= MARKET_DOWN_PCT for c in closes]
-    events = dip_events(prices, down)
+    states = [market_state(market_below.get(c.day, 0.0)) for c in closes]
+    events = dip_events(prices, states)
     below = below_high_series(prices)[-1]
     level = level_reached(below) if below is not None else 0.0
     if level == 0.0 or below is None:
@@ -67,6 +70,8 @@ def check_stock(
         own_higher_after_year=sum(1 for e in with_year if e.end_12m is not None and e.end_12m > 0),
         own_falls_with_year=len(with_year),
         worst_day_pct=round(worst_day_pct(prices), 1),
+        confidence="",  # set once the odds table for the whole list is known
+        evidence=(),
     )
     return events, row
 
@@ -152,14 +157,25 @@ class ScreenerService:
                     rows.append(row)
         if not priced:
             raise PriceSourceError("The price source did not answer for any stock.")
-        rows.sort(key=lambda r: (-r.level, -r.below_pct, r.symbol))
+        state = market_state(market_now)
+        table = odds_table(events)
+        by_level = {o.level: o for o in table if o.market == state}
+        judged = [
+            replace(
+                row,
+                confidence=confidence(row.level, state, row.worst_day_pct),
+                evidence=build_evidence(row, state, market_now, by_level.get(row.level)),
+            )
+            for row in rows
+        ]
+        judged.sort(key=lambda r: (CONFIDENCE_ORDER[r.confidence], -r.below_pct, r.symbol))
         return Screen(
             id=self._new_id(),
             created_at=self._clock(),
             universe=len(self._universe),
             priced=priced,
             market_below_pct=round(market_now, 1),
-            market_down=market_now >= MARKET_DOWN_PCT,
-            odds=tuple(odds_table(events)),
-            rows=tuple(rows),
+            market=state,
+            odds=tuple(table),
+            rows=tuple(judged),
         )

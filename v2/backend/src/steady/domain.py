@@ -80,6 +80,15 @@ class Listing:
 
 
 @dataclass(frozen=True)
+class Evidence:
+    """One thing the confidence rests on, and whether it holds today."""
+
+    label: str
+    met: bool
+    detail: str
+
+
+@dataclass(frozen=True)
 class ScreenRow:
     """One stock that is in a deep fall today."""
 
@@ -95,6 +104,8 @@ class ScreenRow:
     own_higher_after_year: int
     own_falls_with_year: int
     worst_day_pct: float  # biggest one-day drop in the last year; a huge one suggests a demerger
+    confidence: str
+    evidence: tuple[Evidence, ...]
 
 
 @dataclass(frozen=True)
@@ -104,6 +115,6 @@ class Screen:
     universe: int
     priced: int
     market_below_pct: float
-    market_down: bool
+    market: str
     odds: tuple[Odds, ...]
     rows: tuple[ScreenRow, ...]

@@ -679,3 +679,36 @@ Market-down events came from nine different years (2015, 2016, 2018, 2019, 2020,
 Even in the good case about a third of the stocks fell a further 20% before recovering.
 ICICI Bank fell 25% four times since 2015: after 12 months -12%, +39%, +52%, +44%; in two of
 the four it first fell a further 30-35%.
+
+---
+
+## 2026-11-20 · What counts as evidence after a deep fall (T4.8)
+
+**Verdict: two things raised the odds in both periods: how far the whole market is down, and
+(mildly) how deep the stock's own fall is. The stock's own past recoveries, its size, its
+5-year trend and the speed of the fall did not. The screener's "High" confidence is therefore
+only: Nifty 15% or more below its 1-year high and the stock down 25% or more.**
+
+Research only, closing prices with dividends, no costs, today's Nifty 500 members.
+Code: `research/2026-11-market-moves/dipevidence.py`. Stock fell 25% from its 1-year high;
+higher after 6 months / higher after a year, 2015-2020 then 2021-2026:
+
+| Condition on the day | 2015-2020 | 2021-2026 |
+|---|---|---|
+| Nifty 15%+ below its high | 85% / 93% (n=329) | 83% / 87% (n=60) |
+| Nifty 10-15% below its high | 62% / 70% (n=222) | 75% / 66% (n=431) |
+| Nifty less than 10% below (stock fell alone) | 50% / 49% (n=991) | 61% / 62% (n=1,056) |
+| Nifty 15%+ down and the stock fell 30% | 86% / 94% (n=318) | 93% / 85% (n=46) |
+
+Inside market falls (Nifty 10%+ down), factors that did not hold in both periods:
+
+| Factor | 2015-2020 (higher after a year) | 2021-2026 |
+|---|---|---|
+| Its own earlier falls mostly ended higher (3+ falls, 2/3 up) | 86% | 60% |
+| Its own earlier falls mostly ended lower | 85% | 85% |
+| Top 50 by trading / outside top 100 | 79% / 85% | 73% / 68% |
+| Up 60%+ over the 5 years before / not | 92% / 82% | 67% / 73% |
+| Fell in under 40 days / over 120 days | 84% / 90% | 67% / 68% |
+
+Deep market falls (Nifty 15%+ down) occurred in 2015, 2016, 2020, 2022, 2025 and 2026, so the
+"High" case rests on about six episodes. Even there 21-35% of stocks fell another 20% first.

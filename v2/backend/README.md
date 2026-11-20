@@ -21,7 +21,9 @@ in `src/steady/db/migrations`); without it they live in memory and a restart cle
 The screener also runs at 18:30 India time on weekdays, and at start if the stored screen is
 older than 20 hours. Its odds are how often each outcome followed past falls of the same size
 (from the 1-year high, with or without Nifty also 10% down); the method and its test are in
-`BACKTEST_RESULTS.md` (2026-11-20). The algo only proposes ideas: there is no order code.
+`BACKTEST_RESULTS.md` (2026-11-20). Each fallen stock gets a confidence: high only when Nifty is 15% or more below its 1-year
+high and the stock is down 25% or more, with the evidence listed in plain words.
+The algo only proposes ideas: there is no order code.
 
 Prices are daily closes fetched from a public, unofficial source and cached for 30 minutes.
 The stock list and business figures are a seed file (`src/steady/seeds/stocks.json`) until

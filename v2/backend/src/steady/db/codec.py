@@ -7,7 +7,7 @@ from typing import Any
 from steady.core.plan import Plan, PlanStep
 from steady.core.screen import Odds
 from steady.db.models import IdeaRow, RunRow, ScreenRecord
-from steady.domain import Idea, Run, RunStep, Screen, ScreenRow
+from steady.domain import Evidence, Idea, Run, RunStep, Screen, ScreenRow
 
 RUN_COLUMNS = ("kind", "status", "started_at", "finished_at", "summary")
 IDEA_COLUMNS = ("id", "symbol", "status", "created_at")
@@ -53,5 +53,8 @@ def screen_values(screen: Screen) -> dict[str, Any]:
 def to_screen(row: ScreenRecord) -> Screen:
     body = dict(row.body)
     odds = tuple(Odds(**o) for o in body.pop("odds"))
-    rows = tuple(ScreenRow(**r) for r in body.pop("rows"))
+    rows = tuple(
+        ScreenRow(**{**r, "evidence": tuple(Evidence(**e) for e in r["evidence"])})
+        for r in body.pop("rows")
+    )
     return Screen(id=row.id, created_at=row.created_at, odds=odds, rows=rows, **body)

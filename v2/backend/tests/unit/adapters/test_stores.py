@@ -4,15 +4,16 @@ from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy.orm import Session
 
 from steady.adapters.memory import MemoryStore
 from steady.constants import IDEA_EXPIRED, IDEA_NEW, KIND_ON_DEMAND, RUN_DONE
 from steady.core.plan import Plan, PlanStep
 from steady.core.screen import Odds
 from steady.db.engine import make_engine
-from steady.db.models import Base
+from steady.db.models import Base, ScreenRecord
 from steady.db.store import SqlStore
-from steady.domain import Idea, Run, RunStep, Screen, ScreenRow
+from steady.domain import Evidence, Idea, Run, RunStep, Screen, ScreenRow
 from steady.ports import Store
 
 NOW = datetime(2026, 11, 17, 10, 0, tzinfo=UTC)
@@ -105,15 +106,37 @@ def test_an_idea_keeps_its_plan_reasons_and_risks(make):
 def test_the_latest_screen_is_kept_whole(make):
     store: Store = make(50)
     assert store.latest_screen() is None
-    odds = (Odds(25.0, True, 3, 66.7, 33.3, 66.7, 2, 50.0, 50.0, 50.0),)
+    why = (Evidence("The whole market is in a fall", True, "Nifty is 16% below."),)
+    odds = (Odds(25.0, "deep", 3, 66.7, 33.3, 66.7, 2, 50.0, 50.0, 50.0),)
     rows = (
         ScreenRow(
-            "TITAN", "Titan", "Jewellery", 75.0, "2026-11-17", 100.0, 25.0, 25.0, 2, 1, 2, 6.5
+            "TITAN",
+            "Titan",
+            "Jewels",
+            75.0,
+            "2026-11-17",
+            100.0,
+            25.0,
+            25.0,
+            2,
+            1,
+            2,
+            6.5,
+            "high",
+            why,
         ),
     )
-    first = Screen("s1", NOW, 500, 447, 12.0, True, odds, rows)
-    second = Screen("s2", NOW + timedelta(days=1), 500, 440, 3.0, False, (), ())
+    first = Screen("s1", NOW, 500, 447, 16.0, "deep", odds, rows)
+    second = Screen("s2", NOW + timedelta(days=1), 500, 440, 3.0, "fine", (), ())
     store.save_screen(first)
     assert store.latest_screen() == first
     store.save_screen(second)
     assert store.latest_screen() == second
+
+
+def test_a_screen_stored_by_an_older_version_is_ignored():
+    store = sql_store(50)
+    with Session(store._engine) as session, session.begin():
+        session.add(ScreenRecord(id="old", created_at=NOW, body={"market_down": True, "rows": []}))
+    assert store.latest_screen() is None
+    store.close()

@@ -50,7 +50,7 @@ def test_no_row_when_not_in_a_fall_or_without_enough_history():
 def test_the_market_state_is_read_by_date():
     day = FELL[130].day
     events, _ = check_stock(A, FELL, {day: 12.0})
-    assert {e.market_down for e in events} == {True}
+    assert {e.market for e in events} == {"down"}
 
 
 def test_a_screen_lists_fallen_stocks_deepest_first_with_the_odds_table():
@@ -60,18 +60,44 @@ def test_a_screen_lists_fallen_stocks_deepest_first_with_the_odds_table():
     assert (state.running, state.error) == (False, None)
     assert screen is not None
     assert (screen.id, screen.created_at, screen.universe, screen.priced) == ("s1", NOW, 3, 3)
-    assert (screen.market_below_pct, screen.market_down) == (0.0, False)
+    assert (screen.market_below_pct, screen.market) == (0.0, "fine")
     assert [(r.symbol, r.level) for r in screen.rows] == [("CCC", 40.0), ("AAA", 25.0)]
-    odds = {(o.level, o.market_down): o for o in screen.odds}
-    assert (odds[25.0, False].events, odds[25.0, False].higher_12m_pct) == (1, 100.0)
-    assert odds[25.0, True].events == 0
+    odds = {(o.level, o.market): o for o in screen.odds}
+    assert (odds[25.0, "fine"].events, odds[25.0, "fine"].higher_12m_pct) == (1, 100.0)
+    assert odds[25.0, "deep"].events == 0
+    assert {r.confidence for r in screen.rows} == {"low"}
+    first = screen.rows[1].evidence
+    assert [e.met for e in first] == [False, False, True, True, True]
+    assert (
+        first[0].detail == "Nifty is 0.0% below its 1-year high; a market-wide fall starts at 10%."
+    )
+    assert first[2].detail == "It is 25.0% below its 1-year high of 100."
+    assert first[4].detail == (
+        "1 past falls like this: 100% were higher after 6 months, 100% after a year, "
+        "and 0% fell another 20% first."
+    )
+    assert screen.rows[0].evidence[4].detail == "No past fall like this to compare with."
 
 
 def test_a_falling_market_is_flagged():
     market = closes([100.0] * 399 + [88.0])
     state = make({"^NSEI": market, "AAA": FELL}).run()
     assert state.screen is not None
-    assert (state.screen.market_below_pct, state.screen.market_down) == (12.0, True)
+    assert (state.screen.market_below_pct, state.screen.market) == (12.0, "down")
+    assert [r.confidence for r in state.screen.rows] == ["medium"]
+
+
+def test_a_deep_market_fall_makes_fallen_stocks_high_confidence_first():
+    market = closes([100.0] * 399 + [80.0])
+    shallow = closes([100.0] * 399 + [79.0])
+    state = make({"^NSEI": market, "AAA": shallow, "BBB": FELL}).run()
+    assert state.screen is not None
+    assert state.screen.market == "deep"
+    assert [(r.symbol, r.confidence) for r in state.screen.rows] == [
+        ("BBB", "high"),
+        ("AAA", "medium"),
+    ]
+    assert [e.met for e in state.screen.rows[0].evidence][:4] == [True, True, True, True]
 
 
 def test_a_stock_without_prices_is_skipped():

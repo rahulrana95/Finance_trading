@@ -119,7 +119,7 @@ class IdeaOut(CamelModel):
 
 class OddsOut(CamelModel):
     level: float
-    market_down: bool
+    market: str
     events: int
     gain10_6m_pct: float = Field(alias="gain10In6mPct")
     gain20_6m_pct: float = Field(alias="gain20In6mPct")
@@ -128,6 +128,12 @@ class OddsOut(CamelModel):
     gain30_12m_pct: float = Field(alias="gain30In12mPct")
     higher_12m_pct: float = Field(alias="higherAfter12mPct")
     fell_further_12m_pct: float = Field(alias="fellFurtherPct")
+
+
+class EvidenceOut(CamelModel):
+    label: str
+    met: bool
+    detail: str
 
 
 class ScreenRowOut(CamelModel):
@@ -143,6 +149,8 @@ class ScreenRowOut(CamelModel):
     own_higher_after_year: int
     own_falls_with_year: int
     worst_day_pct: float
+    confidence: str
+    evidence: list[EvidenceOut]
 
 
 class ScreenOut(CamelModel):
@@ -151,7 +159,7 @@ class ScreenOut(CamelModel):
     universe: int
     priced: int
     market_below_pct: float
-    market_down: bool
+    market: str
     odds: list[OddsOut]
     rows: list[ScreenRowOut]
 

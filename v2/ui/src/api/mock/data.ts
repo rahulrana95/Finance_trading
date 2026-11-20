@@ -1,7 +1,7 @@
 // Seed data for the mock. Prices and recovery figures are a real snapshot (daily closes to
 // 17 Nov 2026 from a public source). Business figures are from the research notes in
 // research/2026-11-market-moves/company_research.md; null means "not confirmed".
-import type { Business, FinYear, Odds, Screen, Settings, StockStatus } from '../types'
+import type { Business, Evidence, FinYear, MarketState, Odds, Screen, Settings, StockStatus } from '../types'
 import snapshot from './prices.snapshot.json'
 
 export interface SeedStock {
@@ -133,24 +133,33 @@ export const DEMO_EMAIL = 'demo@steady.app'
 export const DEMO_PASSWORD = 'paper-trading'
 export const MOCK_NOW = '2026-11-17T15:25:00+05:30'
 
-const odds = (level: number, marketDown: boolean, events: number, six: [number, number, number], year: [number, number, number]): Odds => ({
-  level, marketDown, events, gain10In6mPct: six[0], gain20In6mPct: six[1], higherAfter6mPct: six[2], eventsWithYear: events - 60, gain30In12mPct: year[0], higherAfter12mPct: year[1], fellFurtherPct: year[2],
+const odds = (level: number, market: MarketState, events: number, six: [number, number, number], year: [number, number, number]): Odds => ({
+  level, market, events, gain10In6mPct: six[0], gain20In6mPct: six[1], higherAfter6mPct: six[2], eventsWithYear: events - 20, gain30In12mPct: year[0], higherAfter12mPct: year[1], fellFurtherPct: year[2],
 })
+const why = (below: number, high: string, worstDay: number, past: string): Evidence[] => [
+  { label: 'The whole market is in a fall', met: false, detail: 'Nifty is 2.1% below its 1-year high; a market-wide fall starts at 10%.' },
+  { label: 'The market fall is deep (15% or more)', met: false, detail: 'This is the case with the best record in both test periods.' },
+  { label: 'The stock has fallen 25% or more', met: below >= 25, detail: `It is ${below.toFixed(1)}% below its 1-year high of ${high}.` },
+  { label: 'No sign of a demerger or split', met: worstDay < 35, detail: `Its biggest one-day drop in the last year was ${worstDay.toFixed(0)}%.` },
+  { label: 'Similar falls usually ended higher', met: false, detail: past },
+]
+const PAST_40 = '589 past falls like this: 51% were higher after 6 months, 50% after a year, and 63% fell another 20% first.'
+const PAST_20 = '3,360 past falls like this: 56% were higher after 6 months, 58% after a year, and 48% fell another 20% first.'
 
-// Sample screen: the odds are the measured ones from the research log; the rows are examples.
+// Sample screen: odds close to the measured ones in the research log; the rows are examples.
 export const MOCK_SCREEN: Screen = {
-  id: 'screen-sample', createdAt: MOCK_NOW, universe: 501, priced: 499, marketBelowPct: 2.1, marketDown: false,
+  id: 'screen-sample', createdAt: MOCK_NOW, universe: 501, priced: 499, marketBelowPct: 2.1, market: 'fine',
   odds: [
-    odds(20, true, 1074, [83.5, 59.4, 75.4], [65.7, 74.9, 33.5]), odds(20, false, 3360, [69.6, 48.6, 55.9], [54.3, 58.2, 47.9]),
-    odds(25, true, 1000, [83.9, 62.3, 75.5], [64.8, 75.4, 35.2]), odds(25, false, 2052, [69.6, 48.0, 55.8], [51.8, 55.4, 51.7]),
-    odds(30, true, 914, [85.8, 66.4, 79.0], [68.9, 75.6, 34.7]), odds(30, false, 1335, [71.9, 50.8, 54.3], [51.7, 53.0, 56.3]),
-    odds(40, true, 617, [91.4, 76.8, 82.2], [76.9, 77.6, 35.0]), odds(40, false, 589, [75.0, 53.3, 51.4], [49.1, 50.2, 62.5]),
+    odds(20, 'deep', 420, [86, 62, 84], [72, 90, 33]), odds(20, 'down', 654, [82, 58, 70], [61, 67, 34]), odds(20, 'fine', 3360, [69.6, 48.6, 55.9], [54.3, 58.2, 47.9]),
+    odds(25, 'deep', 389, [87, 66, 85], [74, 92, 33]), odds(25, 'down', 611, [83, 60, 70], [60, 68, 36]), odds(25, 'fine', 2052, [69.6, 48.0, 55.8], [51.8, 55.4, 51.7]),
+    odds(30, 'deep', 364, [89, 70, 87], [77, 93, 31]), odds(30, 'down', 550, [84, 64, 74], [63, 66, 37]), odds(30, 'fine', 1335, [71.9, 50.8, 54.3], [51.7, 53.0, 56.3]),
+    odds(40, 'deep', 255, [93, 80, 88], [84, 92, 33]), odds(40, 'down', 362, [90, 74, 78], [70, 68, 36]), odds(40, 'fine', 589, [75.0, 53.3, 51.4], [49.1, 50.2, 62.5]),
   ],
   rows: [
-    { symbol: 'VEDL', name: 'Vedanta', industry: 'Metals & Mining', lastPrice: 236.35, priceAsOf: '2026-11-17', yearHigh: 787.5, belowPct: 70, level: 40, ownFalls: 10, ownHigherAfterYear: 5, ownFallsWithYear: 9, worstDayPct: 62 },
-    { symbol: 'KPITTECH', name: 'KPIT Technologies', industry: 'Information Technology', lastPrice: 520.6, priceAsOf: '2026-11-17', yearHigh: 1269.8, belowPct: 59, level: 40, ownFalls: 7, ownHigherAfterYear: 5, ownFallsWithYear: 7, worstDayPct: 9.5 },
-    { symbol: 'PIIND', name: 'PI Industries', industry: 'Chemicals', lastPrice: 1603.2, priceAsOf: '2026-11-17', yearHigh: 3560.5, belowPct: 55, level: 40, ownFalls: 7, ownHigherAfterYear: 5, ownFallsWithYear: 7, worstDayPct: 11 },
-    { symbol: 'SWIGGY', name: 'Swiggy', industry: 'Consumer Services', lastPrice: 179.14, priceAsOf: '2026-11-17', yearHigh: 416.5, belowPct: 57, level: 40, ownFalls: 2, ownHigherAfterYear: 0, ownFallsWithYear: 0, worstDayPct: 8 },
-    { symbol: 'NESTLEIND', name: 'Nestle India', industry: 'Consumer goods', lastPrice: 1294.4, priceAsOf: '2026-11-17', yearHigh: 1680, belowPct: 23, level: 20, ownFalls: 3, ownHigherAfterYear: 3, ownFallsWithYear: 3, worstDayPct: 5 },
+    { symbol: 'VEDL', name: 'Vedanta', industry: 'Metals & Mining', lastPrice: 236.35, priceAsOf: '2026-11-17', yearHigh: 787.5, belowPct: 70, level: 40, ownFalls: 10, ownHigherAfterYear: 5, ownFallsWithYear: 9, worstDayPct: 62, confidence: 'low', evidence: why(70, '788', 62, PAST_40) },
+    { symbol: 'KPITTECH', name: 'KPIT Technologies', industry: 'Information Technology', lastPrice: 520.6, priceAsOf: '2026-11-17', yearHigh: 1269.8, belowPct: 59, level: 40, ownFalls: 7, ownHigherAfterYear: 5, ownFallsWithYear: 7, worstDayPct: 9.5, confidence: 'low', evidence: why(59, '1,270', 9.5, PAST_40) },
+    { symbol: 'PIIND', name: 'PI Industries', industry: 'Chemicals', lastPrice: 1603.2, priceAsOf: '2026-11-17', yearHigh: 3560.5, belowPct: 55, level: 40, ownFalls: 7, ownHigherAfterYear: 5, ownFallsWithYear: 7, worstDayPct: 11, confidence: 'low', evidence: why(55, '3,561', 11, PAST_40) },
+    { symbol: 'SWIGGY', name: 'Swiggy', industry: 'Consumer Services', lastPrice: 179.14, priceAsOf: '2026-11-17', yearHigh: 416.5, belowPct: 57, level: 40, ownFalls: 2, ownHigherAfterYear: 0, ownFallsWithYear: 0, worstDayPct: 8, confidence: 'low', evidence: why(57, '417', 8, PAST_40) },
+    { symbol: 'NESTLEIND', name: 'Nestle India', industry: 'Consumer goods', lastPrice: 1294.4, priceAsOf: '2026-11-17', yearHigh: 1680, belowPct: 23, level: 20, ownFalls: 3, ownHigherAfterYear: 3, ownFallsWithYear: 3, worstDayPct: 5, confidence: 'low', evidence: why(23, '1,680', 5, PAST_20) },
   ],
 }

@@ -6,10 +6,21 @@ from dataclasses import dataclass
 from itertools import pairwise
 
 from steady.constants import (
+    CONFIDENCE_HIGH,
+    CONFIDENCE_LOW,
+    CONFIDENCE_MEDIUM,
+    DEMERGER_DROP_PCT,
     FURTHER_FALL_PCT,
     GAIN_6M_PCT,
     GAIN_12M_PCT,
     HALF_YEAR_DAYS,
+    HIGH_MIN_LEVEL_PCT,
+    MARKET_DEEP,
+    MARKET_DEEP_PCT,
+    MARKET_DOWN,
+    MARKET_DOWN_PCT,
+    MARKET_FINE,
+    MARKET_STATES,
     SCREEN_LEVELS_PCT,
     SCREEN_MIN_HISTORY,
     SCREEN_REARM_PCT,
@@ -24,7 +35,7 @@ class DipEvent:
 
     index: int
     level: float
-    market_down: bool
+    market: str
     best_6m: float
     end_6m: float
     best_12m: float | None
@@ -34,10 +45,10 @@ class DipEvent:
 
 @dataclass(frozen=True)
 class Odds:
-    """How falls of one size turned out, with or without a market-wide fall."""
+    """How falls of one size turned out in one market state (deep fall, fall, or fine)."""
 
     level: float
-    market_down: bool
+    market: str
     events: int
     gain10_6m_pct: float
     gain20_6m_pct: float
@@ -75,7 +86,7 @@ def _change(closes: Sequence[float], start: int, picked: float) -> float:
 
 def dip_events(
     closes: Sequence[float],
-    market_down: Sequence[bool],
+    market: Sequence[str],
     levels: Sequence[float] = SCREEN_LEVELS_PCT,
 ) -> list[DipEvent]:
     """Every fall that has at least six months of prices after it."""
@@ -100,7 +111,7 @@ def dip_events(
                 DipEvent(
                     index=t,
                     level=level,
-                    market_down=market_down[t],
+                    market=market[t],
                     best_6m=_change(closes, t, max(half)),
                     end_6m=_change(closes, t, half[-1]),
                     best_12m=_change(closes, t, max(year)) if year else None,
@@ -122,8 +133,8 @@ def odds_table(
     events = list(events)
     table = []
     for level in levels:
-        for down in (True, False):
-            group = [e for e in events if e.level == level and e.market_down == down]
+        for state in MARKET_STATES:
+            group = [e for e in events if e.level == level and e.market == state]
             # These three fields are set together, so one check covers them all.
             year = [
                 (e.best_12m, e.end_12m, e.worst_12m)
@@ -133,7 +144,7 @@ def odds_table(
             table.append(
                 Odds(
                     level=level,
-                    market_down=down,
+                    market=state,
                     events=len(group),
                     gain10_6m_pct=_share([e.best_6m >= GAIN_6M_PCT[0] for e in group]),
                     gain20_6m_pct=_share([e.best_6m >= GAIN_6M_PCT[1] for e in group]),
@@ -153,3 +164,24 @@ def worst_day_pct(closes: Sequence[float], window: int = SCREEN_WINDOW_DAYS) -> 
     """The biggest one-day fall in the last `window` days, as a positive %."""
     recent = closes[-window - 1 :]
     return max([(1 - b / a) * 100 for a, b in pairwise(recent)] + [0.0])
+
+
+def market_state(below_pct: float) -> str:
+    """How far the index is below its 1-year high, as one of three states."""
+    if below_pct >= MARKET_DEEP_PCT:
+        return MARKET_DEEP
+    return MARKET_DOWN if below_pct >= MARKET_DOWN_PCT else MARKET_FINE
+
+
+def confidence(level: float, market: str, worst_day: float) -> str:
+    """High only for the case with the best tested record: a deep market fall and a 25%+ fall.
+
+    Measured on 2015-2020 and 2021-2026 separately (BACKTEST_RESULTS.md, 2026-11-20): the
+    stock's own past recoveries, size and long-term trend did not change the odds, so they
+    are not part of this.
+    """
+    if market == MARKET_FINE or worst_day >= DEMERGER_DROP_PCT:
+        return CONFIDENCE_LOW
+    if market == MARKET_DEEP and level >= HIGH_MIN_LEVEL_PCT:
+        return CONFIDENCE_HIGH
+    return CONFIDENCE_MEDIUM

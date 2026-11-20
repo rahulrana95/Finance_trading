@@ -1,17 +1,26 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
-import type { ModeFilter } from '../api/types'
+import type { ModeFilter, Position } from '../api/types'
+import { PageNote } from '../components/PageNote'
+import { SortTh } from '../components/SortTh'
 import { Card, ModeTabs, Money, Pill, State } from '../components/ui'
-import { INSTRUMENT_LABEL, MODE_LABEL, ROUTES, SIDE_LABEL } from '../constants'
+import { INSTRUMENT_LABEL, MODE_LABEL, PAGE_NOTES, ROUTES, SIDE_LABEL } from '../constants'
 import { dateTime, price, rupees } from '../lib/format'
+import { sortRows, useSort, type SortValue } from '../lib/sort'
 import { useAsync } from '../lib/useAsync'
+
+type TradeColumn = 'name' | 'quantity' | 'avgPrice' | 'lastPrice' | 'unrealised'
+export const tradeValue = (position: Position, column: TradeColumn): SortValue => position[column]
 
 export function Trades() {
   const [mode, setMode] = useState<ModeFilter>('paper')
   const open = useAsync(() => api.openTrades(mode), [mode])
   const log = useAsync(() => api.tradeLog(mode), [mode])
   const pnl = useAsync(() => api.pnl(mode), [mode])
+  const [sort, onSort] = useSort<TradeColumn>({ key: 'unrealised', dir: 'desc' })
+  const head = { sort, onSort }
+  const positions = sortRows(open.data ?? [], sort, tradeValue)
   return (
     <>
       <header className="page-head">
@@ -21,6 +30,7 @@ export function Trades() {
         </div>
         <ModeTabs value={mode} onChange={setMode} />
       </header>
+      <PageNote lines={PAGE_NOTES.trades} />
       <div className="grid four">
         <Card><span className="muted">Invested</span><span className="big num">{rupees(pnl.data?.invested ?? 0)}</span></Card>
         <Card><span className="muted">Open profit or loss</span><span className="big"><Money value={pnl.data?.unrealised ?? 0} /></span></Card>
@@ -32,10 +42,14 @@ export function Trades() {
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Stock</th><th>Type</th><th>Holding</th><th className="right">Quantity</th><th className="right">Average price</th><th className="right">Last price</th><th className="right">Profit or loss</th></tr>
+                <tr>
+                  <SortTh label="Stock" column="name" {...head} /><th>Type</th><th>Holding</th>
+                  <SortTh label="Quantity" column="quantity" numeric {...head} /><SortTh label="Average price" column="avgPrice" numeric {...head} />
+                  <SortTh label="Last price" column="lastPrice" numeric {...head} /><SortTh label="Profit or loss" column="unrealised" numeric {...head} />
+                </tr>
               </thead>
               <tbody>
-                {open.data?.map((p) => (
+                {positions.map((p) => (
                   <tr key={p.id}>
                     <td><Link to={`/stocks/${p.symbol}`} className="strong">{p.name}</Link></td>
                     <td><Pill kind="warn">{MODE_LABEL[p.mode]}</Pill></td>

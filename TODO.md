@@ -208,6 +208,7 @@ the decisions in `v2/docs/PRD.md` section 8.
 | V2.7 | Price adapter (done: public source) and financials adapter (still a seed file) | 5h | Claude | doing |
 | V2.8 | Stock table service and read-only API (done, live); status changes wait for sign-in | 5h | Claude | doing |
 | V2.15 | Market-fall screener over about 500 stocks: odds table from past falls, stocks in a deep fall today, daily run, Screener page (rules from the research logged 2026-11-20) | 6h | Claude | review |
+| V2.16 | Screener confidence (high / medium / low) with plain-word evidence; page notes on every page; click-to-sort table columns | 5h | Claude | review |
 | V2.9 | Algo run service, run log, API (read-only ideas, no orders) | 6h | Claude | review |
 | V2.10 | Paper broker, trading and portfolio services, API | 6h | Claude | blocked |
 | V2.11 | Sign-in and settings API | 4h | Claude | blocked |

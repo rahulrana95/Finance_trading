@@ -65,7 +65,10 @@ class SqlStore:
         query = select(ScreenRecord).order_by(ScreenRecord.seq.desc()).limit(1)
         with Session(self._engine) as session:
             row = session.scalars(query).first()
-            return to_screen(row) if row else None
+            try:
+                return to_screen(row) if row else None
+            except (TypeError, KeyError):  # stored by an older version with other fields
+                return None
 
     def close(self) -> None:
         self._engine.dispose()

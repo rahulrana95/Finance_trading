@@ -1,9 +1,10 @@
+import { PageNote } from '../components/PageNote'
 import { useState } from 'react'
 import { api, LIVE } from '../api'
 import type { RunKind } from '../api/types'
 import { AlwaysOnCard } from '../components/AlwaysOnCard'
 import { Card, State } from '../components/ui'
-import { RUN_KIND_LABEL as KIND } from '../constants'
+import { RUN_KIND_LABEL as KIND, PAGE_NOTES } from '../constants'
 import { dateTime } from '../lib/format'
 import { useAsync } from '../lib/useAsync'
 
@@ -38,6 +39,7 @@ export function Runs() {
           <p className="muted">Every check the app makes, in plain words.</p>
         </div>
       </header>
+      <PageNote lines={PAGE_NOTES.runs} />
       <div className="grid two">
         <AlwaysOnCard server={LIVE} on={settings.data?.alwaysOn ?? false} onToggle={toggleAlwaysOn} />
         <Card title="Run on demand">

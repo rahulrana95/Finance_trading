@@ -535,3 +535,64 @@ Size and what it means for the first variant (weakest period, +0.38 R a year):
 No full loss occurred in about 160 trades over 16 years, which does not mean it cannot. Five
 survivors out of 951 is more than chance would give (about 0.6% of all rules pass A in an unseen
 period), but they are variants of one rule and were found by testing 57,330.
+
+---
+
+## 2026-11-20 · Free sizing: which rule reaches 8-20% a year, and at what risk (T4.8)
+
+**Verdict: with no loss cap, the rules that looked safest for ten years (up 10 of 10 years,
+worst trade -0.15 R) were the ones that broke: sized for 8-20% they made 3-7% in 2021-2026 with
+one week of -13% to -37%. The one rule that held on all three periods is the earlier frozen
+one, which exits when price reaches the limit. Sized on 2016-2020 for 8 / 12 / 20% it made
+6.4 / 9.5 / 15.7% a year in 2021-2026 and 2.8 / 4.1 / 6.4% in 2011-2015.**
+
+Research only. Option prices are **modelled** (Black-Scholes, India VIX, assumed skew), not
+quotes. Code: `research/2026-11-market-moves/searchsize.py`. Correction to the previous entry:
+its Wednesday set-ups assumed 7 sessions to expiry; this run uses the real calendar (entry
+Monday, Tuesday or Wednesday, expiry the next week's Tuesday, exit the session before). The
+"Wednesday, MACD bars rising and RSI above 60" family from that entry should be disregarded.
+
+Kept: hedged spreads, short delta at most 0.12, next week's expiry, exit before expiry day.
+Dropped for this study: weekly, monthly and yearly loss limits (owner's instruction).
+125,820 rules; chosen on 2011-2020 (positive in both halves, up in 9+ of 10 years, no trade
+worse than -0.6 R: 7,352 rules); 2021-2026 used only to check.
+
+Top three chosen rules, size set on 2011-2020, then applied to 2021-2026:
+
+| Rule (all hold to the day before expiry) | Target | One full loss costs | 2011-2020: CAGR, max drawdown | 2021-2026: CAGR, max drawdown, worst week |
+|---|---|---|---|---|
+| Tuesday, put side, 1.25 x VIX, MACD bars falling and realised vol under 0.8 x VIX | 8% | 16.5% | 8.0%, -2.4% | 3.1%, -15.5%, -15.5% |
+| same | 20% | 39.5% | 20.0%, -5.8% | 6.4%, -37.0%, -37.0% |
+| Monday, both sides, 1.25 x VIX, MACD bars falling and last 5 days up | 8% | 17.4% | 8.0%, -1.3% | -2.7%, -25.0%, -14.6% |
+| same | 20% | 41.7% | 20.0%, -3.2% | -8.0%, -54.9%, -34.8% |
+| Tuesday, put side, 1.5 x VIX, realised vol under 0.8 x VIX | 8% | 16.6% | 8.0%, -2.3% | 3.3%, -13.4%, -13.4% |
+| same | 20% | 39.4% | 20.0%, -5.5% | 7.3%, -31.9%, -31.9% |
+
+All 7,352 chosen rules in 2021-2026: 84% positive, median +0.15 R a year against +0.33 in
+2011-2020. Rules that hold or exit only on a close beyond the strike had a median worst trade
+of -0.81 R in 2021-2026.
+
+The earlier frozen rule (Monday, both sides, limit 0.8 x VIX move, strike 1.5% beyond, exit
+when price reaches the limit, only when MACD is above zero; about 32 trades a year):
+
+| Period | Trades | Won | R per year | Max drawdown | Worst trade | Up years |
+|---|---|---|---|---|---|---|
+| 2011-2015 (never used to choose it) | 140 | 52% | +0.35 | -1.01 | -0.33 | 3 of 5 |
+| 2016-2020 (chosen here) | 170 | 59% | +0.95 | -0.79 | -0.32 | 5 of 5 |
+| 2021-2026 (test) | 179 | 62% | +0.76 | -0.52 | -0.30 | 6 of 6 |
+
+Sized on 2016-2020:
+
+| Target | One full loss costs | 2021-2026: CAGR, max drawdown, worst week, worst year | 2011-2015: CAGR, max drawdown, worst year |
+|---|---|---|---|
+| 8% | 8.3% | 6.4%, -4.3%, -2.5%, +3.2% | 2.8%, -8.1%, -5.0% |
+| 10% | 10.3% | 7.9%, -5.3%, -3.1%, +3.9% | 3.5%, -10.0%, -6.3% |
+| 12% | 12.3% | 9.5%, -6.3%, -3.7%, +4.6% | 4.1%, -11.9%, -7.5% |
+| 15% | 15.3% | 11.8%, -7.8%, -4.5%, +5.6% | 5.0%, -14.6%, -9.3% |
+| 20% | 20.1% | 15.7%, -10.3%, -6.0%, +7.1% | 6.4%, -18.9%, -12.2% |
+
+Its worst trade was about -0.3 R in every period because the exit comes before the strike. The
+same set-up under other filters (VIX under 20, above the 200-day average) had trades of -1.0 R:
+a gap through the limit and the strike is possible and would cost the "one full loss" column.
+The exit at the limit is assumed to fill at the modelled price; real fills are untested.
+These sizes break the loss limits in `AGENTS.md` section 1, which only the owner can change.

@@ -479,3 +479,59 @@ best +0.65, median +0.06, worst -0.58 R a year; the frozen rule happened to be t
 expect less in future. A wider limit wins more often (89%) but earns less and keeps the
 full-loss trade. Reaching 20% a year with the frozen rule would need about 30 times the size,
 a possible loss of about 30% of capital on one trade.
+
+---
+
+## 2026-11-20 · Search of 83,880 rule combinations for 20% a year inside the loss limits (T4.8)
+
+**Verdict: no combination can make 20% a year inside the loss limits, even on the years it was
+searched on. The best of 57,330 rules made 2.8 R a year in 2016-2020; 20% with a 3% cap on one
+position's loss needs 6.7 R. One family of rules did hold up on both unseen periods, with 92-100%
+winning trades, but it earns 0.4-0.6 R a year: 20% from it means risking about half the capital
+on a single trade.**
+
+Research only. Option prices are **modelled** (Black-Scholes, India VIX, assumed skew), not
+quotes. Code: `research/2026-11-market-moves/searchcombo.py`.
+
+| Item | Value |
+|---|---|
+| Set-ups (180) | Entry on the week's first day or Wednesday; put side, call side or both; limit X = 0.6 to 1.5 x VIX-implied move; strike 1.5% or 0.5% beyond X; exit at X, on a close beyond the strike, or hold; short delta capped at 0.12; exit the day before expiry |
+| Filters (466) | None, one, or any two of 30 conditions: VIX ranges, MACD sign and bar direction, RSI ranges, 50 / 200-day trend, realised volatility against VIX, VIX direction, last week's direction, US VIX |
+| Search period | 2016-2020 only; rules must trade at least 10 times a year (57,330 rules) |
+| Unseen checks | 2021-2026 and 2011-2015 |
+| Test "could make 20%" | A: return / drawdown >= 4 (20% with drawdown within 5%). B: return / worst trade >= 20 (worst trade within 1%). C: R per year >= 6.67 (one position's max loss within 3%) |
+
+| Stage | Rules |
+|---|---|
+| Positive in 2016-2020 | 49,918 |
+| Pass A in 2016-2020 | 951 |
+| Pass A and B in 2016-2020 | 209 |
+| Pass A, B and C in 2016-2020 | **0** |
+| Of the 951: still positive in 2021-2026 | 663 |
+| Of the 951: pass A in 2021-2026 | 25 |
+| Of the 951: pass A in 2011-2015 | 31 |
+| Of the 951: pass A in both unseen periods | **5 (one family)** |
+
+Median of the 951: 0.41 R a year in the search years, 0.08 in 2021-2026, 0.11 in 2011-2015.
+
+The surviving family: enter Wednesday, only when MACD bars are rising and RSI is above 60,
+strikes far out, hold to the day before expiry (about 10 trades a year).
+
+| Variant | 2016-2020 | 2021-2026 | 2011-2015 |
+|---|---|---|---|
+| Both sides, X = 1.25 x VIX, strike 1.5% beyond | 57 trades, 100% won, +0.61 R/yr | 50 trades, 92% won, +0.38 R/yr, worst -0.08 R, 6 of 6 years up | +0.42 R/yr, worst -0.09 R |
+| Both sides, X = 1.5 x VIX | 100% won, +0.34 R/yr | 96% won, +0.22 R/yr, worst -0.04 R | +0.26 R/yr |
+| Put side, X = 1.5 x VIX | 100% won, +0.24 R/yr | 96% won, +0.16 R/yr, worst -0.01 R | +0.18 R/yr |
+
+Size and what it means for the first variant (weakest period, +0.38 R a year):
+
+| Max loss of one trade, % of capital | Return a year | Worst trade seen | If the trade ever loses fully |
+|---|---|---|---|
+| 1% (weekly limit) | 0.4% | -0.1% | -1% |
+| 3% (monthly limit) | 1.1% | -0.3% | -3% |
+| 11% | 4.2% | -1.0% | -11% |
+| 52% | 20% | -4.7% | -52% |
+
+No full loss occurred in about 160 trades over 16 years, which does not mean it cannot. Five
+survivors out of 951 is more than chance would give (about 0.6% of all rules pass A in an unseen
+period), but they are variants of one rule and were found by testing 57,330.

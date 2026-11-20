@@ -33,6 +33,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 ema_cross.py       # 9 / 21 EMA crossover: when it worked and when not
     python3 macd_range.py      # MACD as a range filter: touch rates of levels 2-3% away, by MACD and VIX
     python3 rangeml.py         # weekly range model: build 2016-2020, one frozen rule, test 2021 onward
+    python3 searchcombo.py     # 83,880 set-up x filter combinations searched on 2016-2020, checked on two unseen periods
     python3 rel90.py           # reversal and breakout signals with target / stop outcomes
     python3 stock_study.py ICICI   # same search on one stock (needs data/ICICI.json from Yahoo ICICIBANK.NS)
     python3 dips.py ICICI 2016-01-01 126   # falls of 5-30% from the 6-month high and time to recover

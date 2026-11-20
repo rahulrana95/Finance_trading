@@ -430,3 +430,52 @@ Level placed one VIX-implied weekly move away (VIX / sqrt(52)):
 Option premiums are priced from VIX, so the tradable part of this is only the last table: a
 few points lower touch rate on the put side when MACD is above zero. Whether that pays after
 real premiums and costs is not tested here.
+
+---
+
+## 2026-11-20 · Weekly range model, built on 2016-2020, tested once on 2021-2026 (T4.8)
+
+**Verdict: the rule chosen on 2016-2020 was profitable in all six test years, but small:
++0.65 R a year (R = the maximum loss of one trade), worst trade -0.26 R, max drawdown -0.55 R.
+At the 1% weekly loss limit that is about 0.65% a year, not 20%. The machine-learning model did
+not beat a plain VIX multiple.**
+
+Research only. Option prices are **modelled** (Black-Scholes, India VIX, assumed skew), not
+quotes. Code: `research/2026-11-market-moves/rangeml.py`.
+
+| Item | Value |
+|---|---|
+| Framing (owner's) | Predict a limit X the week will not cross; sell a strike 1.5% beyond X; exit if price reaches X |
+| Build data | 2016-2020: 1,228 daily samples, 28 features known before the open (VIX, realised volatility, MACD, RSI, trend distance, US markets, rupee, oil) |
+| Models | LightGBM quantile regression (80th and 90th percentile of the week's largest move up and down) against VIX x 0.8 / 1.0 / 1.25 / 1.5 |
+| Rule choice | Walk-forward inside the build years (fit 2016-18, predict 2019; fit 2016-19, predict 2020); 72 rules scored on return less drawdown |
+| Trade | Week's first open, spread with hedge about 0.8% further, short delta capped at 0.12, exit at the close the day before expiry, costs included |
+| Frozen rule | X = 0.8 x VIX-implied move, both sides, only when MACD is above zero |
+| Test | 2021-01-04 to 2026-10-26, 304 weeks, run once |
+
+Did the limit hold on the test years (share of weeks price stayed inside X on both sides)?
+
+| Limit | Average X | Up side held | Down side held | Both held |
+|---|---|---|---|---|
+| Model, 80th percentile | 2.4% / 2.8% | 76% | 81% | 58% |
+| Model, 90th percentile | 3.0% / 3.7% | 85% | 88% | 73% |
+| VIX x 1.0 | 2.4% | 78% | 76% | 55% |
+| VIX x 1.25 | 3.0% | 88% | 85% | 73% |
+| VIX x 1.5 | 3.5% | 93% | 89% | 83% |
+
+Test result:
+
+| Rule | Trades | Weeks inside X | Winning trades | R per year | Max drawdown | Worst trade | Up years |
+|---|---|---|---|---|---|---|---|
+| **Frozen: VIX x 0.8, both sides, MACD > 0** | 188 | 38% | 61% | **+0.65** | -0.55 | -0.26 | 6 of 6 |
+| Same without the MACD filter | 304 | 33% | 54% | -0.24 | -3.59 | -1.05 | 3 of 6 |
+| VIX x 1.0, both sides, MACD > 0 and VIX < 20 | 170 | 60% | 65% | +0.47 | -0.86 | -0.27 | 5 of 6 |
+| VIX x 1.25, put side, MACD > 0 and VIX < 20 | 170 | 89% | 89% | +0.19 | -1.45 | -1.07 | 4 of 6 |
+| Model 90th percentile, both sides, MACD > 0 and VIX < 20 | 169 | 77% | 80% | +0.15 | -1.53 | -1.04 | 5 of 6 |
+
+Frozen rule by year (R): 2021 +0.30, 2022 +0.64, 2023 +0.49, 2024 +0.85, 2025 +0.92, 2026 +0.59.
+Average winning trade +0.10 R, average losing trade -0.10 R. All 72 rules on the test years:
+best +0.65, median +0.06, worst -0.58 R a year; the frozen rule happened to be the best, so
+expect less in future. A wider limit wins more often (89%) but earns less and keeps the
+full-loss trade. Reaching 20% a year with the frozen rule would need about 30 times the size,
+a possible loss of about 30% of capital on one trade.

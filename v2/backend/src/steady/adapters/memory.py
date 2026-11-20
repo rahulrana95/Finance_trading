@@ -5,7 +5,7 @@ from collections import deque
 from dataclasses import replace
 
 from steady.constants import IDEA_EXPIRED, IDEA_NEW, MAX_RUNS_KEPT
-from steady.domain import Idea, Run
+from steady.domain import Idea, Run, Screen
 
 
 class MemoryStore:
@@ -13,6 +13,7 @@ class MemoryStore:
         self.lock = threading.Lock()
         self._runs: deque[Run] = deque(maxlen=max_runs)
         self._ideas: dict[str, Idea] = {}
+        self._screen: Screen | None = None
 
     def add_run(self, run: Run) -> None:
         self._runs.appendleft(run)
@@ -39,6 +40,12 @@ class MemoryStore:
 
     def expire(self, idea: Idea) -> None:
         self._ideas[idea.id] = replace(idea, status=IDEA_EXPIRED)
+
+    def save_screen(self, screen: Screen) -> None:
+        self._screen = screen
+
+    def latest_screen(self) -> Screen | None:
+        return self._screen
 
     def close(self) -> None:
         """Nothing to release."""

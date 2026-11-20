@@ -46,3 +46,12 @@ class IdeaRow(Base):
     status: Mapped[str] = mapped_column(String(16), index=True)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
     body: Mapped[dict[str, Any]] = mapped_column(JSON)  # name, zone, plan, prices, reasons, risks
+
+
+class ScreenRecord(Base):
+    __tablename__ = "screens"
+
+    seq: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[str] = mapped_column(String(32), unique=True)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+    body: Mapped[dict[str, Any]] = mapped_column(JSON)  # market state, odds table and rows

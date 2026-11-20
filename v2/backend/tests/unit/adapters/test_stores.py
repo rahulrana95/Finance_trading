@@ -8,10 +8,11 @@ import pytest
 from steady.adapters.memory import MemoryStore
 from steady.constants import IDEA_EXPIRED, IDEA_NEW, KIND_ON_DEMAND, RUN_DONE
 from steady.core.plan import Plan, PlanStep
+from steady.core.screen import Odds
 from steady.db.engine import make_engine
 from steady.db.models import Base
 from steady.db.store import SqlStore
-from steady.domain import Idea, Run, RunStep
+from steady.domain import Idea, Run, RunStep, Screen, ScreenRow
 from steady.ports import Store
 
 NOW = datetime(2026, 11, 17, 10, 0, tzinfo=UTC)
@@ -99,3 +100,20 @@ def test_an_idea_keeps_its_plan_reasons_and_risks(make):
     full = replace(idea("1", "TITAN"), plan=plan, reasons=("fell",), risks=("gold", "debt"))
     store.save_idea(full)
     assert store.ideas() == [full]
+
+
+def test_the_latest_screen_is_kept_whole(make):
+    store: Store = make(50)
+    assert store.latest_screen() is None
+    odds = (Odds(25.0, True, 3, 66.7, 33.3, 66.7, 2, 50.0, 50.0, 50.0),)
+    rows = (
+        ScreenRow(
+            "TITAN", "Titan", "Jewellery", 75.0, "2026-11-17", 100.0, 25.0, 25.0, 2, 1, 2, 6.5
+        ),
+    )
+    first = Screen("s1", NOW, 500, 447, 12.0, True, odds, rows)
+    second = Screen("s2", NOW + timedelta(days=1), 500, 440, 3.0, False, (), ())
+    store.save_screen(first)
+    assert store.latest_screen() == first
+    store.save_screen(second)
+    assert store.latest_screen() == second

@@ -1,7 +1,7 @@
 // Seed data for the mock. Prices and recovery figures are a real snapshot (daily closes to
 // 17 Nov 2026 from a public source). Business figures are from the research notes in
 // research/2026-11-market-moves/company_research.md; null means "not confirmed".
-import type { Business, FinYear, Settings, StockStatus } from '../types'
+import type { Business, FinYear, Odds, Screen, Settings, StockStatus } from '../types'
 import snapshot from './prices.snapshot.json'
 
 export interface SeedStock {
@@ -132,3 +132,25 @@ export const DEFAULT_SETTINGS: Settings = {
 export const DEMO_EMAIL = 'demo@steady.app'
 export const DEMO_PASSWORD = 'paper-trading'
 export const MOCK_NOW = '2026-11-17T15:25:00+05:30'
+
+const odds = (level: number, marketDown: boolean, events: number, six: [number, number, number], year: [number, number, number]): Odds => ({
+  level, marketDown, events, gain10In6mPct: six[0], gain20In6mPct: six[1], higherAfter6mPct: six[2], eventsWithYear: events - 60, gain30In12mPct: year[0], higherAfter12mPct: year[1], fellFurtherPct: year[2],
+})
+
+// Sample screen: the odds are the measured ones from the research log; the rows are examples.
+export const MOCK_SCREEN: Screen = {
+  id: 'screen-sample', createdAt: MOCK_NOW, universe: 501, priced: 499, marketBelowPct: 2.1, marketDown: false,
+  odds: [
+    odds(20, true, 1074, [83.5, 59.4, 75.4], [65.7, 74.9, 33.5]), odds(20, false, 3360, [69.6, 48.6, 55.9], [54.3, 58.2, 47.9]),
+    odds(25, true, 1000, [83.9, 62.3, 75.5], [64.8, 75.4, 35.2]), odds(25, false, 2052, [69.6, 48.0, 55.8], [51.8, 55.4, 51.7]),
+    odds(30, true, 914, [85.8, 66.4, 79.0], [68.9, 75.6, 34.7]), odds(30, false, 1335, [71.9, 50.8, 54.3], [51.7, 53.0, 56.3]),
+    odds(40, true, 617, [91.4, 76.8, 82.2], [76.9, 77.6, 35.0]), odds(40, false, 589, [75.0, 53.3, 51.4], [49.1, 50.2, 62.5]),
+  ],
+  rows: [
+    { symbol: 'VEDL', name: 'Vedanta', industry: 'Metals & Mining', lastPrice: 236.35, priceAsOf: '2026-11-17', yearHigh: 787.5, belowPct: 70, level: 40, ownFalls: 10, ownHigherAfterYear: 5, ownFallsWithYear: 9, worstDayPct: 62 },
+    { symbol: 'KPITTECH', name: 'KPIT Technologies', industry: 'Information Technology', lastPrice: 520.6, priceAsOf: '2026-11-17', yearHigh: 1269.8, belowPct: 59, level: 40, ownFalls: 7, ownHigherAfterYear: 5, ownFallsWithYear: 7, worstDayPct: 9.5 },
+    { symbol: 'PIIND', name: 'PI Industries', industry: 'Chemicals', lastPrice: 1603.2, priceAsOf: '2026-11-17', yearHigh: 3560.5, belowPct: 55, level: 40, ownFalls: 7, ownHigherAfterYear: 5, ownFallsWithYear: 7, worstDayPct: 11 },
+    { symbol: 'SWIGGY', name: 'Swiggy', industry: 'Consumer Services', lastPrice: 179.14, priceAsOf: '2026-11-17', yearHigh: 416.5, belowPct: 57, level: 40, ownFalls: 2, ownHigherAfterYear: 0, ownFallsWithYear: 0, worstDayPct: 8 },
+    { symbol: 'NESTLEIND', name: 'Nestle India', industry: 'Consumer goods', lastPrice: 1294.4, priceAsOf: '2026-11-17', yearHigh: 1680, belowPct: 23, level: 20, ownFalls: 3, ownHigherAfterYear: 3, ownFallsWithYear: 3, worstDayPct: 5 },
+  ],
+}

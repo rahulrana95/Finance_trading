@@ -10,13 +10,18 @@ address.
 | `GET /api/stocks/{symbol}` | One stock |
 | `GET /api/runs`, `GET /api/runs/{id}` | Algo runs with every step in plain words |
 | `POST /api/runs` | Start a run (`on_demand` or `dry_run`). Answers 202 at once; the run finishes in the background |
+| `GET /api/screens/latest` | The latest market-fall screen: market state, odds from past falls, and stocks in a deep fall today |
+| `POST /api/screens` | Start a screen of about 500 stocks. Answers 202; it finishes in the background |
 | `GET /api/recommendations` | Ideas the algo proposed, with the stepped plan. Filters: `instrumentType`, `status`, `minZone`, `minScore` |
 
 With `STEADY_SCHEDULER=true` the algo runs once at start and then every 5 minutes, Monday to
 Friday, 09:15 to 15:30 India time. Runs and ideas are kept in Postgres when
 `STEADY_DATABASE_URL` is set (tables are brought up to date at start by Alembic, migrations
 in `src/steady/db/migrations`); without it they live in memory and a restart clears them.
-The algo only proposes ideas: there is no order code.
+The screener also runs at 18:30 India time on weekdays, and at start if the stored screen is
+older than 20 hours. Its odds are how often each outcome followed past falls of the same size
+(from the 1-year high, with or without Nifty also 10% down); the method and its test are in
+`BACKTEST_RESULTS.md` (2026-11-20). The algo only proposes ideas: there is no order code.
 
 Prices are daily closes fetched from a public, unofficial source and cached for 30 minutes.
 The stock list and business figures are a seed file (`src/steady/seeds/stocks.json`) until

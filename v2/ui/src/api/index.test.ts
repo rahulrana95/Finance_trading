@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { composeApi, mockOptions } from './index'
-import { liveAlgo, liveStocks } from './http'
+import { liveAlgo, liveScreen, liveStocks } from './http'
 import { createMockApi } from './mock/mockApi'
 
 describe('composeApi', () => {
@@ -13,6 +13,8 @@ describe('composeApi', () => {
     expect(api.listRuns).toBe(liveAlgo.listRuns)
     expect(api.startRun).toBe(liveAlgo.startRun)
     expect(api.listRecommendations).toBe(liveAlgo.listRecommendations)
+    expect(api.getScreen).toBe(liveScreen.getScreen)
+    expect(api.startScreen).toBe(liveScreen.startScreen)
     expect(api.approve).toBe(mock.approve)
   })
 })

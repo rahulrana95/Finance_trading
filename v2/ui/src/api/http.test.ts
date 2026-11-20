@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getJson, ideasQuery, liveAlgo, liveStocks, postJson, waitForRun } from './http'
+import { getJson, ideasQuery, liveAlgo, liveScreen, liveStocks, postJson, waitForRun, waitUntil } from './http'
 import { sleep } from '../lib/sleep'
 import type { Run } from './types'
 
@@ -104,5 +104,37 @@ describe('live runs and ideas', () => {
     vi.stubGlobal('fetch', fetchMock)
     await liveAlgo.startRun('dry_run')
     expect(fetchMock).toHaveBeenCalledOnce()
+  })
+})
+
+describe('live screener', () => {
+  const state = (running: boolean) => ({ running, error: null, screen: null })
+  it('reads the latest screen', async () => {
+    const fetchMock = reply(true, 200, state(false))
+    vi.stubGlobal('fetch', fetchMock)
+    expect(await liveScreen.getScreen()).toEqual(state(false))
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/screens/latest')
+  })
+  it('starts a screen and waits until it is no longer running', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, status: 202, json: () => Promise.resolve(state(true)) })
+      .mockResolvedValue({ ok: true, status: 200, json: () => Promise.resolve(state(false)) })
+    vi.stubGlobal('fetch', fetchMock)
+    expect((await liveScreen.startScreen()).running).toBe(false)
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(['/api/screens', '/api/screens/latest'])
+  })
+  it('does not wait when the screen was not started', async () => {
+    const fetchMock = reply(true, 202, state(false))
+    vi.stubGlobal('fetch', fetchMock)
+    await liveScreen.startScreen()
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+})
+
+describe('waitUntil', () => {
+  it('uses the real pause and the default number of tries when none are given', async () => {
+    const get = vi.fn().mockResolvedValue(1)
+    expect(await waitUntil(get, () => true)).toBe(1)
+    expect(get).toHaveBeenCalledOnce()
   })
 })

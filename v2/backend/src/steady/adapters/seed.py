@@ -4,9 +4,9 @@ import json
 from importlib import resources
 
 from steady import seeds
-from steady.constants import SEED_FILE
+from steady.constants import SEED_FILE, UNIVERSE_FILE
 from steady.core.scoring import FinYear
-from steady.domain import Business, StockSeed
+from steady.domain import Business, Listing, StockSeed
 
 
 def load_seed_stocks() -> list[StockSeed]:
@@ -19,3 +19,9 @@ def load_seed_stocks() -> list[StockSeed]:
         )
         for row in rows
     ]
+
+
+def load_universe() -> list[Listing]:
+    """The stocks the screener looks at (Nifty 500 members when the file was made)."""
+    rows = json.loads(resources.files(seeds).joinpath(UNIVERSE_FILE).read_text())
+    return [Listing(**row) for row in rows]

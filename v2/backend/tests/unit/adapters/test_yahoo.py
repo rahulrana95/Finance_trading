@@ -6,7 +6,7 @@ from typing import Any
 import httpx2 as httpx
 import pytest
 
-from steady.adapters.yahoo import YahooPriceSource, new_client, parse_chart
+from steady.adapters.yahoo import YahooPriceSource, new_client, parse_chart, ticker
 from steady.constants import YAHOO_USER_AGENT
 from steady.ports import PriceSourceError
 
@@ -114,3 +114,8 @@ def test_the_real_client_identifies_itself_and_has_a_timeout():
 def test_it_is_labelled_unofficial():
     assert YahooPriceSource.official is False
     assert "unofficial" in YahooPriceSource.name
+
+
+def test_an_index_is_asked_for_without_the_share_suffix():
+    assert ticker("TITAN") == "TITAN.NS"
+    assert ticker("^NSEI") == "^NSEI"

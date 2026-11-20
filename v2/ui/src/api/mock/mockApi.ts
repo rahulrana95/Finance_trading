@@ -17,7 +17,7 @@ import {
   type TradeLogEntry,
 } from '../types'
 import { MOCK_DELAY_MS } from '../../constants'
-import { DEFAULT_SETTINGS, DEMO_EMAIL, DEMO_PASSWORD, MOCK_NOW, SEED_STOCKS, SNAPSHOT, type Snapshot } from './data'
+import { DEFAULT_SETTINGS, DEMO_EMAIL, DEMO_PASSWORD, MOCK_NOW, MOCK_SCREEN, SEED_STOCKS, SNAPSHOT, type Snapshot } from './data'
 import { belowHighPct, buildPlan, evidence, financialScore, mockCharges, round2, stabilityScore, zone } from './engine'
 
 const clone = <T>(x: T): T => structuredClone(x)
@@ -44,6 +44,7 @@ export function createMockApi({ delayMs = MOCK_DELAY_MS, now = () => new Date(MO
     new Promise((resolve) => (delayMs ? setTimeout(() => resolve(clone(value)), delayMs) : resolve(clone(value))))
 
   let settings: Settings = clone(DEFAULT_SETTINGS)
+  let screen = clone(MOCK_SCREEN)
   let failedSignIns = 0
   let seq = 0
   const id = (prefix: string): string => `${prefix}-${++seq}`
@@ -264,6 +265,11 @@ export function createMockApi({ delayMs = MOCK_DELAY_MS, now = () => new Date(MO
     },
     listRuns: () => wait(runs),
     startRun: async (kind) => wait(run(kind)),
+    getScreen: () => wait({ running: false, error: null, screen }),
+    async startScreen() {
+      screen = { ...screen, id: id('screen'), createdAt: now().toISOString() }
+      return wait({ running: false, error: null, screen })
+    },
     getSettings: () => wait(settings),
     async updateSettings(patch) {
       if (patch.realLocked === false) throw new ApiError('Real trading cannot be unlocked from the app yet.', 'locked')

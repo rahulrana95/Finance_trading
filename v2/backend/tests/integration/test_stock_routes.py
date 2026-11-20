@@ -93,4 +93,6 @@ def test_the_routes_are_in_the_published_schema(make_client: ClientFactory):
         "/api/runs",
         "/api/runs/{run_id}",
         "/api/recommendations",
+        "/api/screens/latest",
+        "/api/screens",
     ]

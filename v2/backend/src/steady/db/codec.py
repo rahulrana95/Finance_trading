@@ -5,8 +5,9 @@ from datetime import datetime
 from typing import Any
 
 from steady.core.plan import Plan, PlanStep
-from steady.db.models import IdeaRow, RunRow
-from steady.domain import Idea, Run, RunStep
+from steady.core.screen import Odds
+from steady.db.models import IdeaRow, RunRow, ScreenRecord
+from steady.domain import Idea, Run, RunStep, Screen, ScreenRow
 
 RUN_COLUMNS = ("kind", "status", "started_at", "finished_at", "summary")
 IDEA_COLUMNS = ("id", "symbol", "status", "created_at")
@@ -42,3 +43,15 @@ def to_idea(row: IdeaRow) -> Idea:
         risks=tuple(body.pop("risks")),
         **body,
     )
+
+
+def screen_values(screen: Screen) -> dict[str, Any]:
+    body = asdict(screen)
+    return {"id": body.pop("id"), "created_at": body.pop("created_at"), "body": body}
+
+
+def to_screen(row: ScreenRecord) -> Screen:
+    body = dict(row.body)
+    odds = tuple(Odds(**o) for o in body.pop("odds"))
+    rows = tuple(ScreenRow(**r) for r in body.pop("rows"))
+    return Screen(id=row.id, created_at=row.created_at, odds=odds, rows=rows, **body)

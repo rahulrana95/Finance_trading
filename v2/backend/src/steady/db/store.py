@@ -6,9 +6,9 @@ from sqlalchemy import Engine, select, update
 from sqlalchemy.orm import Session
 
 from steady.constants import IDEA_EXPIRED, IDEA_NEW, MAX_RUNS_KEPT
-from steady.db.codec import idea_values, run_values, to_idea, to_run
-from steady.db.models import IdeaRow, RunRow
-from steady.domain import Idea, Run
+from steady.db.codec import idea_values, run_values, screen_values, to_idea, to_run, to_screen
+from steady.db.models import IdeaRow, RunRow, ScreenRecord
+from steady.domain import Idea, Run, Screen
 
 
 class SqlStore:
@@ -56,6 +56,16 @@ class SqlStore:
             session.execute(
                 update(IdeaRow).where(IdeaRow.id == idea.id).values(status=IDEA_EXPIRED)
             )
+
+    def save_screen(self, screen: Screen) -> None:
+        with Session(self._engine) as session, session.begin():
+            session.add(ScreenRecord(**screen_values(screen)))
+
+    def latest_screen(self) -> Screen | None:
+        query = select(ScreenRecord).order_by(ScreenRecord.seq.desc()).limit(1)
+        with Session(self._engine) as session:
+            row = session.scalars(query).first()
+            return to_screen(row) if row else None
 
     def close(self) -> None:
         self._engine.dispose()

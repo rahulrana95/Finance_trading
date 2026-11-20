@@ -3,6 +3,7 @@ import { AuthProvider, RequireAuth } from './auth/AuthContext'
 import { Layout } from './components/Layout'
 import { Ideas } from './pages/Ideas'
 import { Runs } from './pages/Runs'
+import { Screener } from './pages/Screener'
 import { Settings } from './pages/Settings'
 import { SignIn } from './pages/SignIn'
 import { StockDetail } from './pages/StockDetail'
@@ -18,6 +19,7 @@ export function App() {
         <Route element={<RequireAuth><Layout /></RequireAuth>}>
           <Route path={ROUTES.stocks} element={<Stocks />} />
           <Route path={`${ROUTES.stocks}/:symbol`} element={<StockDetail />} />
+          <Route path={ROUTES.screener} element={<Screener />} />
           <Route path={ROUTES.ideas} element={<Ideas />} />
           <Route path={ROUTES.trades} element={<Trades />} />
           <Route path={ROUTES.runs} element={<Runs />} />

@@ -136,6 +136,51 @@ export interface Run {
   steps: RunStep[]
 }
 
+export interface Odds {
+  level: number
+  marketDown: boolean
+  events: number
+  gain10In6mPct: number
+  gain20In6mPct: number
+  higherAfter6mPct: number
+  eventsWithYear: number
+  gain30In12mPct: number
+  higherAfter12mPct: number
+  fellFurtherPct: number
+}
+
+export interface ScreenRow {
+  symbol: string
+  name: string
+  industry: string
+  lastPrice: number
+  priceAsOf: string
+  yearHigh: number
+  belowPct: number
+  level: number
+  ownFalls: number
+  ownHigherAfterYear: number
+  ownFallsWithYear: number
+  worstDayPct: number
+}
+
+export interface Screen {
+  id: string
+  createdAt: string
+  universe: number
+  priced: number
+  marketBelowPct: number
+  marketDown: boolean
+  odds: Odds[]
+  rows: ScreenRow[]
+}
+
+export interface ScreenState {
+  running: boolean
+  error: string | null
+  screen: Screen | null
+}
+
 export interface Settings {
   paperCapital: number
   perStockCapPct: number
@@ -182,6 +227,8 @@ export interface Api {
   pnl(mode: ModeFilter): Promise<Pnl>
   listRuns(): Promise<Run[]>
   startRun(kind: RunKind): Promise<Run>
+  getScreen(): Promise<ScreenState>
+  startScreen(): Promise<ScreenState>
   getSettings(): Promise<Settings>
   updateSettings(patch: Partial<Settings>): Promise<Settings>
 }

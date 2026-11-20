@@ -4,9 +4,16 @@ from datetime import UTC, datetime
 
 from steady.adapters.memory import MemoryStore
 from steady.adapters.seed import load_seed_stocks
-from steady.constants import KIND_SCHEDULED, SCHEDULER_JOB_ID, SCHEDULER_START_JOB_ID
+from steady.constants import (
+    KIND_SCHEDULED,
+    SCHEDULER_JOB_ID,
+    SCHEDULER_START_JOB_ID,
+    SCREENER_JOB_ID,
+    SCREENER_START_JOB_ID,
+)
 from steady.scheduler import build_scheduler, scheduled_run
 from steady.services.algo import AlgoService
+from steady.services.screener import ScreenerService
 from steady.services.stocks import StockService
 from tests.support import FakePrices, closes
 
@@ -34,9 +41,18 @@ def test_a_tick_outside_market_hours_does_nothing():
 
 
 def test_the_scheduler_has_a_start_run_and_a_five_minute_job():
-    scheduler = build_scheduler(make(OPEN), lambda: OPEN)
+    screener = ScreenerService([], FakePrices(), MemoryStore(), lambda: OPEN)
+    scheduler = build_scheduler(make(OPEN), screener, lambda: OPEN)
     jobs = {job.id: job for job in scheduler.get_jobs()}
-    assert set(jobs) == {SCHEDULER_START_JOB_ID, SCHEDULER_JOB_ID}
+    assert set(jobs) == {
+        SCHEDULER_START_JOB_ID,
+        SCHEDULER_JOB_ID,
+        SCREENER_START_JOB_ID,
+        SCREENER_JOB_ID,
+    }
+    daily = str(jobs[SCREENER_JOB_ID].trigger)
+    assert "hour='18'" in daily
+    assert "minute='30'" in daily
     trigger = str(jobs[SCHEDULER_JOB_ID].trigger)
     assert "day_of_week='mon-fri'" in trigger
     assert "hour='9-15'" in trigger

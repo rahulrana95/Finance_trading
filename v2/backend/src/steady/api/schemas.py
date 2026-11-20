@@ -115,3 +115,48 @@ class IdeaOut(CamelModel):
     futures_note: str
     status: str
     created_at: datetime
+
+
+class OddsOut(CamelModel):
+    level: float
+    market_down: bool
+    events: int
+    gain10_6m_pct: float = Field(alias="gain10In6mPct")
+    gain20_6m_pct: float = Field(alias="gain20In6mPct")
+    higher_6m_pct: float = Field(alias="higherAfter6mPct")
+    events_12m: int = Field(alias="eventsWithYear")
+    gain30_12m_pct: float = Field(alias="gain30In12mPct")
+    higher_12m_pct: float = Field(alias="higherAfter12mPct")
+    fell_further_12m_pct: float = Field(alias="fellFurtherPct")
+
+
+class ScreenRowOut(CamelModel):
+    symbol: str
+    name: str
+    industry: str
+    last_price: float
+    price_as_of: str
+    year_high: float
+    below_pct: float
+    level: float
+    own_falls: int
+    own_higher_after_year: int
+    own_falls_with_year: int
+    worst_day_pct: float
+
+
+class ScreenOut(CamelModel):
+    id: str
+    created_at: datetime
+    universe: int
+    priced: int
+    market_below_pct: float
+    market_down: bool
+    odds: list[OddsOut]
+    rows: list[ScreenRowOut]
+
+
+class ScreenStateOut(CamelModel):
+    running: bool
+    error: str | None
+    screen: ScreenOut | None

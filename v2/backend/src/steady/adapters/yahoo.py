@@ -8,10 +8,12 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from steady.clock import Clock
 from steady.constants import (
+    INDEX_PREFIX,
     MARKET_UTC_OFFSET_MINUTES,
     PRICE_FETCH_ATTEMPTS,
     PRICE_HISTORY_START,
     YAHOO_NAME,
+    YAHOO_STOCK_SUFFIX,
     YAHOO_TIMEOUT_SECONDS,
     YAHOO_URL,
     YAHOO_USER_AGENT,
@@ -24,6 +26,11 @@ MARKET_TZ = timezone(timedelta(minutes=MARKET_UTC_OFFSET_MINUTES))
 
 def new_client() -> httpx.Client:
     return httpx.Client(timeout=YAHOO_TIMEOUT_SECONDS, headers={"User-Agent": YAHOO_USER_AGENT})
+
+
+def ticker(symbol: str) -> str:
+    """NSE shares carry a suffix; an index (^NSEI) is used as it is."""
+    return symbol if symbol.startswith(INDEX_PREFIX) else symbol + YAHOO_STOCK_SUFFIX
 
 
 def parse_chart(payload: Any) -> list[Close]:  # noqa: ANN401 - JSON from outside
@@ -58,7 +65,7 @@ class YahooPriceSource:
     def _fetch(self, symbol: str) -> Any:  # noqa: ANN401 - JSON from outside
         start = datetime.fromisoformat(PRICE_HISTORY_START).replace(tzinfo=UTC)
         response = self._client.get(
-            YAHOO_URL.format(symbol=symbol),
+            YAHOO_URL.format(symbol=ticker(symbol)),
             params={
                 "period1": int(start.timestamp()),
                 "period2": int((self._clock() + timedelta(days=1)).timestamp()),

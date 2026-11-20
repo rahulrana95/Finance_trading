@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from steady.adapters.memory import MemoryStore
-from steady.adapters.seed import load_seed_stocks
+from steady.adapters.seed import load_seed_stocks, load_universe
 from steady.adapters.yahoo import YahooPriceSource, new_client
 from steady.api import api_router
 from steady.clock import Clock, utc_now
@@ -19,6 +19,7 @@ from steady.middleware import add_middleware
 from steady.ports import PriceSource, Store
 from steady.scheduler import build_scheduler
 from steady.services.algo import AlgoService
+from steady.services.screener import ScreenerService
 from steady.services.stocks import StockService
 from steady.web.spa import mount_interface
 
@@ -39,10 +40,11 @@ def create_app(
     store = make_store(settings)
     algo = AlgoService(stocks, store, clock)
     algo.recover()
+    screener = ScreenerService(load_universe(), source, store, clock)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        scheduler = build_scheduler(algo, clock) if settings.scheduler else None
+        scheduler = build_scheduler(algo, screener, clock) if settings.scheduler else None
         if scheduler:
             scheduler.start()
         yield
@@ -58,9 +60,9 @@ def create_app(
         redoc_url=None,
         lifespan=lifespan,
     )
-    app.state.algo, app.state.store = algo, store
+    app.state.algo, app.state.store, app.state.screener = algo, store, screener
     add_middleware(app)
-    app.include_router(api_router(settings, clock, stocks, algo))
+    app.include_router(api_router(settings, clock, stocks, algo, screener))
     mount_interface(app, settings.static_dir)  # last: it answers every remaining address
     return app
 

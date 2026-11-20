@@ -79,7 +79,9 @@ MSG_UNKNOWN_STOCK = "Unknown stock"
 
 # --- public price source (unofficial; replaced by a broker feed later) ---
 YAHOO_NAME = "Yahoo Finance daily close (unofficial)"
-YAHOO_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}.NS"
+YAHOO_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
+YAHOO_STOCK_SUFFIX = ".NS"
+INDEX_PREFIX = "^"
 YAHOO_USER_AGENT = "Mozilla/5.0 (compatible; steady/0.1)"
 YAHOO_TIMEOUT_SECONDS = 15.0
 PRICE_FETCH_ATTEMPTS = 2
@@ -141,3 +143,23 @@ POSTGRES_PREFIXES = ("postgres://", "postgresql://")
 POSTGRES_DRIVER_PREFIX = "postgresql+psycopg://"
 SQLITE_PREFIX = "sqlite"
 SUMMARY_INTERRUPTED = "Interrupted by a restart"
+
+# --- market-fall screener (rules from research logged 2026-11-20 in BACKTEST_RESULTS.md) ---
+SCREENS_PATH = "/screens"
+UNIVERSE_FILE = "nifty500.json"
+MARKET_SYMBOL = "^NSEI"
+SCREEN_WINDOW_DAYS = 252  # falls are measured from the 1-year high
+SCREEN_MIN_HISTORY = 120
+SCREEN_LEVELS_PCT = (20.0, 25.0, 30.0, 40.0)
+SCREEN_REARM_PCT = 10.0  # a new fall counts only after the stock was back within 10% of its high
+MARKET_DOWN_PCT = 10.0  # "the whole market fell": the index is this far below its 1-year high
+HALF_YEAR_DAYS = 126
+YEAR_DAYS = 252
+GAIN_6M_PCT = (10.0, 20.0)
+GAIN_12M_PCT = 30.0
+FURTHER_FALL_PCT = 20.0
+SCREEN_WORKERS = 8
+SCREEN_MAX_AGE_HOURS = 20
+SCREEN_HOUR, SCREEN_MINUTE = 18, 30
+SCREENER_JOB_ID = "screener"
+SCREENER_START_JOB_ID = "screener-at-start"

@@ -1,6 +1,6 @@
-import { DEFAULT_ERROR, IDEAS_URL, RUN_POLL_MS, RUN_POLL_TRIES, RUNS_URL, STOCKS_URL } from '../constants'
+import { DEFAULT_ERROR, IDEAS_URL, RUN_POLL_MS, RUN_POLL_TRIES, RUNS_URL, SCREEN_POLL_TRIES, SCREENS_URL, STOCKS_URL } from '../constants'
 import { sleep as realSleep, type Sleep } from '../lib/sleep'
-import { ApiError, type Api, type RecFilter, type Recommendation, type Run, type Stock } from './types'
+import { ApiError, type Api, type RecFilter, type Recommendation, type Run, type ScreenState, type Stock } from './types'
 
 /** Send a request and read the JSON answer; failures become ApiError with the server's reason. */
 async function request<T>(url: string, init: RequestInit): Promise<T> {
@@ -39,20 +39,18 @@ export function ideasQuery(filter: RecFilter = {}): string {
   return query ? `?${query}` : ''
 }
 
-/** The server finishes a run in the background, so ask again until it is no longer running. */
-export async function waitForRun(
-  id: string,
-  get: (id: string) => Promise<Run>,
-  sleep: Sleep = realSleep,
-  tries: number = RUN_POLL_TRIES,
-): Promise<Run> {
-  let run = await get(id)
-  for (let i = 1; i < tries && run.status === 'running'; i++) {
+/** The server finishes work in the background, so ask again until it is done or tries run out. */
+export async function waitUntil<T>(get: () => Promise<T>, done: (value: T) => boolean, sleep: Sleep = realSleep, tries: number = RUN_POLL_TRIES): Promise<T> {
+  let value = await get()
+  for (let i = 1; i < tries && !done(value); i++) {
     await sleep(RUN_POLL_MS)
-    run = await get(id)
+    value = await get()
   }
-  return run
+  return value
 }
+
+export const waitForRun = (id: string, get: (id: string) => Promise<Run>, sleep: Sleep = realSleep, tries: number = RUN_POLL_TRIES): Promise<Run> =>
+  waitUntil(() => get(id), (run) => run.status !== 'running', sleep, tries)
 
 const getRun = (id: string): Promise<Run> => getJson<Run>(`${RUNS_URL}/${encodeURIComponent(id)}`)
 
@@ -63,4 +61,14 @@ export const liveAlgo: Pick<Api, 'listRuns' | 'startRun' | 'listRecommendations'
     return started.status === 'running' ? waitForRun(started.id, getRun) : started
   },
   listRecommendations: (filter) => getJson<Recommendation[]>(IDEAS_URL + ideasQuery(filter)),
+}
+
+const latestScreen = (): Promise<ScreenState> => getJson<ScreenState>(`${SCREENS_URL}/latest`)
+
+export const liveScreen: Pick<Api, 'getScreen' | 'startScreen'> = {
+  getScreen: latestScreen,
+  startScreen: async () => {
+    const started = await postJson<ScreenState>(SCREENS_URL, {})
+    return started.running ? waitUntil(latestScreen, (state) => !state.running, realSleep, SCREEN_POLL_TRIES) : started
+  },
 }

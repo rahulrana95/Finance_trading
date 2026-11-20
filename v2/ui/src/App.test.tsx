@@ -4,7 +4,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import { api, resetMockApi } from './api'
-import { DEMO_EMAIL, DEMO_PASSWORD } from './api/mock/data'
+import { DEMO_EMAIL, DEMO_PASSWORD, MOCK_SCREEN } from './api/mock/data'
+import { ApiError } from './api/types'
 
 function open(route = '/') {
   return render(
@@ -197,6 +198,64 @@ describe('trades', () => {
     expect(await screen.findByRole('link', { name: 'Nestle India' })).toBeInTheDocument()
     expect(screen.getByText('Bought shares')).toBeInTheDocument()
     expect(screen.getAllByText('Paper').length).toBeGreaterThan(1)
+  })
+})
+
+describe('screener', () => {
+  it('shows the market state, the odds from past falls and the fallen stocks', async () => {
+    await openSignedIn('/screener')
+    expect(await screen.findByText('Market not in a fall')).toBeInTheDocument()
+    expect(screen.getByText(/Nifty is 2.1% below its 1-year high/)).toHaveTextContent('coin toss')
+    expect(screen.getByText(/prices for 499 of 501 stocks/)).toBeInTheDocument()
+    const odds = screen.getByRole('table', { name: 'What happened after past falls' })
+    expect(within(odds).getAllByRole('row')).toHaveLength(9)
+    expect(within(odds).getAllByText('Also in a fall')).toHaveLength(4)
+    const fallen = screen.getByRole('table', { name: 'Stocks in a deep fall' })
+    expect(within(fallen).getAllByRole('row')).toHaveLength(6)
+    const kpit = within(fallen).getByText('KPIT Technologies').closest('tr')!
+    expect(kpit).toHaveTextContent('59.0%')
+    expect(kpit).toHaveTextContent('51%')
+    expect(kpit).toHaveTextContent('5 of 7 higher after a year')
+    expect(within(fallen).getByText(/Fell 62% in one day/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Stocks in a deep fall today (5)' })).toBeInTheDocument()
+  })
+  it('filters by fall size and search, and sorts', async () => {
+    const user = await openSignedIn('/screener')
+    await user.selectOptions(await screen.findByLabelText('Fell at least'), '40')
+    expect(screen.getByRole('heading', { name: 'Stocks in a deep fall today (4)' })).toBeInTheDocument()
+    await user.selectOptions(screen.getByLabelText('Sort by'), 'name')
+    const fallen = screen.getByRole('table', { name: 'Stocks in a deep fall' })
+    expect(within(fallen).getAllByRole('row')[1]).toHaveTextContent('KPIT Technologies')
+    await user.type(screen.getByLabelText('Find'), 'zzz')
+    expect(screen.getByText('No stock matches.')).toBeInTheDocument()
+  })
+  it('screens again on demand', async () => {
+    const user = await openSignedIn('/screener')
+    const start = vi.spyOn(api, 'startScreen')
+    await user.click(await screen.findByRole('button', { name: 'Screen now' }))
+    await waitFor(() => expect(start).toHaveBeenCalledOnce())
+    expect(await screen.findByRole('button', { name: 'Screen now' })).toBeEnabled()
+  })
+  it('says the market is in a fall when it is, and shows a dash without odds', async () => {
+    vi.spyOn(api, 'getScreen').mockResolvedValue({ running: false, error: null, screen: { ...MOCK_SCREEN, marketDown: true, marketBelowPct: 12.4, odds: [] } })
+    await openSignedIn('/screener')
+    expect(await screen.findByText('Market in a fall')).toBeInTheDocument()
+    expect(screen.getByText(/Nifty is 12.4% below/)).toHaveTextContent('worked best')
+    expect(within(screen.getByRole('table', { name: 'Stocks in a deep fall' })).getAllByText('–').length).toBeGreaterThan(0)
+  })
+  it('explains when there is no screen yet, and when one is running', async () => {
+    vi.spyOn(api, 'getScreen').mockResolvedValue({ running: true, error: null, screen: null })
+    await openSignedIn('/screener')
+    expect(await screen.findByText(/No screen yet/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Screening…' })).toBeDisabled()
+  })
+  it('shows why a screen failed', async () => {
+    vi.spyOn(api, 'getScreen').mockResolvedValue({ running: false, error: 'The screen failed.', screen: null })
+    const user = await openSignedIn('/screener')
+    expect(await screen.findByRole('alert')).toHaveTextContent('The screen failed.')
+    vi.spyOn(api, 'startScreen').mockRejectedValue(new ApiError('The server did not answer.', 'network'))
+    await user.click(screen.getByRole('button', { name: 'Screen now' }))
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('The server did not answer.'))
   })
 })
 

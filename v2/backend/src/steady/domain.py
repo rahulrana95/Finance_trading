@@ -5,6 +5,7 @@ from datetime import date, datetime
 
 from steady.core.plan import Plan
 from steady.core.scoring import FinYear
+from steady.core.screen import Odds
 
 
 @dataclass(frozen=True)
@@ -69,3 +70,40 @@ class Idea:
     risks: tuple[str, ...]
     status: str
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class Listing:
+    symbol: str
+    name: str
+    industry: str
+
+
+@dataclass(frozen=True)
+class ScreenRow:
+    """One stock that is in a deep fall today."""
+
+    symbol: str
+    name: str
+    industry: str
+    last_price: float
+    price_as_of: str
+    year_high: float
+    below_pct: float
+    level: float
+    own_falls: int
+    own_higher_after_year: int
+    own_falls_with_year: int
+    worst_day_pct: float  # biggest one-day drop in the last year; a huge one suggests a demerger
+
+
+@dataclass(frozen=True)
+class Screen:
+    id: str
+    created_at: datetime
+    universe: int
+    priced: int
+    market_below_pct: float
+    market_down: bool
+    odds: tuple[Odds, ...]
+    rows: tuple[ScreenRow, ...]

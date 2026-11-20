@@ -596,3 +596,28 @@ same set-up under other filters (VIX under 20, above the 200-day average) had tr
 a gap through the limit and the strike is possible and would cost the "one full loss" column.
 The exit at the limit is assumed to fill at the modelled price; real fills are untested.
 These sizes break the loss limits in `AGENTS.md` section 1, which only the owner can change.
+
+---
+
+## 2026-11-20 · The frozen rule by entry day (T4.8)
+
+**Verdict: Tuesday entry (for the next week's Tuesday expiry) was the best day in each of the
+three periods; Friday was the weakest. The MACD filter roughly halved the drawdown on every day.**
+
+Research only, modelled option prices. Code: `research/2026-11-market-moves/entry_day.py`.
+Set-up unchanged: both sides, limit 0.8 x VIX move, strike 1.5% beyond, exit when price reaches
+the limit, only when MACD is above zero. R per year / max drawdown / worst trade:
+
+| Entry day | 2011-2015 | 2016-2020 | 2021-2026 |
+|---|---|---|---|
+| Monday | +0.35 / -1.01 / -0.33 | +0.95 / -0.79 / -0.32 | +0.76 / -0.52 / -0.30 |
+| Tuesday | +0.75 / -0.71 / -0.35 | +1.63 / -0.90 / -0.54 | +1.08 / -0.84 / -0.29 |
+| Wednesday | +0.46 / -0.69 / -0.25 | +1.10 / -0.92 / -0.54 | +0.52 / -0.51 / -0.30 |
+| Thursday (under 6 days to expiry) | +0.21 / -0.74 / -0.30 | +1.18 / -0.71 / -0.51 | +0.32 / -0.58 / -0.30 |
+| Friday (under 6 days to expiry) | +0.22 / -0.98 / -0.44 | +0.76 / -0.30 / -0.30 | +0.16 / -0.85 / -0.40 |
+
+Without the MACD filter the Monday drawdown was -1.98 / -1.72 / -2.32 and the worst trade
+reached -1.05. The day was compared after seeing all three periods, so the Tuesday advantage
+is a lead to confirm on real prices, not a tested result. Speed note: one simulated trade is
+about 6 daily bars and a few Black-Scholes evaluations (about 0.05 ms); the 125,820-rule search
+simulated 270 set-ups x about 800 entry days once, then applied filters as yes/no masks.

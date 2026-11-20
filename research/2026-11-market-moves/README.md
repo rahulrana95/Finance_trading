@@ -35,6 +35,7 @@ Run from this folder (needs `pandas`, `scikit-learn`, `lightgbm`):
     python3 rangeml.py         # weekly range model: build 2016-2020, one frozen rule, test 2021 onward
     python3 searchcombo.py     # 83,880 set-up x filter combinations searched on 2016-2020, checked on two unseen periods
     python3 searchsize.py      # free sizing: rules chosen on 2011-2020, sized for 8-20% a year, checked on 2021-2026
+    python3 entry_day.py       # the frozen rule by entry weekday
     python3 rel90.py           # reversal and breakout signals with target / stop outcomes
     python3 stock_study.py ICICI   # same search on one stock (needs data/ICICI.json from Yahoo ICICIBANK.NS)
     python3 dips.py ICICI 2016-01-01 126   # falls of 5-30% from the 6-month high and time to recover

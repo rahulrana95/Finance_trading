@@ -393,3 +393,40 @@ Average win +6.05%, average loss -2.28%, best +51.1%, worst -8.1%. ADX level, th
 2026 had 12 crossovers; 3 of the 11 closed ones made money.
 With about 30 condition groups tested on 40-100 trades each, only differences that hold in both
 periods (buy vs sell, with vs against trend, large cross bar) should be given any weight.
+
+---
+
+## 2026-11-20 · MACD as a range filter, Wednesday to next Tuesday (T4.8)
+
+**Verdict: MACD does not give direction, but it does say something about range. With MACD above
+zero Nifty touched a level 3% below entry in 21% / 10% of weeks (train / test) against 32% / 20%
+with MACD below zero. Part of that is just VIX: once the level is placed by VIX, MACD still
+lowers the downside touch rate (23% / 20% against 27% / 34%) but adds nothing on the upside.**
+
+Research only, index prices, no option prices. Code: `research/2026-11-market-moves/macd_range.py`.
+886 weeks, 2008-03 to 2026-10, entry Wednesday open, exit next Tuesday close, state at Tuesday's
+close. "Touched" = traded there at any time in the week. Train before 2017 / test from 2017.
+
+| State | Touched 2% below | Touched 2% above | Touched 3% below | Touched 3% above |
+|---|---|---|---|---|
+| Every week | 38% / 26% | 39% / 26% | 26% / 13% | 22% / 8% |
+| MACD above zero | 34% / 21% | 36% / 23% | 21% / 10% | 19% / 6% |
+| MACD below zero | 44% / 36% | 43% / 31% | 32% / 20% | 27% / 13% |
+| MACD above zero, bars rising | 29% / 19% | 33% / 20% | 20% / 7% | 22% / 2% |
+| MACD above zero and VIX under 16 | 22% / 15% | 22% / 17% | 7% / 4% | 7% / 2% |
+| MACD below zero and VIX 20+ | 51% / 47% | 54% / 58% | 42% / 37% | 39% / 26% |
+| VIX 20+ (any MACD) | 45% / 43% | 53% / 50% | 35% / 33% | 36% / 26% |
+
+Level placed one VIX-implied weekly move away (VIX / sqrt(52)):
+
+| State | Touched below | Touched above |
+|---|---|---|
+| Every week | 25% / 25% | 21% / 20% |
+| MACD above zero | 23% / 20% | 19% / 20% |
+| MACD below zero | 27% / 34% | 25% / 21% |
+| MACD above zero, bars rising | 20% / 18% | 21% / 16% |
+| MACD below zero, bars falling | 30% / 38% | 30% / 17% |
+
+Option premiums are priced from VIX, so the tradable part of this is only the last table: a
+few points lower touch rate on the put side when MACD is above zero. Whether that pays after
+real premiums and costs is not tested here.

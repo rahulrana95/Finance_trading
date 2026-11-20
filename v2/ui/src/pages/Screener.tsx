@@ -85,25 +85,33 @@ function Picks({ screen }: { screen: Screen }) {
 }
 
 function Row({ row, screen }: { row: ScreenRow; screen: Screen }) {
+  const [open, setOpen] = useState(false)
   const odds = oddsFor(screen, row.level)
   const note = demergerNote(row)
   return (
-    <tr>
-      <td>
-        <span className="strong">{row.name}</span>
-        {note && <div className="small loss">{note}</div>}
-        <details><summary>Evidence</summary><EvidenceList items={row.evidence} /></details>
-      </td>
-      <td><Pill kind={CONFIDENCE_KIND[row.confidence]}>{CONFIDENCE_LABEL[row.confidence]}</Pill></td>
-      <td>{row.industry}</td>
-      <td className="right num">{price(row.lastPrice)}</td>
-      <td className="right num">{pct(row.belowPct)}</td>
-      <td className="right num strong">{chance(odds?.higherAfter6mPct)}</td>
-      <td className="right num">{chance(odds?.gain10In6mPct)}</td>
-      <td className="right num">{chance(odds?.gain30In12mPct)}</td>
-      <td className="right num">{chance(odds?.fellFurtherPct)}</td>
-      <td>{ownRecord(row)}</td>
-    </tr>
+    <>
+      <tr>
+        <td>
+          <span className="strong">{row.name}</span>
+          {note && <div className="small loss">{note}</div>}
+          <div><button type="button" className="link-button" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Hide evidence' : 'Evidence'}</button></div>
+        </td>
+        <td><Pill kind={CONFIDENCE_KIND[row.confidence]}>{CONFIDENCE_LABEL[row.confidence]}</Pill></td>
+        <td>{row.industry}</td>
+        <td className="right num">{price(row.lastPrice)}</td>
+        <td className="right num">{pct(row.belowPct)}</td>
+        <td className="right num strong">{chance(odds?.higherAfter6mPct)}</td>
+        <td className="right num">{chance(odds?.gain10In6mPct)}</td>
+        <td className="right num">{chance(odds?.gain30In12mPct)}</td>
+        <td className="right num">{chance(odds?.fellFurtherPct)}</td>
+        <td>{ownRecord(row)}</td>
+      </tr>
+      {open && (
+        <tr className="evidence-row">
+          <td colSpan={10} aria-label={`Evidence for ${row.name}`}><EvidenceList items={row.evidence} /></td>
+        </tr>
+      )}
+    </>
   )
 }
 

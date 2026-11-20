@@ -132,4 +132,4 @@ input[type='checkbox'], input[type='radio'] { width: 18px; height: 18px; accent-
 .evidence { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; } .evidence li { display: grid; grid-template-columns: 20px 1fr; gap: 6px; }
 .evidence .met { color: #0a5a3f; } .evidence .unmet { color: var(--loss-ink); }
 .pick { padding: 14px 0; border-top: 1px solid var(--border); } .pick:first-of-type { border-top: 0; }
-details > summary { cursor: pointer; color: var(--accent-ink); min-height: 32px; display: flex; align-items: center; }
+.evidence-row td { background: var(--surface-2, #f6f7f4); padding: 4px 16px 16px; white-space: normal; }

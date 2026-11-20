@@ -336,3 +336,28 @@ Nifty daily 2007-09 to 2026-11-06, train before 2017, test from 2017. R = amount
 17 of 32 entry/exit pairs were positive in both periods, all with an average of 0.0-0.25 R per
 trade. Raising risk per trade to reach 20% a year would scale the drawdown the same way (4-10
 times), past the 5% yearly limit in `AGENTS.md`.
+
+---
+
+## 2026-11-20 · Wednesday to next Tuesday, direction from the MACD histogram's slope (T4.8)
+
+**Verdict: 20 wins in 40 weeks of 2026 (50%), average win +1.39% and average loss -1.39%,
+net zero. Over 2008-2026 it won 444 of 895 (50%).**
+
+Research only, index prices, no costs. Code: `research/2026-11-market-moves/wed_macd.py`.
+Rule: histogram (12/26/9, daily) falling at Tuesday's close (green shrinking or red growing)
+calls "below"; rising (red shrinking or green growing) calls "above". Entry Wednesday open,
+exit next Tuesday close. Data to 2026-11-03.
+
+| 2026 | Wins | Average result |
+|---|---|---|
+| All calls | 20 of 40 (50%) | 0.00% |
+| Call "below" | 12 of 22 (55%) | +0.18% |
+| Call "above" | 8 of 18 (44%) | -0.23% |
+| Green shrinking | 6 of 9 | +0.25% |
+| Red growing | 6 of 13 | +0.14% |
+| Red shrinking | 6 of 10 | -0.04% |
+| Green growing | 2 of 8 | -0.46% |
+
+By year the rule won 44-54% in every year except 2020 (63%). 2026 was a falling year (Nifty
+closed above the Wednesday entry in only 45% of weeks), which is why "below" calls did better.

@@ -621,3 +621,61 @@ reached -1.05. The day was compared after seeing all three periods, so the Tuesd
 is a lead to confirm on real prices, not a tested result. Speed note: one simulated trade is
 about 6 daily bars and a few Black-Scholes evaluations (about 0.05 ms); the 125,820-rule search
 simulated 270 set-ups x about 800 entry days once, then applied filters as yes/no masks.
+
+---
+
+## 2026-11-20 · Stock screen research: a general "chance of gain" score, and buying after deep falls (T4.8)
+
+**Verdict: a general score for "which of 500 stocks will gain 4 / 5 / 10%" is accurate as a
+percentage but nearly useless for picking (its top 20 picks made +8.7% in 3 months against +7.2%
+for all stocks). Buying after a 25% fall is not a 99% bet either: for strong stocks it ended
+higher after a year 54% of the time. What does separate good falls from bad is whether the whole
+market fell: after a 25% fall with Nifty also 10%+ below its high, stocks ended higher six months
+later 76% of the time in both periods; when the stock fell alone, 50-61%.**
+
+Research only, closing prices with dividends, no costs. Universe is today's Nifty 500 members
+(447-467 with enough history, 2014 to 2026-11-17), so companies that failed and left the index
+are missing and real results would be worse. Code: `research/2026-11-market-moves/buyscore.py`,
+`dipquality.py`.
+
+General score (samples every 5 days; fitted to 2020, checked on 2021-2026; 3-month horizon):
+
+| Outcome | How often it happens anyway | Score's top tenth: said / got | Ranking skill (0.5 = none) |
+|---|---|---|---|
+| +4% before -10% | 71% | 79% / 73% | 0.54 |
+| +5% before -10% | 67% | 76% / 70% | 0.54 |
+| +10% before -10% | 51% | 64% / 60% | 0.57 |
+| Fell 10% at some point | 39% | 62% / 51% | 0.59 |
+
+A LightGBM model and a simple bucket table scored the same. Top-20 picks by the model: +10%
+before -10% in 54% (all stocks 51%), fell 10% in 44% (39%), worst tenth of picks -17%.
+
+After a fall from the 1-year high (first close X% below it; buy at that close):
+
+| Case (fell 25%) | Events | 6 months: reached +10% / ended higher | 12 months: reached +30% / ended higher / worst tenth / fell 20% more |
+|---|---|---|---|
+| All stocks | 3,089 | 76% / 63% | 57% / 63% / -32% / 46% |
+| Strong (top 100 by trading, 12%+ a year before, always recovered before) | 186 | 78% / 63% | 44% / 54% / -35% / 52% |
+| Any big stock on an ordinary day (no fall) | 8,657 | 68% / 60% | 46% / 64% / -28% / 39% |
+
+"Strong" judged from price history did not help; real business quality needs financial data.
+The worst strong-stock events were Yes Bank (-80%), Sammaan Capital (-74%), Adani Green (-59%).
+
+All stocks, by whether Nifty was also 10%+ below its 1-year high on the event day:
+
+| Fell | Market | 2015-2020: ended higher at 6 / 12 months, fell 20% more | 2021-2026: ended higher at 6 / 12 months, fell 20% more |
+|---|---|---|---|
+| 20% | also down | 74% / 83%, 35% | 75% / 65%, 28% |
+| 20% | fine | 50% / 52%, 56% | 61% / 64%, 40% |
+| 25% | also down | 76% / 84%, 38% | 76% / 69%, 31% |
+| 25% | fine | 50% / 49%, 61% | 61% / 62%, 42% |
+| 30% | also down | 78% / 86%, 36% | 81% / 68%, 29% |
+| 30% | fine | 47% / 46%, 66% | 62% / 60%, 44% |
+| 40% | also down | 83% / 88%, 38% | 82% / 65%, 27% |
+| 40% | fine | 45% / 46%, 68% | 61% / 60%, 46% |
+
+Market-down events came from nine different years (2015, 2016, 2018, 2019, 2020, 2021, 2022,
+2024, 2025, 2026); excluding February-April 2020 the 25% row is 75% at 6 months and 73% at 12.
+Even in the good case about a third of the stocks fell a further 20% before recovering.
+ICICI Bank fell 25% four times since 2015: after 12 months -12%, +39%, +52%, +44%; in two of
+the four it first fell a further 30-35%.
